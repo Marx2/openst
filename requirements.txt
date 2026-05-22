@@ -1,0 +1,8 @@
+fastapi[standard]==0.115.12
+uvicorn==0.34.2
+openbb==4.7.1
+redis==5.2.1
+python-dotenv==1.0.1
+pytest==8.3.5
+pytest-asyncio==0.25.3
+httpx==0.28.1
