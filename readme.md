@@ -35,3 +35,5 @@ docker compose --profile test run --rm test
 | `REDIS_PORT` | No | `6379` | Redis port |
 | `REDIS_PASSWORD` | No | `` | Redis password |
 | `REDIS_DB` | No | `0` | Redis database index |
+
+## License
