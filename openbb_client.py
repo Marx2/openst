@@ -1,19 +1,23 @@
+import logging
 from decimal import Decimal
 
 from openbb import obb
 
 PROVIDERS = ["yfinance", "fmp", "intrinio"]
 
+logger = logging.getLogger(__name__)
 
-def get_dividend_yield(ticker: str) -> str | None:
+
+def get_dividend_yield(ticker: str) -> float | None:
     for provider in PROVIDERS:
         try:
             df = obb.equity.fundamental.metrics(ticker, provider=provider).to_df()
             if df.empty:
                 continue
             raw = df.iloc[0]["dividend_yield"]
-            return str(Decimal(str(raw)).quantize(Decimal("0.01")))
-        except Exception:
+            return float(Decimal(str(raw)).quantize(Decimal("0.01")))
+        except Exception as e:
+            logger.warning("Provider %s failed for %s: %s", provider, ticker, e)
             continue
     return None
 
@@ -30,6 +34,7 @@ def get_dividend_history(ticker: str) -> list[dict] | None:
                 amount = str(Decimal(str(row["amount"])).quantize(Decimal("0.0001")))
                 rows.append({"date": str(date), "amount": amount})
             return rows
-        except Exception:
+        except Exception as e:
+            logger.warning("Provider %s failed for %s: %s", provider, ticker, e)
             continue
     return None

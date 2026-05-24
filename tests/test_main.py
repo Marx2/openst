@@ -27,15 +27,15 @@ def client():
     return TestClient(app)
 
 
-@patch("main.get_dividend_yield", return_value="2.45")
+@patch("main.get_dividend_yield", return_value=2.45)
 def test_yield_miss_fetches_and_returns(mock_fn, client):
     r = client.get("/dividend/yield/AAPL")
     assert r.status_code == 200
-    assert r.json() == "2.45"
+    assert r.json() == 2.45
     mock_fn.assert_called_once_with("AAPL")
 
 
-@patch("main.get_dividend_yield", return_value="2.45")
+@patch("main.get_dividend_yield", return_value=2.45)
 def test_yield_hit_returns_cached(mock_fn, client):
     client.get("/dividend/yield/AAPL")
     client.get("/dividend/yield/AAPL")
