@@ -39,6 +39,9 @@ def get_dividend_yield(ticker: str) -> float | None:
             got_data = True
             if df.empty:
                 continue
+            if "dividend_yield" not in df.columns:
+                _pays_dividend[ticker] = False
+                return 0.0
             raw = df.iloc[0]["dividend_yield"]
             return float(Decimal(str(raw)).quantize(Decimal("0.01")))
         except Exception as e:
