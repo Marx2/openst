@@ -1,3 +1,4 @@
+import base64
 import json
 import os
 
@@ -6,11 +7,24 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import Response
 
 from cache import RedisCache
 from openbb_client import get_dividend_history, get_dividend_yield
 
 app = FastAPI()
+
+_FAVICON = base64.b64decode(
+    "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAbklEQVR4nI2SwQ3AIAwD"
+    "eTNO58yI7EJbggxKnEDkRwU+W0BLYdPbr9tR95nR7WmVoZxZwbIpYoy1PfVTxsCtVghM"
+    "GG+AyZiSxE1KEE/dpCSPJyXH+L2EAP5aORCaxjc79/0t+Wcm8o/NfyRZ65gXP1AKlpa+"
+    "AnUAAAAASUVORK5CYII="
+)
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    return Response(_FAVICON, media_type="image/png")
 
 _cache = RedisCache(
     host=os.environ.get("REDIS_HOST", "localhost"),
