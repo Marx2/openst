@@ -1,3 +1,4 @@
+import logging
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
@@ -28,7 +29,7 @@ def test_get_dividend_yield_returns_decimal_string(mock_obb):
 
     result = get_dividend_yield("AAPL")
 
-    assert result == "2.46"
+    assert result == 2.46
     mock_obb.equity.fundamental.metrics.assert_called_once_with("AAPL", provider="yfinance")
 
 
@@ -40,8 +41,22 @@ def test_get_dividend_yield_fallback_to_fmp(mock_obb):
 
     result = get_dividend_yield("AAPL")
 
-    assert result == "1.50"
+    assert result == 1.50
     assert mock_obb.equity.fundamental.metrics.call_count == 2
+
+
+@patch("openbb_client.obb")
+def test_get_dividend_yield_fallback_logs_warning(mock_obb):
+    mock_ok = MagicMock()
+    mock_ok.to_df.return_value = _metrics_df(1.5)
+    mock_obb.equity.fundamental.metrics.side_effect = [Exception("yfinance down"), mock_ok]
+
+    with patch("openbb_client.logger") as mock_logger:
+        get_dividend_yield("AAPL")
+        mock_logger.warning.assert_called_once()
+        call_args = mock_logger.warning.call_args
+        assert "yfinance" in str(call_args)
+        assert "AAPL" in str(call_args)
 
 
 @patch("openbb_client.obb")
