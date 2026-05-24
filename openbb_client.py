@@ -1,14 +1,12 @@
 from decimal import Decimal
 
-from dotenv import load_dotenv
+from openbb import obb
 
-load_dotenv()
-
-from openbb import obb  # noqa: E402
+PROVIDERS = ["yfinance", "fmp", "intrinio"]
 
 
 def get_dividend_yield(ticker: str) -> str | None:
-    for provider in ["yfinance", "fmp"]:
+    for provider in PROVIDERS:
         try:
             df = obb.equity.fundamental.metrics(ticker, provider=provider).to_df()
             if df.empty:
@@ -21,7 +19,7 @@ def get_dividend_yield(ticker: str) -> str | None:
 
 
 def get_dividend_history(ticker: str) -> list[dict] | None:
-    for provider in ["yfinance", "fmp"]:
+    for provider in PROVIDERS:
         try:
             df = obb.equity.fundamental.dividends(ticker, provider=provider).to_df()
             if df.empty:
