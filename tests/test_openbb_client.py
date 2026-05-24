@@ -85,6 +85,15 @@ def test_get_dividend_yield_non_payer_returns_zero(mock_obb):
 
 
 @patch("openbb_client.obb")
+def test_get_dividend_yield_missing_column_returns_zero(mock_obb):
+    # yfinance returns df without dividend_yield column (e.g. SNPS)
+    mock_result = MagicMock()
+    mock_result.to_df.return_value = pd.DataFrame([{"market_cap": 1e11}])
+    mock_obb.equity.fundamental.metrics.return_value = mock_result
+    assert get_dividend_yield("SNPS") == 0.0
+
+
+@patch("openbb_client.obb")
 def test_get_dividend_yield_non_payer_caches_result(mock_obb):
     mock_obb.equity.fundamental.metrics.side_effect = Exception("fail")
     empty = MagicMock()
