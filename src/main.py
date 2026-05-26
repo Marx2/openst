@@ -9,8 +9,8 @@ load_dotenv()
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
 
-from cache import RedisCache
-from openbb_client import get_dividend_history, get_dividend_yield
+from src.cache import RedisCache
+from src.openbb_client import get_dividend_history, get_dividend_yield
 
 app = FastAPI()
 
