@@ -1,0 +1,311 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "label": "openbb_client.py",
+      "file_type": "code",
+      "source_file": "openbb_client.py",
+      "source_location": "L1",
+      "id": "openbb_client_py",
+      "community": 1,
+      "norm_label": "openbb_client.py"
+    },
+    {
+      "label": "_check_pays_dividend()",
+      "file_type": "code",
+      "source_file": "openbb_client.py",
+      "source_location": "L14",
+      "id": "src_openbb_client_check_pays_dividend",
+      "community": 1,
+      "norm_label": "_check_pays_dividend()"
+    },
+    {
+      "label": "get_dividend_yield()",
+      "file_type": "code",
+      "source_file": "openbb_client.py",
+      "source_location": "L34",
+      "id": "src_openbb_client_get_dividend_yield",
+      "community": 1,
+      "norm_label": "get_dividend_yield()"
+    },
+    {
+      "label": "get_dividend_history()",
+      "file_type": "code",
+      "source_file": "openbb_client.py",
+      "source_location": "L55",
+      "id": "src_openbb_client_get_dividend_history",
+      "community": 3,
+      "norm_label": "get_dividend_history()"
+    },
+    {
+      "label": "Return True if ticker has any dividend history across all providers.",
+      "file_type": "rationale",
+      "source_file": "openbb_client.py",
+      "source_location": "L15",
+      "id": "src_openbb_client_rationale_15",
+      "community": 1,
+      "norm_label": "return true if ticker has any dividend history across all providers."
+    },
+    {
+      "label": "cache.py",
+      "file_type": "code",
+      "source_file": "cache.py",
+      "source_location": "L1",
+      "id": "cache_py",
+      "community": 0,
+      "norm_label": "cache.py"
+    },
+    {
+      "label": "RedisCache",
+      "file_type": "code",
+      "source_file": "cache.py",
+      "source_location": "L4",
+      "id": "src_cache_rediscache",
+      "community": 0,
+      "norm_label": "rediscache"
+    },
+    {
+      "label": ".__init__()",
+      "file_type": "code",
+      "source_file": "cache.py",
+      "source_location": "L5",
+      "id": "src_cache_rediscache_init",
+      "community": 0,
+      "norm_label": ".__init__()"
+    },
+    {
+      "label": ".get()",
+      "file_type": "code",
+      "source_file": "cache.py",
+      "source_location": "L14",
+      "id": "src_cache_rediscache_get",
+      "community": 0,
+      "norm_label": ".get()"
+    },
+    {
+      "label": ".set()",
+      "file_type": "code",
+      "source_file": "cache.py",
+      "source_location": "L17",
+      "id": "src_cache_rediscache_set",
+      "community": 0,
+      "norm_label": ".set()"
+    },
+    {
+      "label": "__init__.py",
+      "file_type": "code",
+      "source_file": "__init__.py",
+      "source_location": "L1",
+      "id": "init_py",
+      "community": 4,
+      "norm_label": "__init__.py"
+    },
+    {
+      "label": "main.py",
+      "file_type": "code",
+      "source_file": "main.py",
+      "source_location": "L1",
+      "id": "main_py",
+      "community": 2,
+      "norm_label": "main.py"
+    },
+    {
+      "label": "favicon()",
+      "file_type": "code",
+      "source_file": "main.py",
+      "source_location": "L26",
+      "id": "src_main_favicon",
+      "community": 2,
+      "norm_label": "favicon()"
+    },
+    {
+      "label": "dividend_yield()",
+      "file_type": "code",
+      "source_file": "main.py",
+      "source_location": "L38",
+      "id": "src_main_dividend_yield",
+      "community": 2,
+      "norm_label": "dividend_yield()"
+    },
+    {
+      "label": "dividend_history()",
+      "file_type": "code",
+      "source_file": "main.py",
+      "source_location": "L53",
+      "id": "src_main_dividend_history",
+      "community": 3,
+      "norm_label": "dividend_history()"
+    }
+  ],
+  "links": [
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openbb_client.py",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "openbb_client_py",
+      "target": "src_openbb_client_check_pays_dividend",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openbb_client.py",
+      "source_location": "L34",
+      "weight": 1.0,
+      "source": "openbb_client_py",
+      "target": "src_openbb_client_get_dividend_yield",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openbb_client.py",
+      "source_location": "L55",
+      "weight": 1.0,
+      "source": "openbb_client_py",
+      "target": "src_openbb_client_get_dividend_history",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "main.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "main_py",
+      "target": "openbb_client_py",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "openbb_client.py",
+      "source_location": "L50",
+      "weight": 1.0,
+      "source": "src_openbb_client_get_dividend_yield",
+      "target": "src_openbb_client_check_pays_dividend",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "openbb_client.py",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "src_openbb_client_rationale_15",
+      "target": "src_openbb_client_check_pays_dividend",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "main.py",
+      "source_location": "L44",
+      "weight": 1.0,
+      "source": "src_main_dividend_yield",
+      "target": "src_openbb_client_get_dividend_yield"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "main.py",
+      "source_location": "L59",
+      "weight": 1.0,
+      "source": "src_main_dividend_history",
+      "target": "src_openbb_client_get_dividend_history"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "cache.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "cache_py",
+      "target": "src_cache_rediscache",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "main.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "main_py",
+      "target": "cache_py",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "cache.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "src_cache_rediscache",
+      "target": "src_cache_rediscache_init",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "cache.py",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "src_cache_rediscache",
+      "target": "src_cache_rediscache_get",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "cache.py",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "src_cache_rediscache",
+      "target": "src_cache_rediscache_set",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "main.py",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "main_py",
+      "target": "src_main_favicon",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "main.py",
+      "source_location": "L38",
+      "weight": 1.0,
+      "source": "main_py",
+      "target": "src_main_dividend_yield",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "main.py",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "main_py",
+      "target": "src_main_dividend_history",
+      "confidence_score": 1.0
+    }
+  ],
+  "hyperedges": [],
+  "built_at_commit": "ed9c5c4fbd0ba989f5ac6498de935837dd4fa669"
+}
