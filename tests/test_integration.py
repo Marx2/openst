@@ -1,5 +1,5 @@
 import pytest
-from openbb_client import get_dividend_yield, get_dividend_history
+from src.openbb_client import get_dividend_yield, get_dividend_history
 
 pytestmark = pytest.mark.integration
 

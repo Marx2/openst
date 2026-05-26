@@ -5,8 +5,8 @@ from unittest.mock import MagicMock, patch
 import pandas as pd
 import pytest
 
-from openbb_client import get_dividend_history, get_dividend_yield
-import openbb_client
+from src.openbb_client import get_dividend_history, get_dividend_yield
+import src.openbb_client as openbb_client
 
 
 @pytest.fixture(autouse=True)
@@ -29,7 +29,7 @@ def _dividends_df() -> pd.DataFrame:
     return df
 
 
-@patch("openbb_client.obb")
+@patch("src.openbb_client.obb")
 def test_get_dividend_yield_returns_decimal_string(mock_obb):
     mock_result = MagicMock()
     mock_result.to_df.return_value = _metrics_df(2.456789)
@@ -41,7 +41,7 @@ def test_get_dividend_yield_returns_decimal_string(mock_obb):
     mock_obb.equity.fundamental.metrics.assert_called_once_with("AAPL", provider="yfinance")
 
 
-@patch("openbb_client.obb")
+@patch("src.openbb_client.obb")
 def test_get_dividend_yield_fallback_to_fmp(mock_obb):
     mock_ok = MagicMock()
     mock_ok.to_df.return_value = _metrics_df(1.5)
@@ -53,13 +53,13 @@ def test_get_dividend_yield_fallback_to_fmp(mock_obb):
     assert mock_obb.equity.fundamental.metrics.call_count == 2
 
 
-@patch("openbb_client.obb")
+@patch("src.openbb_client.obb")
 def test_get_dividend_yield_fallback_logs_warning(mock_obb):
     mock_ok = MagicMock()
     mock_ok.to_df.return_value = _metrics_df(1.5)
     mock_obb.equity.fundamental.metrics.side_effect = [Exception("yfinance down"), mock_ok]
 
-    with patch("openbb_client.logger") as mock_logger:
+    with patch("src.openbb_client.logger") as mock_logger:
         get_dividend_yield("AAPL")
         mock_logger.warning.assert_called_once()
         call_args = mock_logger.warning.call_args
@@ -67,7 +67,7 @@ def test_get_dividend_yield_fallback_logs_warning(mock_obb):
         assert "AAPL" in str(call_args)
 
 
-@patch("openbb_client.obb")
+@patch("src.openbb_client.obb")
 def test_get_dividend_yield_all_providers_fail_returns_none(mock_obb):
     mock_obb.equity.fundamental.metrics.side_effect = Exception("fail")
     # dividends also fail → can't confirm non-payer → None
@@ -75,7 +75,7 @@ def test_get_dividend_yield_all_providers_fail_returns_none(mock_obb):
     assert get_dividend_yield("AAPL") is None
 
 
-@patch("openbb_client.obb")
+@patch("src.openbb_client.obb")
 def test_get_dividend_yield_non_payer_returns_zero(mock_obb):
     mock_obb.equity.fundamental.metrics.side_effect = Exception("fail")
     empty = MagicMock()
@@ -84,7 +84,7 @@ def test_get_dividend_yield_non_payer_returns_zero(mock_obb):
     assert get_dividend_yield("AAPL") == 0.0
 
 
-@patch("openbb_client.obb")
+@patch("src.openbb_client.obb")
 def test_get_dividend_yield_missing_column_returns_zero(mock_obb):
     # yfinance returns df without dividend_yield column (e.g. SNPS)
     mock_result = MagicMock()
@@ -93,7 +93,7 @@ def test_get_dividend_yield_missing_column_returns_zero(mock_obb):
     assert get_dividend_yield("SNPS") == 0.0
 
 
-@patch("openbb_client.obb")
+@patch("src.openbb_client.obb")
 def test_get_dividend_yield_non_payer_caches_result(mock_obb):
     mock_obb.equity.fundamental.metrics.side_effect = Exception("fail")
     empty = MagicMock()
@@ -106,7 +106,7 @@ def test_get_dividend_yield_non_payer_caches_result(mock_obb):
     assert mock_obb.equity.fundamental.dividends.call_count == 3
 
 
-@patch("openbb_client.obb")
+@patch("src.openbb_client.obb")
 def test_get_dividend_yield_empty_df_returns_none(mock_obb):
     mock_result = MagicMock()
     mock_result.to_df.return_value = pd.DataFrame()
@@ -114,7 +114,7 @@ def test_get_dividend_yield_empty_df_returns_none(mock_obb):
     assert get_dividend_yield("AAPL") is None
 
 
-@patch("openbb_client.obb")
+@patch("src.openbb_client.obb")
 def test_get_dividend_history_returns_list(mock_obb):
     mock_result = MagicMock()
     mock_result.to_df.return_value = _dividends_df()
@@ -128,7 +128,7 @@ def test_get_dividend_history_returns_list(mock_obb):
     ]
 
 
-@patch("openbb_client.obb")
+@patch("src.openbb_client.obb")
 def test_get_dividend_history_fallback_to_fmp(mock_obb):
     mock_ok = MagicMock()
     mock_ok.to_df.return_value = _dividends_df()
@@ -139,13 +139,13 @@ def test_get_dividend_history_fallback_to_fmp(mock_obb):
     assert len(result) == 2
 
 
-@patch("openbb_client.obb")
+@patch("src.openbb_client.obb")
 def test_get_dividend_history_all_providers_fail_returns_empty(mock_obb):
     mock_obb.equity.fundamental.dividends.side_effect = Exception("fail")
     assert get_dividend_history("AAPL") == []
 
 
-@patch("openbb_client.obb")
+@patch("src.openbb_client.obb")
 def test_get_dividend_history_non_payer_caches_result(mock_obb):
     empty = MagicMock()
     empty.to_df.return_value = pd.DataFrame()
@@ -157,7 +157,7 @@ def test_get_dividend_history_non_payer_caches_result(mock_obb):
     assert mock_obb.equity.fundamental.dividends.call_count == 3
 
 
-@patch("openbb_client.obb")
+@patch("src.openbb_client.obb")
 def test_get_dividend_history_empty_df_returns_empty(mock_obb):
     mock_result = MagicMock()
     mock_result.to_df.return_value = pd.DataFrame()
