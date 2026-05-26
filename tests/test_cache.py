@@ -1,7 +1,7 @@
 import os
 import pytest
 import redis
-from cache import RedisCache
+from src.cache import RedisCache
 
 
 @pytest.fixture
