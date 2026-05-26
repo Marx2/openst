@@ -4,7 +4,8 @@ from decimal import Decimal
 
 from openbb import obb
 
-PROVIDERS = ["yfinance", "fmp", "intrinio"]
+DIVIDEND_PROVIDERS = ["yfinance", "fmp", "intrinio", "nasdaq"]
+METRICS_PROVIDERS  = ["yfinance", "fmp", "intrinio"]
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,7 @@ def _check_pays_dividend(ticker: str) -> bool:
     if ticker in _pays_dividend:
         return _pays_dividend[ticker]
     any_success = False
-    for provider in PROVIDERS:
+    for provider in DIVIDEND_PROVIDERS:
         if _provider_is_blocked(provider):
             continue
         try:
@@ -81,7 +82,7 @@ def get_dividend_yield(ticker: str) -> float | None:
     if _pays_dividend.get(ticker) is False:
         return 0.0
     got_data = False
-    for provider in PROVIDERS:
+    for provider in METRICS_PROVIDERS:
         if _provider_is_blocked(provider):
             continue
         try:
@@ -118,7 +119,7 @@ def get_dividend_history(ticker: str) -> list[dict] | None:
     if _pays_dividend.get(ticker) is False:
         return []
     any_success = False
-    for provider in PROVIDERS:
+    for provider in DIVIDEND_PROVIDERS:
         if _provider_is_blocked(provider):
             continue
         try:
