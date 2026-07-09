@@ -72,7 +72,7 @@ def test_history_not_found_returns_404(mock_fn, client):
 
 @patch("src.main.get_dividend_yield", return_value=2.45)
 def test_middleware_logs_response(mock_fn, client, caplog):
-    with caplog.at_level(logging.INFO, logger="uvicorn.access"):
+    with caplog.at_level(logging.INFO, logger="openst"):
         r = client.get("/dividend/yield/AAPL")
     assert r.status_code == 200
     assert any("2.45" in m and "/dividend/yield/AAPL" in m and "200" in m for m in caplog.messages)
