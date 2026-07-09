@@ -11,7 +11,12 @@ load_dotenv()
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import Response
 
-logger = logging.getLogger("uvicorn.access")
+logger = logging.getLogger("openst")
+logger.setLevel(logging.INFO)
+if not logger.handlers:
+    _handler = logging.StreamHandler()
+    _handler.setFormatter(logging.Formatter("%(levelname)s:     %(message)s"))
+    logger.addHandler(_handler)
 
 from .cache import RedisCache
 from .openbb_client import get_dividend_history, get_dividend_yield
