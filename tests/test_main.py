@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from unittest.mock import patch
 
@@ -67,3 +68,11 @@ def test_history_hit_returns_cached(mock_fn, client):
 def test_history_not_found_returns_404(mock_fn, client):
     r = client.get("/dividend/history/UNKNOWN")
     assert r.status_code == 404
+
+
+@patch("src.main.get_dividend_yield", return_value=2.45)
+def test_middleware_logs_response(mock_fn, client, caplog):
+    with caplog.at_level(logging.INFO, logger="uvicorn.access"):
+        r = client.get("/dividend/yield/AAPL")
+    assert r.status_code == 200
+    assert any("2.45" in m and "/dividend/yield/AAPL" in m for m in caplog.messages)
