@@ -1,18 +1,56 @@
 import base64
 import json
+import logging
 import os
+import time
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import Response
+
+logger = logging.getLogger("openst")
 
 from .cache import RedisCache
 from .openbb_client import get_dividend_history, get_dividend_yield
 
 app = FastAPI()
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start = time.perf_counter()
+    response = await call_next(request)
+    elapsed = (time.perf_counter() - start) * 1000
+
+    body_chunks = []
+    async for chunk in response.body_iterator:
+        body_chunks.append(chunk)
+    body = b"".join(body_chunks)
+
+    try:
+        body_str = json.loads(body)
+    except Exception:
+        body_str = body.decode(errors="replace")
+
+    logger.info(
+        "%s %s -> %d (%.1fms) %s",
+        request.method,
+        request.url.path,
+        response.status_code,
+        elapsed,
+        json.dumps(body_str, ensure_ascii=False),
+    )
+
+    return Response(
+        content=body,
+        status_code=response.status_code,
+        headers=dict(response.headers),
+        media_type=response.media_type,
+    )
+
 
 _FAVICON = base64.b64decode(
     "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAbklEQVR4nI2SwQ3AIAwD"
