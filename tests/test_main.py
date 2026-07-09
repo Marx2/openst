@@ -75,4 +75,4 @@ def test_middleware_logs_response(mock_fn, client, caplog):
     with caplog.at_level(logging.INFO, logger="uvicorn.access"):
         r = client.get("/dividend/yield/AAPL")
     assert r.status_code == 200
-    assert any("2.45" in m and "/dividend/yield/AAPL" in m for m in caplog.messages)
+    assert any("2.45" in m and "/dividend/yield/AAPL" in m and "200" in m for m in caplog.messages)

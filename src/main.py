@@ -36,12 +36,7 @@ async def log_requests(request: Request, call_next):
         body_str = body.decode(errors="replace")
 
     logger.info(
-        "%s %s -> %d (%.1fms) %s",
-        request.method,
-        request.url.path,
-        response.status_code,
-        elapsed,
-        json.dumps(body_str, ensure_ascii=False),
+        f"{request.method} {request.url.path} -> {response.status_code} ({elapsed:.1f}ms) {json.dumps(body_str, ensure_ascii=False)}"
     )
 
     return Response(
