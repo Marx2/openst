@@ -19,7 +19,7 @@ if not logger.handlers:
     logger.addHandler(_handler)
 
 from .cache import RedisCache
-from .openbb_client import get_dividend_history, get_dividend_yield
+from .openbb_client import get_dividend_history, get_dividend_yield, get_price_history
 
 app = FastAPI()
 
@@ -82,6 +82,24 @@ def dividend_yield(ticker: str):
     value = get_dividend_yield(ticker)
     if value is None:
         raise HTTPException(status_code=404, detail=f"No dividend yield data for {ticker}")
+
+    _cache.set(key, json.dumps(value))
+    return value
+
+
+@app.get("/price/history/{ticker}")
+def price_history(ticker: str):
+    from datetime import date, timedelta
+    end = date.today()
+    start = end - timedelta(days=365)
+    key = f"price_history:{ticker}:{start}:{end}"
+    cached = _cache.get(key)
+    if cached is not None:
+        return json.loads(cached)
+
+    value = get_price_history(ticker, str(start), str(end))
+    if value is None:
+        raise HTTPException(status_code=404, detail=f"No price history for {ticker}")
 
     _cache.set(key, json.dumps(value))
     return value

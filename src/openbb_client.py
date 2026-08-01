@@ -115,6 +115,37 @@ def get_dividend_yield(ticker: str) -> float | None:
     return None
 
 
+PRICE_PROVIDERS = ["yfinance", "fmp", "intrinio"]
+
+
+def get_price_history(ticker: str, start_date: str, end_date: str) -> list[dict] | None:
+    for provider in PRICE_PROVIDERS:
+        if _provider_is_blocked(provider):
+            continue
+        try:
+            df = obb.equity.price.historical(
+                ticker, start_date=start_date, end_date=end_date, provider=provider
+            ).to_df()
+            if df.empty:
+                continue
+            rows = []
+            for idx, row in df.iterrows():
+                date = idx.date() if hasattr(idx, "date") else idx
+                rows.append({"date": str(date), "close": float(round(row["close"], 4))})
+            return rows
+        except Exception as e:
+            err = str(e)
+            if _is_rate_limited(err):
+                _block_provider(provider)
+                continue
+            if _is_invalid_ticker(err):
+                logger.warning("Invalid/delisted ticker %s (provider %s)", ticker, provider)
+                return []
+            logger.warning("Provider %s failed for %s: %s", provider, ticker, e)
+            continue
+    return None
+
+
 def get_dividend_history(ticker: str) -> list[dict] | None:
     if _pays_dividend.get(ticker) is False:
         return []
