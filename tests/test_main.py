@@ -70,6 +70,27 @@ def test_history_not_found_returns_404(mock_fn, client):
     assert r.status_code == 404
 
 
+@patch("src.main.get_price_history", return_value=[{"date": "2025-08-01", "close": 195.5}])
+def test_price_history_miss_fetches_and_returns(mock_fn, client):
+    r = client.get("/price/history/AAPL")
+    assert r.status_code == 200
+    assert r.json() == [{"date": "2025-08-01", "close": 195.5}]
+    mock_fn.assert_called_once()
+
+
+@patch("src.main.get_price_history", return_value=[{"date": "2025-08-01", "close": 195.5}])
+def test_price_history_hit_returns_cached(mock_fn, client):
+    client.get("/price/history/AAPL")
+    client.get("/price/history/AAPL")
+    assert mock_fn.call_count == 1
+
+
+@patch("src.main.get_price_history", return_value=None)
+def test_price_history_not_found_returns_404(mock_fn, client):
+    r = client.get("/price/history/UNKNOWN")
+    assert r.status_code == 404
+
+
 @patch("src.main.get_dividend_yield", return_value=2.45)
 def test_middleware_logs_response(mock_fn, client, caplog):
     with caplog.at_level(logging.INFO, logger="openst"):

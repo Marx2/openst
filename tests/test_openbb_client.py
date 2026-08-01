@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 import pandas as pd
 import pytest
 
-from src.openbb_client import get_dividend_history, get_dividend_yield
+from src.openbb_client import get_dividend_history, get_dividend_yield, get_price_history
 import src.openbb_client as openbb_client
 
 
@@ -231,6 +231,87 @@ def test_get_dividend_yield_blocked_provider_skipped(mock_obb):
     # first call must be fmp, not yfinance
     first_call = mock_obb.equity.fundamental.metrics.call_args_list[0]
     assert first_call[1]["provider"] == "fmp"
+
+
+def _price_history_df() -> pd.DataFrame:
+    df = pd.DataFrame(
+        [{"close": 195.5}, {"close": 197.0}],
+        index=pd.to_datetime(["2025-08-01", "2025-08-02"]),
+    )
+    df.index.name = "date"
+    return df
+
+
+# ---------------------------------------------------------------------------
+# get_price_history
+# ---------------------------------------------------------------------------
+
+
+@patch("src.openbb_client.obb")
+def test_get_price_history_returns_list(mock_obb):
+    mock_result = MagicMock()
+    mock_result.to_df.return_value = _price_history_df()
+    mock_obb.equity.price.historical.return_value = mock_result
+
+    result = get_price_history("AAPL", "2025-08-01", "2026-08-01")
+
+    assert result == [
+        {"date": "2025-08-01", "close": 195.5},
+        {"date": "2025-08-02", "close": 197.0},
+    ]
+    mock_obb.equity.price.historical.assert_called_once_with(
+        "AAPL", start_date="2025-08-01", end_date="2026-08-01", provider="yfinance"
+    )
+
+
+@patch("src.openbb_client.obb")
+def test_get_price_history_empty_df_tries_next_provider(mock_obb):
+    empty = MagicMock()
+    empty.to_df.return_value = pd.DataFrame()
+    mock_ok = MagicMock()
+    mock_ok.to_df.return_value = _price_history_df()
+    mock_obb.equity.price.historical.side_effect = [empty, mock_ok]
+
+    result = get_price_history("AAPL", "2025-08-01", "2026-08-01")
+
+    assert result is not None and len(result) == 2
+    assert mock_obb.equity.price.historical.call_count == 2
+
+
+@patch("src.openbb_client.obb")
+def test_get_price_history_rate_limit_blocks_provider_tries_next(mock_obb):
+    mock_ok = MagicMock()
+    mock_ok.to_df.return_value = _price_history_df()
+    mock_obb.equity.price.historical.side_effect = [
+        Exception("402 payment required"),
+        mock_ok,
+    ]
+
+    result = get_price_history("AAPL", "2025-08-01", "2026-08-01")
+
+    assert result is not None and len(result) == 2
+    assert "yfinance" in openbb_client._provider_blocked_until
+    assert mock_obb.equity.price.historical.call_count == 2
+
+
+@patch("src.openbb_client.obb")
+def test_get_price_history_invalid_ticker_returns_empty(mock_obb):
+    mock_obb.equity.price.historical.side_effect = Exception("possibly delisted")
+
+    result = get_price_history("FAKE", "2025-08-01", "2026-08-01")
+
+    assert result == []
+    assert mock_obb.equity.price.historical.call_count == 1
+
+
+@patch("src.openbb_client.obb")
+def test_get_price_history_all_providers_fail_returns_none(mock_obb):
+    mock_obb.equity.price.historical.side_effect = Exception("connection error")
+
+    result = get_price_history("AAPL", "2025-08-01", "2026-08-01")
+
+    assert result is None
+    assert mock_obb.equity.price.historical.call_count == 3
 
 
 # ---------------------------------------------------------------------------
