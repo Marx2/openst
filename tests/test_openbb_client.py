@@ -1,4 +1,5 @@
 import logging
+import types
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
@@ -6,6 +7,7 @@ from unittest.mock import MagicMock, patch
 import pandas as pd
 import pytest
 
+from src import openbb_client
 from src.openbb_client import (
     get_calendar,
     get_dividend_history,
@@ -705,3 +707,22 @@ def test_plain_keeps_primitives():
 def test_plain_stringifies_unknown_types():
     from decimal import Decimal
     assert openbb_client._plain(Decimal("1.5")) == "1.5"
+
+
+def test_dividend_history_handles_non_datetime_index():
+    """Providers that return a RangeIndex (date as a column) still yield ISO dates."""
+    df = pd.DataFrame(
+        [{"ex_dividend_date": "2026-05-12", "amount": 0.26},
+         {"ex_dividend_date": "2026-02-09", "amount": 0.25}],
+    )
+    fake = types.SimpleNamespace(
+        equity=types.SimpleNamespace(
+            fundamental=types.SimpleNamespace(
+                dividends=lambda ticker, provider: types.SimpleNamespace(to_df=lambda: df),
+            ),
+        ),
+    )
+    with patch.object(openbb_client, "obb", fake):
+        rows = openbb_client.get_dividend_history("AAPL")
+    assert [r["date"] for r in rows] == ["2026-05-12", "2026-02-09"]
+    assert rows[0]["amount"] == "0.2600"

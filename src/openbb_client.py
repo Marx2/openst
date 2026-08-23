@@ -169,6 +169,15 @@ def get_dividend_history(ticker: str) -> list[dict] | None:
             any_success = True
             if df.empty:
                 continue
+            # Some providers return the ex-dividend date as a column instead
+            # of the index; normalize so we always have a DatetimeIndex.
+            if not isinstance(df.index, pd.DatetimeIndex):
+                for col in ("date", "ex_dividend_date", "record_date"):
+                    if col in df.columns:
+                        df = df.set_index(pd.to_datetime(df[col]))
+                        break
+                else:
+                    df.index = pd.to_datetime(df.index, errors="coerce")
             rows = []
             for idx, row in df.iterrows():
                 date = idx.date() if hasattr(idx, "date") else idx
