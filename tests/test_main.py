@@ -97,3 +97,131 @@ def test_middleware_logs_response(mock_fn, client, caplog):
         r = client.get("/dividend/yield/AAPL")
     assert r.status_code == 200
     assert any("2.45" in m and "/dividend/yield/AAPL" in m and "200" in m for m in caplog.messages)
+
+
+# ---------------------------------------------------------------------------
+# New instruments-surface routes
+# ---------------------------------------------------------------------------
+
+
+@patch("src.main.get_profile", return_value={"name": "Apple Inc"})
+def test_profile_miss_fetches_and_returns(mock_fn, client):
+    r = client.get("/equity/profile/AAPL")
+    assert r.status_code == 200
+    assert r.json() == {"name": "Apple Inc"}
+    mock_fn.assert_called_once_with("AAPL")
+
+
+@patch("src.main.get_profile", return_value=None)
+def test_profile_not_found_returns_404(mock_fn, client):
+    assert client.get("/equity/profile/UNKNOWN").status_code == 404
+
+
+@patch("src.main.get_profile", return_value={"name": "Apple Inc"})
+def test_profile_hit_returns_cached(mock_fn, client):
+    client.get("/equity/profile/AAPL")
+    client.get("/equity/profile/AAPL")
+    assert mock_fn.call_count == 1
+
+
+@patch("src.main.get_quote", return_value={"last_price": 232.14})
+def test_quote_returns_record(mock_fn, client):
+    r = client.get("/equity/quote/AAPL")
+    assert r.status_code == 200
+    assert r.json() == {"last_price": 232.14}
+
+
+@patch("src.main.get_metrics", return_value={"market_cap": 3.1e12})
+def test_metrics_returns_record(mock_fn, client):
+    r = client.get("/equity/metrics/AAPL")
+    assert r.status_code == 200
+    assert r.json() == {"market_cap": 3.1e12}
+
+
+@patch("src.main.get_projections", return_value={"target_median": 250.0})
+def test_projections_returns_record(mock_fn, client):
+    r = client.get("/equity/projections/AAPL")
+    assert r.status_code == 200
+    assert r.json() == {"target_median": 250.0}
+
+
+@patch(
+    "src.main.get_ohlcv_history",
+    return_value=[{"date": "2025-08-01", "open": 194.0, "high": 196.2, "low": 193.5, "close": 195.5, "volume": 52301400}],
+)
+def test_price_ohlcv_defaults_to_one_year_window(mock_fn, client):
+    from datetime import date, timedelta
+
+    end = date.today()
+    start = end - timedelta(days=365)
+
+    r = client.get("/price/ohlcv/AAPL")
+    assert r.status_code == 200
+    assert len(r.json()) == 1
+    mock_fn.assert_called_once_with("AAPL", str(start), str(end))
+
+
+@patch("src.main.get_ohlcv_history", return_value=[])
+def test_price_ohlcv_explicit_window_and_invalid_ticker_empty_list(mock_fn, client):
+    r = client.get("/price/ohlcv/FAKE?start=2025-01-01&end=2025-02-01")
+    assert r.status_code == 200
+    assert r.json() == []
+    mock_fn.assert_called_once_with("FAKE", "2025-01-01", "2025-02-01")
+
+
+def test_price_ohlcv_rejects_bad_date_format(client):
+    assert client.get("/price/ohlcv/AAPL?start=nope").status_code == 422
+
+
+@patch(
+    "src.main.get_fundamentals",
+    return_value=[{"fiscal_year": 2024, "net_income": 93736}],
+)
+def test_fundamentals_defaults_income_annual(mock_fn, client):
+    r = client.get("/equity/fundamentals/AAPL")
+    assert r.status_code == 200
+    assert r.json() == [{"fiscal_year": 2024, "net_income": 93736}]
+    mock_fn.assert_called_once_with("AAPL", "income", "annual")
+
+
+@patch("src.main.get_fundamentals", return_value=[{"fiscal_year": 2024}])
+def test_fundamentals_statement_and_period_params(mock_fn, client):
+    client.get("/equity/fundamentals/AAPL?statement=cash&period=quarter")
+    mock_fn.assert_called_once_with("AAPL", "cash", "quarter")
+
+
+def test_fundamentals_rejects_unknown_statement(client):
+    assert client.get("/equity/fundamentals/AAPL?statement=hogwarts").status_code == 422
+
+
+@patch("src.main.get_fundamentals", return_value=[])
+def test_fundamentals_no_data_returns_404(mock_fn, client):
+    assert client.get("/equity/fundamentals/UNKNOWN").status_code == 404
+
+
+@patch(
+    "src.main.get_calendar",
+    return_value=[{"symbol": "AAPL", "eps_actual": 1.57}],
+)
+def test_calendar_earnings_window(mock_fn, client):
+    r = client.get("/equity/calendar/earnings?start=2026-08-20&end=2026-08-25")
+    assert r.status_code == 200
+    assert r.json() == [{"symbol": "AAPL", "eps_actual": 1.57}]
+    mock_fn.assert_called_once_with("earnings", "2026-08-20", "2026-08-25")
+
+
+def test_calendar_unknown_kind_returns_404(client):
+    assert client.get("/equity/calendar/hogwarts").status_code == 404
+
+
+@patch("src.main.search_equities", return_value=[{"cik": 320193, "name": "Apple Inc", "symbol": "AAPL"}])
+def test_search_normalizes_and_returns(mock_fn, client):
+    r = client.get("/equity/search/%20Apple%20")
+    assert r.status_code == 200
+    assert r.json()[0]["symbol"] == "AAPL"
+    mock_fn.assert_called_once_with("apple")
+
+
+@patch("src.main.search_equities", return_value=[])
+def test_search_no_results_404(mock_fn, client):
+    assert client.get("/equity/search/zzzznope").status_code == 404
