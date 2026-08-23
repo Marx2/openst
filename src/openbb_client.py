@@ -2,10 +2,21 @@ import logging
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
+import pandas as pd
 from openbb import obb
 
 DIVIDEND_PROVIDERS = ["yfinance", "fmp", "intrinio", "nasdaq"]
 METRICS_PROVIDERS  = ["yfinance", "fmp", "intrinio"]
+PROFILE_PROVIDERS = ["fmp", "yfinance"]
+QUOTE_PROVIDERS = ["fmp", "yfinance"]
+STATEMENT_PROVIDERS = ["fmp", "yfinance"]
+PROJECTION_PROVIDERS = ["fmp", "yfinance"]
+CALENDAR_PROVIDERS = ["fmp"]
+SEARCH_PROVIDERS = ["sec"]
+
+STATEMENTS = ("income", "balance", "cash")
+PERIODS = ("annual", "quarter")
+CALENDAR_KINDS = ("earnings", "dividend")
 
 logger = logging.getLogger(__name__)
 
@@ -182,4 +193,198 @@ def get_dividend_history(ticker: str) -> list[dict] | None:
             continue
     if any_success:
         _pays_dividend[ticker] = False
+    return []
+
+
+def _plain(value):
+    """Convert a pandas/numpy cell into a JSON-safe primitive."""
+    if value is None:
+        return None
+    try:
+        if pd.isna(value):
+            return None
+    except (TypeError, ValueError):
+        pass
+    if hasattr(value, "item"):
+        try:
+            return value.item()
+        except Exception:
+            pass
+    if isinstance(value, (int, float, str, bool)):
+        return value
+    return str(value)
+
+
+def _df_records(df: "pd.DataFrame") -> list[dict]:
+    if df.index.name is None:
+        df = df.reset_index(drop=True)
+    else:
+        df = df.reset_index()
+    return [{str(k): _plain(v) for k, v in row.items()} for _, row in df.iterrows()]
+
+
+def _single_record(providers, call, ticker: str) -> dict | None:
+    got_data = False
+    for provider in providers:
+        if _provider_is_blocked(provider):
+            continue
+        try:
+            df = call(provider).to_df()
+            got_data = True
+            if df.empty:
+                continue
+            records = _df_records(df)
+            if records:
+                return records[0]
+            continue
+        except Exception as e:
+            err = str(e)
+            if _is_rate_limited(err):
+                _block_provider(provider)
+                continue
+            if _is_invalid_ticker(err):
+                logger.warning("Invalid/delisted ticker %s (provider %s)", ticker, provider)
+                return None
+            logger.warning("Provider %s failed for %s: %s", provider, ticker, e)
+            continue
+    return None
+
+
+def get_profile(ticker: str) -> dict | None:
+    return _single_record(
+        PROFILE_PROVIDERS,
+        lambda provider: obb.equity.profile(ticker, provider=provider),
+        ticker,
+    )
+
+
+def get_quote(ticker: str) -> dict | None:
+    return _single_record(
+        QUOTE_PROVIDERS,
+        lambda provider: obb.equity.price.quote(ticker, provider=provider),
+        ticker,
+    )
+
+
+def get_metrics(ticker: str) -> dict | None:
+    return _single_record(
+        METRICS_PROVIDERS,
+        lambda provider: obb.equity.fundamental.metrics(ticker, provider=provider),
+        ticker,
+    )
+
+
+def get_projections(ticker: str) -> dict | None:
+    return _single_record(
+        PROJECTION_PROVIDERS,
+        lambda provider: obb.equity.estimates.consensus(ticker, provider=provider),
+        ticker,
+    )
+
+
+def get_ohlcv_history(ticker: str, start_date: str, end_date: str) -> list[dict] | None:
+    for provider in PRICE_PROVIDERS:
+        if _provider_is_blocked(provider):
+            continue
+        try:
+            df = obb.equity.price.historical(
+                ticker, start_date=start_date, end_date=end_date, provider=provider
+            ).to_df()
+            if df.empty:
+                continue
+            rows = []
+            for idx, row in df.iterrows():
+                date = idx.date() if hasattr(idx, "date") else idx
+                rows.append({
+                    "date": str(date),
+                    "open": float(round(row["open"], 4)),
+                    "high": float(round(row["high"], 4)),
+                    "low": float(round(row["low"], 4)),
+                    "close": float(round(row["close"], 4)),
+                    "volume": int(row["volume"]),
+                })
+            return rows
+        except Exception as e:
+            err = str(e)
+            if _is_rate_limited(err):
+                _block_provider(provider)
+                continue
+            if _is_invalid_ticker(err):
+                logger.warning("Invalid/delisted ticker %s (provider %s)", ticker, provider)
+                return []
+            logger.warning("Provider %s failed for %s: %s", provider, ticker, e)
+            continue
+    return None
+
+
+def get_fundamentals(ticker: str, statement: str, period: str) -> list[dict]:
+    fn = getattr(obb.equity.fundamental, statement)
+    for provider in STATEMENT_PROVIDERS:
+        if _provider_is_blocked(provider):
+            continue
+        try:
+            df = fn(ticker, period=period, provider=provider).to_df()
+            if df.empty:
+                continue
+            records = _df_records(df)
+            if records:
+                return records
+            continue
+        except Exception as e:
+            err = str(e)
+            if _is_rate_limited(err):
+                _block_provider(provider)
+                continue
+            if _is_invalid_ticker(err):
+                logger.warning("Invalid/delisted ticker %s (provider %s)", ticker, provider)
+                return []
+            logger.warning("Provider %s failed for %s: %s", provider, ticker, e)
+            continue
+    return []
+
+
+def get_calendar(kind: str, start_date: str, end_date: str) -> list[dict]:
+    fn = getattr(obb.equity.calendar, kind)
+    for provider in CALENDAR_PROVIDERS:
+        if _provider_is_blocked(provider):
+            continue
+        try:
+            df = fn(start_date=start_date, end_date=end_date, provider=provider).to_df()
+            if df.empty:
+                continue
+            records = _df_records(df)
+            if records:
+                return records
+            continue
+        except Exception as e:
+            err = str(e)
+            if _is_rate_limited(err):
+                _block_provider(provider)
+                continue
+            if _is_invalid_ticker(err):
+                return []
+            logger.warning("Provider %s failed for calendar/%s: %s", provider, kind, e)
+            continue
+    return []
+
+
+def search_equities(query: str) -> list[dict]:
+    for provider in SEARCH_PROVIDERS:
+        if _provider_is_blocked(provider):
+            continue
+        try:
+            df = obb.equity.search(query, provider=provider).to_df()
+            if df.empty:
+                continue
+            records = _df_records(df)
+            if records:
+                return records
+            continue
+        except Exception as e:
+            err = str(e)
+            if _is_rate_limited(err):
+                _block_provider(provider)
+                continue
+            logger.warning("Provider %s failed for search '%s': %s", provider, query, e)
+            continue
     return []
