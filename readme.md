@@ -28,7 +28,7 @@ Requests try providers in fallback order until one returns data:
 |----------------|----------------|-----------|
 | Dividends | yfinance → fmp → intrinio → nasdaq | fmp, intrinio, nasdaq |
 | Yield / metrics | yfinance → fmp → intrinio | fmp, intrinio |
-| Price history / OHLCV | yfinance → fmp → intrinio → polygon → cboe | fmp, intrinio, polygon |
+| Price history / OHLCV | yfinance → fmp → intrinio → polygon → cboe → tiingo | fmp, intrinio, polygon, tiingo |
 | Profile / quote | fmp → yfinance → cboe | fmp |
 | Fundamentals | fmp → yfinance → polygon → sec | fmp, polygon |
 | Projections | fmp → yfinance → tmx | fmp |
@@ -61,8 +61,9 @@ Credentials are read by OpenBB using the exact variable names below (or `~/.open
 |----------|----------|---------|-------------|
 | `FMP_API_KEY` | recommended | — | FMP — fundamentals, quotes, calendar |
 | `INTRINIO_API_KEY` | No | — | Intrinio fallback (paid subscription needed) |
-| `POLYGON_API_KEY` | No | — | Polygon — price history, statements |
-| `NASDAQ_API_KEY` | No | — | Nasdaq Data Link — dividend history, search |
+| `POLYGON_API_KEY` | No | — | Polygon — price history, statements, company news |
+| `NASDAQ_API_KEY` | No | — | Nasdaq Data Link — dividend history, search, econ calendar |
+| `TIINGO_TOKEN` | No | — | Tiingo — price history fallback (news API is paid tier) |
 | `REDIS_HOST` | No | `localhost` | Redis hostname |
 | `REDIS_PORT` | No | `6379` | Redis port |
 | `REDIS_PASSWORD` | No | `` | Redis password |
