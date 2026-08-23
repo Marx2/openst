@@ -324,7 +324,7 @@ def test_get_price_history_all_providers_fail_returns_none(mock_obb):
     result = get_price_history("AAPL", "2025-08-01", "2026-08-01")
 
     assert result is None
-    assert mock_obb.equity.price.historical.call_count == 3
+    assert mock_obb.equity.price.historical.call_count == len(openbb_client.PRICE_PROVIDERS)
 
 
 # ---------------------------------------------------------------------------
