@@ -8,11 +8,11 @@ from openbb import obb
 DIVIDEND_PROVIDERS = ["yfinance", "fmp", "intrinio", "nasdaq"]
 METRICS_PROVIDERS  = ["yfinance", "fmp", "intrinio"]
 PROFILE_PROVIDERS = ["fmp", "yfinance"]
-QUOTE_PROVIDERS = ["fmp", "yfinance"]
-STATEMENT_PROVIDERS = ["fmp", "yfinance", "polygon"]
-PROJECTION_PROVIDERS = ["fmp", "yfinance"]
+QUOTE_PROVIDERS = ["fmp", "yfinance", "cboe"]
+STATEMENT_PROVIDERS = ["fmp", "yfinance", "polygon", "sec"]
+PROJECTION_PROVIDERS = ["fmp", "yfinance", "tmx"]
 CALENDAR_PROVIDERS = ["fmp"]
-SEARCH_PROVIDERS = ["sec", "nasdaq"]
+SEARCH_PROVIDERS = ["sec", "nasdaq", "cboe"]
 
 STATEMENTS = ("income", "balance", "cash")
 PERIODS = ("annual", "quarter")
@@ -126,7 +126,7 @@ def get_dividend_yield(ticker: str) -> float | None:
     return None
 
 
-PRICE_PROVIDERS = ["yfinance", "fmp", "intrinio", "polygon"]
+PRICE_PROVIDERS = ["yfinance", "fmp", "intrinio", "polygon", "cboe"]
 
 
 def get_price_history(ticker: str, start_date: str, end_date: str) -> list[dict] | None:

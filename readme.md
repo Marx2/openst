@@ -28,14 +28,15 @@ Requests try providers in fallback order until one returns data:
 |----------------|----------------|-----------|
 | Dividends | yfinance → fmp → intrinio → nasdaq | fmp, intrinio, nasdaq |
 | Yield / metrics | yfinance → fmp → intrinio | fmp, intrinio |
-| Price history / OHLCV | yfinance → fmp → intrinio → polygon | fmp, intrinio, polygon |
-| Profile / quote | fmp → yfinance | fmp |
-| Fundamentals | fmp → yfinance → polygon | fmp, polygon |
-| Projections | fmp → yfinance | fmp |
+| Price history / OHLCV | yfinance → fmp → intrinio → polygon → cboe | fmp, intrinio, polygon |
+| Profile / quote | fmp → yfinance → cboe | fmp |
+| Fundamentals | fmp → yfinance → polygon → sec | fmp, polygon |
+| Projections | fmp → yfinance → tmx | fmp |
 | Calendar | fmp | fmp |
-| Search | sec → nasdaq | nasdaq |
+| Search | sec → nasdaq → cboe | nasdaq |
 
 A provider returning rate-limit/paywall errors is blocked in-process for 24h.
+Keyless providers (`cboe`, `sec`, `tmx`, `yfinance`) need no configuration.
 
 ## Run
 
