@@ -9,7 +9,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L1",
       "id": "openbb_client_py",
-      "community": 2,
+      "community": 3,
       "norm_label": "openbb_client.py"
     },
     {
@@ -18,7 +18,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L39",
       "id": "src_openbb_client_is_rate_limited",
-      "community": 0,
+      "community": 4,
       "norm_label": "_is_rate_limited()"
     },
     {
@@ -27,7 +27,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L43",
       "id": "src_openbb_client_is_invalid_ticker",
-      "community": 0,
+      "community": 2,
       "norm_label": "_is_invalid_ticker()"
     },
     {
@@ -45,7 +45,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L53",
       "id": "src_openbb_client_provider_is_blocked",
-      "community": 0,
+      "community": 5,
       "norm_label": "_provider_is_blocked()"
     },
     {
@@ -54,7 +54,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L58",
       "id": "src_openbb_client_check_pays_dividend",
-      "community": 5,
+      "community": 2,
       "norm_label": "_check_pays_dividend()"
     },
     {
@@ -63,7 +63,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L92",
       "id": "src_openbb_client_get_dividend_yield",
-      "community": 5,
+      "community": 2,
       "norm_label": "get_dividend_yield()"
     },
     {
@@ -72,7 +72,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L132",
       "id": "src_openbb_client_get_price_history",
-      "community": 0,
+      "community": 5,
       "norm_label": "get_price_history()"
     },
     {
@@ -81,106 +81,106 @@
       "source_file": "openbb_client.py",
       "source_location": "L160",
       "id": "src_openbb_client_get_dividend_history",
-      "community": 0,
+      "community": 5,
       "norm_label": "get_dividend_history()"
     },
     {
       "label": "_plain()",
       "file_type": "code",
       "source_file": "openbb_client.py",
-      "source_location": "L199",
+      "source_location": "L208",
       "id": "src_openbb_client_plain",
-      "community": 2,
+      "community": 7,
       "norm_label": "_plain()"
     },
     {
       "label": "_df_records()",
       "file_type": "code",
       "source_file": "openbb_client.py",
-      "source_location": "L218",
+      "source_location": "L227",
       "id": "src_openbb_client_df_records",
-      "community": 2,
+      "community": 4,
       "norm_label": "_df_records()"
     },
     {
       "label": "_single_record()",
       "file_type": "code",
       "source_file": "openbb_client.py",
-      "source_location": "L226",
+      "source_location": "L235",
       "id": "src_openbb_client_single_record",
-      "community": 4,
+      "community": 3,
       "norm_label": "_single_record()"
     },
     {
       "label": "get_profile()",
       "file_type": "code",
       "source_file": "openbb_client.py",
-      "source_location": "L253",
+      "source_location": "L262",
       "id": "src_openbb_client_get_profile",
-      "community": 4,
+      "community": 3,
       "norm_label": "get_profile()"
     },
     {
       "label": "get_quote()",
       "file_type": "code",
       "source_file": "openbb_client.py",
-      "source_location": "L261",
+      "source_location": "L270",
       "id": "src_openbb_client_get_quote",
-      "community": 4,
+      "community": 3,
       "norm_label": "get_quote()"
     },
     {
       "label": "get_metrics()",
       "file_type": "code",
       "source_file": "openbb_client.py",
-      "source_location": "L269",
+      "source_location": "L278",
       "id": "src_openbb_client_get_metrics",
-      "community": 4,
+      "community": 3,
       "norm_label": "get_metrics()"
     },
     {
       "label": "get_projections()",
       "file_type": "code",
       "source_file": "openbb_client.py",
-      "source_location": "L277",
+      "source_location": "L286",
       "id": "src_openbb_client_get_projections",
-      "community": 4,
+      "community": 7,
       "norm_label": "get_projections()"
     },
     {
       "label": "get_ohlcv_history()",
       "file_type": "code",
       "source_file": "openbb_client.py",
-      "source_location": "L285",
+      "source_location": "L314",
       "id": "src_openbb_client_get_ohlcv_history",
-      "community": 0,
+      "community": 5,
       "norm_label": "get_ohlcv_history()"
     },
     {
       "label": "get_fundamentals()",
       "file_type": "code",
       "source_file": "openbb_client.py",
-      "source_location": "L320",
+      "source_location": "L349",
       "id": "src_openbb_client_get_fundamentals",
-      "community": 0,
+      "community": 4,
       "norm_label": "get_fundamentals()"
     },
     {
       "label": "get_calendar()",
       "file_type": "code",
       "source_file": "openbb_client.py",
-      "source_location": "L346",
+      "source_location": "L375",
       "id": "src_openbb_client_get_calendar",
-      "community": 2,
+      "community": 4,
       "norm_label": "get_calendar()"
     },
     {
       "label": "search_equities()",
       "file_type": "code",
       "source_file": "openbb_client.py",
-      "source_location": "L371",
+      "source_location": "L400",
       "id": "src_openbb_client_search_equities",
-      "community": 2,
+      "community": 4,
       "norm_label": "search_equities()"
     },
     {
@@ -189,16 +189,16 @@
       "source_file": "openbb_client.py",
       "source_location": "L59",
       "id": "src_openbb_client_rationale_59",
-      "community": 5,
+      "community": 2,
       "norm_label": "return true if ticker has any dividend history across all providers."
     },
     {
       "label": "Convert a pandas/numpy cell into a JSON-safe primitive.",
       "file_type": "rationale",
       "source_file": "openbb_client.py",
-      "source_location": "L200",
-      "id": "src_openbb_client_rationale_200",
-      "community": 2,
+      "source_location": "L209",
+      "id": "src_openbb_client_rationale_209",
+      "community": 7,
       "norm_label": "convert a pandas/numpy cell into a json-safe primitive."
     },
     {
@@ -252,7 +252,7 @@
       "source_file": "__init__.py",
       "source_location": "L1",
       "id": "init_py",
-      "community": 8,
+      "community": 9,
       "norm_label": "__init__.py"
     },
     {
@@ -261,7 +261,7 @@
       "source_file": "main.py",
       "source_location": "L1",
       "id": "main_py",
-      "community": 3,
+      "community": 1,
       "norm_label": "main.py"
     },
     {
@@ -270,7 +270,7 @@
       "source_file": "main.py",
       "source_location": "L43",
       "id": "src_main_log_requests",
-      "community": 3,
+      "community": 1,
       "norm_label": "log_requests()"
     },
     {
@@ -279,7 +279,7 @@
       "source_file": "main.py",
       "source_location": "L79",
       "id": "src_main_favicon",
-      "community": 3,
+      "community": 1,
       "norm_label": "favicon()"
     },
     {
@@ -288,7 +288,7 @@
       "source_file": "main.py",
       "source_location": "L91",
       "id": "src_main_dividend_yield",
-      "community": 3,
+      "community": 1,
       "norm_label": "dividend_yield()"
     },
     {
@@ -297,7 +297,7 @@
       "source_file": "main.py",
       "source_location": "L106",
       "id": "src_main_price_history",
-      "community": 3,
+      "community": 1,
       "norm_label": "price_history()"
     },
     {
@@ -306,7 +306,7 @@
       "source_file": "main.py",
       "source_location": "L124",
       "id": "src_main_dividend_history",
-      "community": 3,
+      "community": 1,
       "norm_label": "dividend_history()"
     },
     {
@@ -315,7 +315,7 @@
       "source_file": "main.py",
       "source_location": "L138",
       "id": "src_main_cached_or_404",
-      "community": 1,
+      "community": 0,
       "norm_label": "_cached_or_404()"
     },
     {
@@ -324,7 +324,7 @@
       "source_file": "main.py",
       "source_location": "L151",
       "id": "src_main_default_dates",
-      "community": 7,
+      "community": 8,
       "norm_label": "_default_dates()"
     },
     {
@@ -333,7 +333,7 @@
       "source_file": "main.py",
       "source_location": "L159",
       "id": "src_main_equity_profile",
-      "community": 1,
+      "community": 0,
       "norm_label": "equity_profile()"
     },
     {
@@ -342,7 +342,7 @@
       "source_file": "main.py",
       "source_location": "L168",
       "id": "src_main_equity_quote",
-      "community": 1,
+      "community": 0,
       "norm_label": "equity_quote()"
     },
     {
@@ -351,7 +351,7 @@
       "source_file": "main.py",
       "source_location": "L177",
       "id": "src_main_equity_metrics",
-      "community": 1,
+      "community": 0,
       "norm_label": "equity_metrics()"
     },
     {
@@ -360,7 +360,7 @@
       "source_file": "main.py",
       "source_location": "L186",
       "id": "src_main_equity_projections",
-      "community": 1,
+      "community": 0,
       "norm_label": "equity_projections()"
     },
     {
@@ -369,7 +369,7 @@
       "source_file": "main.py",
       "source_location": "L195",
       "id": "src_main_price_ohlcv",
-      "community": 7,
+      "community": 8,
       "norm_label": "price_ohlcv()"
     },
     {
@@ -378,7 +378,7 @@
       "source_file": "main.py",
       "source_location": "L217",
       "id": "src_main_equity_fundamentals",
-      "community": 1,
+      "community": 0,
       "norm_label": "equity_fundamentals()"
     },
     {
@@ -387,7 +387,7 @@
       "source_file": "main.py",
       "source_location": "L235",
       "id": "src_main_equity_calendar",
-      "community": 7,
+      "community": 8,
       "norm_label": "equity_calendar()"
     },
     {
@@ -396,15 +396,24 @@
       "source_file": "main.py",
       "source_location": "L260",
       "id": "src_main_equity_search",
-      "community": 1,
+      "community": 0,
       "norm_label": "equity_search()"
+    },
+    {
+      "label": "Convert a pandas/numpy cell into a JSON-safe primitive.",
+      "file_type": "rationale",
+      "source_file": "openbb_client.py",
+      "source_location": "L200",
+      "community": 7,
+      "norm_label": "convert a pandas/numpy cell into a json-safe primitive.",
+      "id": "src_openbb_client_rationale_200"
     },
     {
       "label": "Return True if ticker has any dividend history across all providers.",
       "file_type": "rationale",
       "source_file": "openbb_client.py",
       "source_location": "L15",
-      "community": 5,
+      "community": 2,
       "norm_label": "return true if ticker has any dividend history across all providers.",
       "id": "src_openbb_client_rationale_15"
     }
@@ -416,9 +425,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L39",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openbb_client_py",
-      "target": "src_openbb_client_is_rate_limited",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_is_rate_limited"
     },
     {
       "relation": "contains",
@@ -426,9 +435,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L43",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openbb_client_py",
-      "target": "src_openbb_client_is_invalid_ticker",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_is_invalid_ticker"
     },
     {
       "relation": "contains",
@@ -436,9 +445,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L47",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openbb_client_py",
-      "target": "src_openbb_client_block_provider",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_block_provider"
     },
     {
       "relation": "contains",
@@ -446,9 +455,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L53",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openbb_client_py",
-      "target": "src_openbb_client_provider_is_blocked",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_provider_is_blocked"
     },
     {
       "relation": "contains",
@@ -476,9 +485,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L132",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openbb_client_py",
-      "target": "src_openbb_client_get_price_history",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_get_price_history"
     },
     {
       "relation": "contains",
@@ -496,9 +505,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L199",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openbb_client_py",
-      "target": "src_openbb_client_plain",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_plain"
     },
     {
       "relation": "contains",
@@ -506,9 +515,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L218",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openbb_client_py",
-      "target": "src_openbb_client_df_records",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_df_records"
     },
     {
       "relation": "contains",
@@ -516,9 +525,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L226",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openbb_client_py",
-      "target": "src_openbb_client_single_record",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_single_record"
     },
     {
       "relation": "contains",
@@ -526,9 +535,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L253",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openbb_client_py",
-      "target": "src_openbb_client_get_profile",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_get_profile"
     },
     {
       "relation": "contains",
@@ -536,9 +545,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L261",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openbb_client_py",
-      "target": "src_openbb_client_get_quote",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_get_quote"
     },
     {
       "relation": "contains",
@@ -546,9 +555,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L269",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openbb_client_py",
-      "target": "src_openbb_client_get_metrics",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_get_metrics"
     },
     {
       "relation": "contains",
@@ -556,9 +565,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L277",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openbb_client_py",
-      "target": "src_openbb_client_get_projections",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_get_projections"
     },
     {
       "relation": "contains",
@@ -566,9 +575,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L285",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openbb_client_py",
-      "target": "src_openbb_client_get_ohlcv_history",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_get_ohlcv_history"
     },
     {
       "relation": "contains",
@@ -576,9 +585,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L320",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openbb_client_py",
-      "target": "src_openbb_client_get_fundamentals",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_get_fundamentals"
     },
     {
       "relation": "contains",
@@ -586,9 +595,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L346",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openbb_client_py",
-      "target": "src_openbb_client_get_calendar",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_get_calendar"
     },
     {
       "relation": "contains",
@@ -596,9 +605,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L371",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openbb_client_py",
-      "target": "src_openbb_client_search_equities",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_search_equities"
     },
     {
       "relation": "imports_from",
@@ -618,9 +627,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L74",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_check_pays_dividend",
-      "target": "src_openbb_client_is_rate_limited",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_is_rate_limited"
     },
     {
       "relation": "calls",
@@ -629,9 +638,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L111",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_dividend_yield",
-      "target": "src_openbb_client_is_rate_limited",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_is_rate_limited"
     },
     {
       "relation": "calls",
@@ -640,9 +649,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L149",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_price_history",
-      "target": "src_openbb_client_is_rate_limited",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_is_rate_limited"
     },
     {
       "relation": "calls",
@@ -651,9 +660,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L181",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_dividend_history",
-      "target": "src_openbb_client_is_rate_limited",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_is_rate_limited"
     },
     {
       "relation": "calls",
@@ -662,9 +671,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L242",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_single_record",
-      "target": "src_openbb_client_is_rate_limited",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_is_rate_limited"
     },
     {
       "relation": "calls",
@@ -673,9 +682,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L309",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_ohlcv_history",
-      "target": "src_openbb_client_is_rate_limited",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_is_rate_limited"
     },
     {
       "relation": "calls",
@@ -684,9 +693,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L335",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_fundamentals",
-      "target": "src_openbb_client_is_rate_limited",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_is_rate_limited"
     },
     {
       "relation": "calls",
@@ -695,9 +704,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L361",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_calendar",
-      "target": "src_openbb_client_is_rate_limited",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_is_rate_limited"
     },
     {
       "relation": "calls",
@@ -706,9 +715,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L385",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_search_equities",
-      "target": "src_openbb_client_is_rate_limited",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_is_rate_limited"
     },
     {
       "relation": "calls",
@@ -717,9 +726,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L77",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_check_pays_dividend",
-      "target": "src_openbb_client_is_invalid_ticker",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_is_invalid_ticker"
     },
     {
       "relation": "calls",
@@ -728,9 +737,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L114",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_dividend_yield",
-      "target": "src_openbb_client_is_invalid_ticker",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_is_invalid_ticker"
     },
     {
       "relation": "calls",
@@ -739,9 +748,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L152",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_price_history",
-      "target": "src_openbb_client_is_invalid_ticker",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_is_invalid_ticker"
     },
     {
       "relation": "calls",
@@ -750,9 +759,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L184",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_dividend_history",
-      "target": "src_openbb_client_is_invalid_ticker",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_is_invalid_ticker"
     },
     {
       "relation": "calls",
@@ -761,9 +770,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L245",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_single_record",
-      "target": "src_openbb_client_is_invalid_ticker",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_is_invalid_ticker"
     },
     {
       "relation": "calls",
@@ -772,9 +781,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L312",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_ohlcv_history",
-      "target": "src_openbb_client_is_invalid_ticker",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_is_invalid_ticker"
     },
     {
       "relation": "calls",
@@ -783,9 +792,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L338",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_fundamentals",
-      "target": "src_openbb_client_is_invalid_ticker",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_is_invalid_ticker"
     },
     {
       "relation": "calls",
@@ -794,9 +803,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L364",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_calendar",
-      "target": "src_openbb_client_is_invalid_ticker",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_is_invalid_ticker"
     },
     {
       "relation": "calls",
@@ -805,9 +814,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L75",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_check_pays_dividend",
-      "target": "src_openbb_client_block_provider",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_block_provider"
     },
     {
       "relation": "calls",
@@ -816,9 +825,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L112",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_dividend_yield",
-      "target": "src_openbb_client_block_provider",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_block_provider"
     },
     {
       "relation": "calls",
@@ -827,9 +836,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L150",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_price_history",
-      "target": "src_openbb_client_block_provider",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_block_provider"
     },
     {
       "relation": "calls",
@@ -838,9 +847,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L182",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_dividend_history",
-      "target": "src_openbb_client_block_provider",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_block_provider"
     },
     {
       "relation": "calls",
@@ -849,9 +858,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L243",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_single_record",
-      "target": "src_openbb_client_block_provider",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_block_provider"
     },
     {
       "relation": "calls",
@@ -860,9 +869,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L310",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_ohlcv_history",
-      "target": "src_openbb_client_block_provider",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_block_provider"
     },
     {
       "relation": "calls",
@@ -871,9 +880,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L336",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_fundamentals",
-      "target": "src_openbb_client_block_provider",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_block_provider"
     },
     {
       "relation": "calls",
@@ -882,9 +891,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L362",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_calendar",
-      "target": "src_openbb_client_block_provider",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_block_provider"
     },
     {
       "relation": "calls",
@@ -893,9 +902,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L386",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_search_equities",
-      "target": "src_openbb_client_block_provider",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_block_provider"
     },
     {
       "relation": "calls",
@@ -904,9 +913,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L64",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_check_pays_dividend",
-      "target": "src_openbb_client_provider_is_blocked",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_provider_is_blocked"
     },
     {
       "relation": "calls",
@@ -915,9 +924,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L97",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_dividend_yield",
-      "target": "src_openbb_client_provider_is_blocked",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_provider_is_blocked"
     },
     {
       "relation": "calls",
@@ -926,9 +935,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L134",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_price_history",
-      "target": "src_openbb_client_provider_is_blocked",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_provider_is_blocked"
     },
     {
       "relation": "calls",
@@ -937,9 +946,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L165",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_dividend_history",
-      "target": "src_openbb_client_provider_is_blocked",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_provider_is_blocked"
     },
     {
       "relation": "calls",
@@ -948,9 +957,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L229",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_single_record",
-      "target": "src_openbb_client_provider_is_blocked",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_provider_is_blocked"
     },
     {
       "relation": "calls",
@@ -959,9 +968,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L287",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_ohlcv_history",
-      "target": "src_openbb_client_provider_is_blocked",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_provider_is_blocked"
     },
     {
       "relation": "calls",
@@ -970,9 +979,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L323",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_fundamentals",
-      "target": "src_openbb_client_provider_is_blocked",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_provider_is_blocked"
     },
     {
       "relation": "calls",
@@ -981,9 +990,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L349",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_calendar",
-      "target": "src_openbb_client_provider_is_blocked",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_provider_is_blocked"
     },
     {
       "relation": "calls",
@@ -992,9 +1001,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L373",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_search_equities",
-      "target": "src_openbb_client_provider_is_blocked",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_provider_is_blocked"
     },
     {
       "relation": "calls",
@@ -1013,9 +1022,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L59",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_rationale_59",
-      "target": "src_openbb_client_check_pays_dividend",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_check_pays_dividend"
     },
     {
       "relation": "rationale_for",
@@ -1067,7 +1076,28 @@
       "source_file": "openbb_client.py",
       "source_location": "L223",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_df_records",
+      "target": "src_openbb_client_plain"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "openbb_client.py",
+      "source_location": "L300",
+      "weight": 1.0,
+      "source": "src_openbb_client_get_projections",
+      "target": "src_openbb_client_plain",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "openbb_client.py",
+      "source_location": "L209",
+      "weight": 1.0,
+      "source": "src_openbb_client_rationale_209",
       "target": "src_openbb_client_plain",
       "confidence_score": 1.0
     },
@@ -1077,9 +1107,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L200",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_rationale_200",
-      "target": "src_openbb_client_plain",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_plain"
     },
     {
       "relation": "calls",
@@ -1088,9 +1118,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L236",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_single_record",
-      "target": "src_openbb_client_df_records",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_df_records"
     },
     {
       "relation": "calls",
@@ -1099,9 +1129,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L329",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_fundamentals",
-      "target": "src_openbb_client_df_records",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_df_records"
     },
     {
       "relation": "calls",
@@ -1110,9 +1140,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L355",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_calendar",
-      "target": "src_openbb_client_df_records",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_df_records"
     },
     {
       "relation": "calls",
@@ -1121,9 +1151,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L379",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_search_equities",
-      "target": "src_openbb_client_df_records",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_df_records"
     },
     {
       "relation": "calls",
@@ -1132,9 +1162,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L254",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_profile",
-      "target": "src_openbb_client_single_record",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_single_record"
     },
     {
       "relation": "calls",
@@ -1143,9 +1173,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L262",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_quote",
-      "target": "src_openbb_client_single_record",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_single_record"
     },
     {
       "relation": "calls",
@@ -1154,9 +1184,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L270",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_metrics",
-      "target": "src_openbb_client_single_record",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_single_record"
     },
     {
       "relation": "calls",
@@ -1165,9 +1195,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L278",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_projections",
-      "target": "src_openbb_client_single_record",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_single_record"
     },
     {
       "relation": "calls",
@@ -1270,9 +1300,9 @@
       "source_file": "main.py",
       "source_location": "L43",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_py",
-      "target": "src_main_log_requests",
-      "confidence_score": 1.0
+      "target": "src_main_log_requests"
     },
     {
       "relation": "contains",
@@ -1300,9 +1330,9 @@
       "source_file": "main.py",
       "source_location": "L106",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_py",
-      "target": "src_main_price_history",
-      "confidence_score": 1.0
+      "target": "src_main_price_history"
     },
     {
       "relation": "contains",
@@ -1320,9 +1350,9 @@
       "source_file": "main.py",
       "source_location": "L138",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_py",
-      "target": "src_main_cached_or_404",
-      "confidence_score": 1.0
+      "target": "src_main_cached_or_404"
     },
     {
       "relation": "contains",
@@ -1330,9 +1360,9 @@
       "source_file": "main.py",
       "source_location": "L151",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_py",
-      "target": "src_main_default_dates",
-      "confidence_score": 1.0
+      "target": "src_main_default_dates"
     },
     {
       "relation": "contains",
@@ -1340,9 +1370,9 @@
       "source_file": "main.py",
       "source_location": "L159",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_py",
-      "target": "src_main_equity_profile",
-      "confidence_score": 1.0
+      "target": "src_main_equity_profile"
     },
     {
       "relation": "contains",
@@ -1350,9 +1380,9 @@
       "source_file": "main.py",
       "source_location": "L168",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_py",
-      "target": "src_main_equity_quote",
-      "confidence_score": 1.0
+      "target": "src_main_equity_quote"
     },
     {
       "relation": "contains",
@@ -1360,9 +1390,9 @@
       "source_file": "main.py",
       "source_location": "L177",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_py",
-      "target": "src_main_equity_metrics",
-      "confidence_score": 1.0
+      "target": "src_main_equity_metrics"
     },
     {
       "relation": "contains",
@@ -1370,9 +1400,9 @@
       "source_file": "main.py",
       "source_location": "L186",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_py",
-      "target": "src_main_equity_projections",
-      "confidence_score": 1.0
+      "target": "src_main_equity_projections"
     },
     {
       "relation": "contains",
@@ -1380,9 +1410,9 @@
       "source_file": "main.py",
       "source_location": "L195",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_py",
-      "target": "src_main_price_ohlcv",
-      "confidence_score": 1.0
+      "target": "src_main_price_ohlcv"
     },
     {
       "relation": "contains",
@@ -1390,9 +1420,9 @@
       "source_file": "main.py",
       "source_location": "L217",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_py",
-      "target": "src_main_equity_fundamentals",
-      "confidence_score": 1.0
+      "target": "src_main_equity_fundamentals"
     },
     {
       "relation": "contains",
@@ -1400,9 +1430,9 @@
       "source_file": "main.py",
       "source_location": "L235",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_py",
-      "target": "src_main_equity_calendar",
-      "confidence_score": 1.0
+      "target": "src_main_equity_calendar"
     },
     {
       "relation": "contains",
@@ -1410,9 +1440,9 @@
       "source_file": "main.py",
       "source_location": "L260",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_py",
-      "target": "src_main_equity_search",
-      "confidence_score": 1.0
+      "target": "src_main_equity_search"
     },
     {
       "relation": "calls",
@@ -1421,9 +1451,9 @@
       "source_file": "main.py",
       "source_location": "L160",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_equity_profile",
-      "target": "src_main_cached_or_404",
-      "confidence_score": 1.0
+      "target": "src_main_cached_or_404"
     },
     {
       "relation": "calls",
@@ -1432,9 +1462,9 @@
       "source_file": "main.py",
       "source_location": "L169",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_equity_quote",
-      "target": "src_main_cached_or_404",
-      "confidence_score": 1.0
+      "target": "src_main_cached_or_404"
     },
     {
       "relation": "calls",
@@ -1443,9 +1473,9 @@
       "source_file": "main.py",
       "source_location": "L178",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_equity_metrics",
-      "target": "src_main_cached_or_404",
-      "confidence_score": 1.0
+      "target": "src_main_cached_or_404"
     },
     {
       "relation": "calls",
@@ -1454,9 +1484,9 @@
       "source_file": "main.py",
       "source_location": "L187",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_equity_projections",
-      "target": "src_main_cached_or_404",
-      "confidence_score": 1.0
+      "target": "src_main_cached_or_404"
     },
     {
       "relation": "calls",
@@ -1465,9 +1495,9 @@
       "source_file": "main.py",
       "source_location": "L209",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_price_ohlcv",
-      "target": "src_main_cached_or_404",
-      "confidence_score": 1.0
+      "target": "src_main_cached_or_404"
     },
     {
       "relation": "calls",
@@ -1476,9 +1506,9 @@
       "source_file": "main.py",
       "source_location": "L227",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_equity_fundamentals",
-      "target": "src_main_cached_or_404",
-      "confidence_score": 1.0
+      "target": "src_main_cached_or_404"
     },
     {
       "relation": "calls",
@@ -1487,9 +1517,9 @@
       "source_file": "main.py",
       "source_location": "L252",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_equity_calendar",
-      "target": "src_main_cached_or_404",
-      "confidence_score": 1.0
+      "target": "src_main_cached_or_404"
     },
     {
       "relation": "calls",
@@ -1498,9 +1528,9 @@
       "source_file": "main.py",
       "source_location": "L267",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_equity_search",
-      "target": "src_main_cached_or_404",
-      "confidence_score": 1.0
+      "target": "src_main_cached_or_404"
     },
     {
       "relation": "calls",
@@ -1509,9 +1539,9 @@
       "source_file": "main.py",
       "source_location": "L201",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_price_ohlcv",
-      "target": "src_main_default_dates",
-      "confidence_score": 1.0
+      "target": "src_main_default_dates"
     },
     {
       "relation": "calls",
@@ -1520,11 +1550,11 @@
       "source_file": "main.py",
       "source_location": "L244",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_equity_calendar",
-      "target": "src_main_default_dates",
-      "confidence_score": 1.0
+      "target": "src_main_default_dates"
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "8b904645e4a913413423de5d11cf2a2f74fb6414"
+  "built_at_commit": "ccf95bcfe9a5515f22a522d006816decb6cff818"
 }

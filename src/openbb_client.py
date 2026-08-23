@@ -9,10 +9,10 @@ DIVIDEND_PROVIDERS = ["yfinance", "fmp", "intrinio", "nasdaq"]
 METRICS_PROVIDERS  = ["yfinance", "fmp", "intrinio"]
 PROFILE_PROVIDERS = ["fmp", "yfinance"]
 QUOTE_PROVIDERS = ["fmp", "yfinance"]
-STATEMENT_PROVIDERS = ["fmp", "yfinance"]
+STATEMENT_PROVIDERS = ["fmp", "yfinance", "polygon"]
 PROJECTION_PROVIDERS = ["fmp", "yfinance"]
 CALENDAR_PROVIDERS = ["fmp"]
-SEARCH_PROVIDERS = ["sec"]
+SEARCH_PROVIDERS = ["sec", "nasdaq"]
 
 STATEMENTS = ("income", "balance", "cash")
 PERIODS = ("annual", "quarter")
@@ -126,7 +126,7 @@ def get_dividend_yield(ticker: str) -> float | None:
     return None
 
 
-PRICE_PROVIDERS = ["yfinance", "fmp", "intrinio"]
+PRICE_PROVIDERS = ["yfinance", "fmp", "intrinio", "polygon"]
 
 
 def get_price_history(ticker: str, start_date: str, end_date: str) -> list[dict] | None:
