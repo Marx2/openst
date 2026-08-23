@@ -284,11 +284,31 @@ def get_metrics(ticker: str) -> dict | None:
 
 
 def get_projections(ticker: str) -> dict | None:
-    return _single_record(
+    base = _single_record(
         PROJECTION_PROVIDERS,
         lambda provider: obb.equity.estimates.consensus(ticker, provider=provider),
         ticker,
     )
+    if base is None:
+        return None
+    # Best-effort analyst recommendation from yfinance (mean on the 1..5
+    # sell->strong-buy scale plus analyst count). Free tier has no bucket
+    # breakdown, so only mean/count are exposed.
+    try:
+        df = obb.equity.estimates.consensus(ticker, provider="yfinance").to_df()
+        row = df.iloc[0]
+        rec_mean = _plain(row.get("recommendation_mean"))
+        analysts = _plain(row.get("number_of_analysts"))
+        rating = _plain(row.get("recommendation"))
+        base["recommendation"] = {
+            "mean": round(float(rec_mean), 2) if isinstance(rec_mean, (int, float)) else None,
+            "rating": str(rating) if rating else None,
+            "analysts": int(analysts) if isinstance(analysts, (int, float)) else None,
+        }
+    except Exception as e:
+        logger.warning("yfinance recommendation unavailable for %s: %s", ticker, e)
+        base["recommendation"] = None
+    return base
 
 
 def get_ohlcv_history(ticker: str, start_date: str, end_date: str) -> list[dict] | None:
