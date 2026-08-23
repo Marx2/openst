@@ -560,8 +560,12 @@ def test_get_projections_prefers_fmp(mock_obb):
 
     result = get_projections("AAPL")
 
-    assert result == {"target_high": 300.0, "target_low": 180.0, "target_median": 250.0}
-    mock_obb.equity.estimates.consensus.assert_called_once_with("AAPL", provider="fmp")
+    assert result["target_high"] == 300.0
+    assert result["target_low"] == 180.0
+    assert result["target_median"] == 250.0
+    # yfinance recommendation is best-effort; with a consensus df lacking
+    # recommendation columns it degrades to a null-valued block.
+    assert result["recommendation"] == {"mean": None, "rating": None, "analysts": None}
 
 
 @patch("src.openbb_client.obb")
@@ -573,7 +577,27 @@ def test_get_projections_falls_back_to_yfinance(mock_obb):
     result = get_projections("AAPL")
 
     assert result is not None
-    assert mock_obb.equity.estimates.consensus.call_count == 2
+    assert mock_obb.equity.estimates.consensus.call_count == 3
+
+
+@patch("src.openbb_client.obb")
+def test_get_projections_includes_yfinance_recommendation(mock_obb):
+    mock_targets = MagicMock()
+    mock_targets.to_df.return_value = pd.DataFrame(
+        [{"target_high": 300.0, "target_low": 180.0, "target_consensus": 250.0, "target_median": 250.0}]
+    )
+    mock_rec = MagicMock()
+    mock_rec.to_df.return_value = pd.DataFrame(
+        [{"recommendation": "buy", "recommendation_mean": 2.18182, "number_of_analysts": 39}]
+    )
+    # first call (fmp targets) succeeds; second call (yf recommendation) succeeds
+    mock_obb.equity.estimates.consensus.side_effect = [mock_targets, mock_rec]
+
+    result = get_projections("AAPL")
+
+    assert result["recommendation"]["mean"] == 2.18
+    assert result["recommendation"]["rating"] == "buy"
+    assert result["recommendation"]["analysts"] == 39
 
 
 @patch("src.openbb_client.obb")
