@@ -126,7 +126,7 @@ def get_dividend_yield(ticker: str) -> float | None:
     return None
 
 
-PRICE_PROVIDERS = ["yfinance", "fmp", "intrinio", "polygon", "cboe"]
+PRICE_PROVIDERS = ["yfinance", "fmp", "intrinio", "polygon", "cboe", "tiingo"]
 
 
 def get_price_history(ticker: str, start_date: str, end_date: str) -> list[dict] | None:
