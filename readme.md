@@ -8,13 +8,39 @@ OpenBB wrapper service. Exposes financial data via HTTP with 24h Redis cache.
 |--------|------|---------|
 | GET | `/dividend/yield/{ticker}` | Current dividend yield as decimal string, e.g. `"2.45"` |
 | GET | `/dividend/history/{ticker}` | Dividend payment history, e.g. `[{"date": "2024-03-15", "amount": "0.2500"}]` |
+| GET | `/price/history/{ticker}` | 1y close prices `[{"date": "...", "close": ...}]` |
+| GET | `/price/ohlcv/{ticker}?start&end` | OHLCV rows (dates default to last 365 days) |
+| GET | `/equity/profile/{ticker}` | Company profile |
+| GET | `/equity/quote/{ticker}` | Latest quote |
+| GET | `/equity/metrics/{ticker}` | Fundamental metrics incl. `dividend_yield` |
+| GET | `/equity/projections/{ticker}` | Analyst estimates consensus + recommendation |
+| GET | `/equity/fundamentals/{ticker}?statement=income&period=annual` | Statements: `income`/`balance`/`cash`, `annual`/`quarter` |
+| GET | `/equity/calendar/{kind}?start&end` | `kind`: `earnings`/`dividend` |
+| GET | `/equity/search/{query}` | Equity search |
 
 Returns `404` if no data found for the ticker.
+
+## Data Providers
+
+Requests try providers in fallback order until one returns data:
+
+| Endpoint group | Provider order | Needs key |
+|----------------|----------------|-----------|
+| Dividends | yfinance → fmp → intrinio → nasdaq | fmp, intrinio, nasdaq |
+| Yield / metrics | yfinance → fmp → intrinio | fmp, intrinio |
+| Price history / OHLCV | yfinance → fmp → intrinio → polygon | fmp, intrinio, polygon |
+| Profile / quote | fmp → yfinance | fmp |
+| Fundamentals | fmp → yfinance → polygon | fmp, polygon |
+| Projections | fmp → yfinance | fmp |
+| Calendar | fmp | fmp |
+| Search | sec → nasdaq | nasdaq |
+
+A provider returning rate-limit/paywall errors is blocked in-process for 24h.
 
 ## Run
 
 ```bash
-cp .env.example .env   # fill in OPENBB_PAT
+cp env.example .env   # fill in API keys
 docker compose up --build
 ```
 
@@ -28,9 +54,14 @@ docker compose --profile test run --rm test
 
 ## Environment Variables
 
+Credentials are read by OpenBB using the exact variable names below (or `~/.openbb_platform/user_settings.json`).
+
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `OPENBB_PAT` | Yes | — | OpenBB personal access token |
+| `FMP_API_KEY` | recommended | — | FMP — fundamentals, quotes, calendar |
+| `INTRINIO_API_KEY` | No | — | Intrinio fallback (paid subscription needed) |
+| `POLYGON_API_KEY` | No | — | Polygon — price history, statements |
+| `NASDAQ_API_KEY` | No | — | Nasdaq Data Link — dividend history, search |
 | `REDIS_HOST` | No | `localhost` | Redis hostname |
 | `REDIS_PORT` | No | `6379` | Redis port |
 | `REDIS_PASSWORD` | No | `` | Redis password |
