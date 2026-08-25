@@ -1,7 +1,9 @@
 import logging
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
+from urllib.parse import urlparse
 
+import httpx
 import pandas as pd
 from openbb import obb
 
@@ -417,3 +419,53 @@ def search_equities(query: str) -> list[dict]:
             logger.warning("Provider %s failed for search '%s': %s", provider, query, e)
             continue
     return []
+
+
+_FAVICON_URL = "https://www.google.com/s2/favicons?domain={domain}&sz=128"
+
+
+def get_logo(ticker: str) -> dict | None:
+    """Resolve a logo URL for the ticker via the D34 chain.
+
+    1. FMP keyless CDN (images.financialmodelingprep.com) — strong coverage.
+    2. Profile website (yfinance `company_url`, then fmp) → Google favicon.
+
+    Returns {"source", "remote_url"} or None when the chain is exhausted. The
+    caller owns downloading and persisting bytes; openst stays a thin wrapper.
+    """
+    t = ticker.strip().upper()
+    fmp_url = f"https://images.financialmodelingprep.com/symbol/{t}.png"
+    try:
+        resp = httpx.head(fmp_url, timeout=10)
+        if resp.status_code == 200:
+            return {"source": "fmp", "remote_url": fmp_url}
+    except Exception as e:
+        logger.warning("FMP logo probe failed for %s: %s", ticker, e)
+
+    website = None
+    for provider in ("yfinance", "fmp"):
+        if _provider_is_blocked(provider):
+            continue
+        try:
+            df = obb.equity.profile(ticker, provider=provider).to_df()
+            if df.empty:
+                continue
+            for col in ("company_url", "website"):
+                value = _plain(df.iloc[0].get(col))
+                if value:
+                    website = str(value)
+                    break
+            if website:
+                break
+        except Exception as e:
+            err = str(e)
+            if _is_rate_limited(err):
+                _block_provider(provider)
+                continue
+            logger.warning("Provider %s failed logo profile for %s: %s", provider, ticker, e)
+            continue
+
+    domain = urlparse(website or "").hostname
+    if not domain:
+        return None
+    return {"source": "favicon", "remote_url": _FAVICON_URL.format(domain=domain)}

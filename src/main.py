@@ -27,6 +27,7 @@ from .openbb_client import (
     get_dividend_history,
     get_dividend_yield,
     get_fundamentals,
+    get_logo,
     get_metrics,
     get_ohlcv_history,
     get_price_history,
@@ -268,4 +269,13 @@ def equity_search(query: str):
         f"equity_search:{normalized}",
         fetch,
         f"No search results for '{query}'",
+    )
+
+
+@app.get("/equity/logo/{ticker}")
+def equity_logo(ticker: str):
+    return _cached_or_404(
+        f"equity_logo:{ticker.upper()}",
+        lambda: get_logo(ticker),
+        f"No logo resolvable for {ticker}",
     )
