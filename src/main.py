@@ -37,7 +37,22 @@ from .openbb_client import (
     search_equities,
 )
 
-app = FastAPI()
+import re as _re
+from fastapi.responses import JSONResponse as _JSONResponse
+
+
+class _SafeJSONResponse(_JSONResponse):
+    """JSONResponse that serializes NaN/Inf floats as null instead of crashing."""
+
+    def render(self, content) -> bytes:
+        raw = json.dumps(content, ensure_ascii=False, allow_nan=True)
+        raw = _re.sub(r'\bNaN\b', 'null', raw)
+        raw = _re.sub(r'\bInfinity\b', 'null', raw)
+        raw = _re.sub(r'\b-Infinity\b', 'null', raw)
+        return raw.encode("utf-8")
+
+
+app = FastAPI(default_response_class=_SafeJSONResponse)
 
 
 @app.middleware("http")
@@ -56,8 +71,13 @@ async def log_requests(request: Request, call_next):
     except Exception:
         body_str = body.decode(errors="replace")
 
+    try:
+        log_body = json.dumps(body_str, ensure_ascii=False)
+    except (ValueError, TypeError):
+        log_body = repr(body_str)
+
     logger.info(
-        f"{request.method} {request.url.path} -> {response.status_code} ({elapsed:.1f}ms) {json.dumps(body_str, ensure_ascii=False)}"
+        f"{request.method} {request.url.path} -> {response.status_code} ({elapsed:.1f}ms) {log_body}"
     )
 
     return Response(
@@ -99,7 +119,7 @@ def dividend_yield(ticker: str):
     if value is None:
         raise HTTPException(status_code=404, detail=f"No dividend yield data for {ticker}")
 
-    _cache.set(key, json.dumps(value))
+    _cache.set(key, _safe_json_dumps(value))
     return value
 
 
@@ -117,7 +137,7 @@ def price_history(ticker: str):
     if value is None:
         raise HTTPException(status_code=404, detail=f"No price history for {ticker}")
 
-    _cache.set(key, json.dumps(value))
+    _cache.set(key, _safe_json_dumps(value))
     return value
 
 
@@ -132,8 +152,28 @@ def dividend_history(ticker: str):
     if value is None:
         raise HTTPException(status_code=404, detail=f"No dividend history data for {ticker}")
 
-    _cache.set(key, json.dumps(value))
+    _cache.set(key, _safe_json_dumps(value))
     return value
+
+
+def _safe_json_dumps(value) -> str:
+    """Serialize to JSON, replacing any NaN/Inf floats with null."""
+    import math
+
+    def default_handler(obj):
+        return str(obj)
+
+    # json.dumps with allow_nan=False would raise; instead we pre-sanitize
+    # via a custom walk — but that's expensive. Simpler: use allow_nan=True
+    # to produce non-spec output, then fix it, OR use a replacer approach.
+    # Fastest: serialize with allow_nan=True and post-process the string.
+    raw = json.dumps(value, ensure_ascii=False, allow_nan=True, default=default_handler)
+    # Replace bare NaN / Infinity / -Infinity tokens (not inside strings)
+    import re
+    raw = re.sub(r'\bNaN\b', 'null', raw)
+    raw = re.sub(r'\bInfinity\b', 'null', raw)
+    raw = re.sub(r'\b-Infinity\b', 'null', raw)
+    return raw
 
 
 def _cached_or_404(key: str, fetch, not_found_msg: str):
@@ -145,7 +185,7 @@ def _cached_or_404(key: str, fetch, not_found_msg: str):
     if value is None:
         raise HTTPException(status_code=404, detail=not_found_msg)
 
-    _cache.set(key, json.dumps(value))
+    _cache.set(key, _safe_json_dumps(value))
     return value
 
 

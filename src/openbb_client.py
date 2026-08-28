@@ -107,7 +107,8 @@ def get_dividend_yield(ticker: str) -> float | None:
                 _pays_dividend[ticker] = False
                 return 0.0
             raw = df.iloc[0]["dividend_yield"]
-            return float(Decimal(str(raw)).quantize(Decimal("0.01")))
+            v = _safe_float(raw, ndigits=4)
+            return v if v is not None else 0.0
         except Exception as e:
             err = str(e)
             if _is_rate_limited(err):
@@ -144,7 +145,10 @@ def get_price_history(ticker: str, start_date: str, end_date: str) -> list[dict]
             rows = []
             for idx, row in df.iterrows():
                 date = idx.date() if hasattr(idx, "date") else idx
-                rows.append({"date": str(date), "close": float(round(row["close"], 4))})
+                close = _safe_float(row.get("close"))
+                if close is None:
+                    continue
+                rows.append({"date": str(date), "close": close})
             return rows
         except Exception as e:
             err = str(e)
@@ -183,8 +187,10 @@ def get_dividend_history(ticker: str) -> list[dict] | None:
             rows = []
             for idx, row in df.iterrows():
                 date = idx.date() if hasattr(idx, "date") else idx
-                amount = str(Decimal(str(row["amount"])).quantize(Decimal("0.0001")))
-                rows.append({"date": str(date), "amount": amount})
+                amount = _safe_float(row.get("amount"), ndigits=4)
+                if amount is None:
+                    continue
+                rows.append({"date": str(date), "amount": str(amount)})
             _pays_dividend[ticker] = True
             return rows
         except Exception as e:
@@ -226,7 +232,29 @@ def _plain(value):
     return str(value)
 
 
-def _df_records(df: "pd.DataFrame") -> list[dict]:
+def _safe_float(value, ndigits: int = 4) -> float | None:
+    """Round and return a float, or None for NaN/None/non-numeric values."""
+    v = _plain(value)
+    if v is None:
+        return None
+    try:
+        return round(float(v), ndigits)
+    except (TypeError, ValueError):
+        return None
+
+
+def _safe_int(value) -> int | None:
+    """Return an int, or None for NaN/None/non-numeric values."""
+    v = _plain(value)
+    if v is None:
+        return None
+    try:
+        return int(float(v))
+    except (TypeError, ValueError):
+        return None
+
+
+
     if df.index.name is None:
         df = df.reset_index(drop=True)
     else:
@@ -326,13 +354,16 @@ def get_ohlcv_history(ticker: str, start_date: str, end_date: str) -> list[dict]
             rows = []
             for idx, row in df.iterrows():
                 date = idx.date() if hasattr(idx, "date") else idx
+                close = _safe_float(row.get("close"))
+                if close is None:
+                    continue  # skip rows with NaN close — unusable
                 rows.append({
                     "date": str(date),
-                    "open": float(round(row["open"], 4)),
-                    "high": float(round(row["high"], 4)),
-                    "low": float(round(row["low"], 4)),
-                    "close": float(round(row["close"], 4)),
-                    "volume": int(row["volume"]),
+                    "open": _safe_float(row.get("open")) or close,
+                    "high": _safe_float(row.get("high")) or close,
+                    "low": _safe_float(row.get("low")) or close,
+                    "close": close,
+                    "volume": _safe_int(row.get("volume")) or 0,
                 })
             return rows
         except Exception as e:
