@@ -254,7 +254,7 @@ def _safe_int(value) -> int | None:
         return None
 
 
-
+def _df_records(df: "pd.DataFrame") -> list[dict]:
     if df.index.name is None:
         df = df.reset_index(drop=True)
     else:
