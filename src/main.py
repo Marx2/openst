@@ -100,6 +100,16 @@ _FAVICON = base64.b64decode(
 def favicon():
     return Response(_FAVICON, media_type="image/png")
 
+
+@app.get("/__meta", include_in_schema=False)
+def meta():
+    return {
+        "service": "openst",
+        "impl": "real",
+        "version": os.environ.get("APP_VERSION") or "0.0.0-dev",
+    }
+
+
 _cache = RedisCache(
     host=os.environ.get("REDIS_HOST", "localhost"),
     port=int(os.environ.get("REDIS_PORT", 6379)),
