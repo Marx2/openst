@@ -225,3 +225,12 @@ def test_search_normalizes_and_returns(mock_fn, client):
 @patch("src.main.search_equities", return_value=[])
 def test_search_no_results_404(mock_fn, client):
     assert client.get("/equity/search/zzzznope").status_code == 404
+
+
+def test_meta_reports_service_and_version(client):
+    r = client.get("/__meta")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["service"] == "openst"
+    assert body["impl"] == "real"
+    assert isinstance(body["version"], str)
