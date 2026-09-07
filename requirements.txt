@@ -3,6 +3,7 @@ openbb-polygon==1.5.1
 openbb-nasdaq==1.6.3
 openbb-cboe==1.6.1
 openbb-tmx==1.5.2
+openbb-sec==1.6.7
 redis==5.2.1
 python-dotenv==1.2.2
 pytest==9.0.3

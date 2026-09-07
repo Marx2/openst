@@ -234,3 +234,67 @@ def test_meta_reports_service_and_version(client):
     assert body["service"] == "openst"
     assert body["impl"] == "real"
     assert isinstance(body["version"], str)
+
+
+# ---------------------------------------------------------------------------
+# SEC routes — insider trading / institutional ownership / filings / MD&A
+# ---------------------------------------------------------------------------
+
+
+@patch("src.main.get_insider_trading", return_value=[{"insider_name": "Tim Cook", "transaction_type": "P"}])
+def test_ownership_miss_fetches_and_returns(mock_fn, client):
+    r = client.get("/equity/ownership/AAPL")
+    assert r.status_code == 200
+    assert r.json() == [{"insider_name": "Tim Cook", "transaction_type": "P"}]
+    mock_fn.assert_called_once_with("AAPL")
+
+
+@patch("src.main.get_insider_trading", return_value=None)
+def test_ownership_not_found_returns_404(mock_fn, client):
+    assert client.get("/equity/ownership/UNKNOWN").status_code == 404
+
+
+@patch("src.main.get_insider_trading", return_value=[{"insider_name": "Tim Cook"}])
+def test_ownership_hit_returns_cached(mock_fn, client):
+    client.get("/equity/ownership/AAPL")
+    client.get("/equity/ownership/AAPL")
+    assert mock_fn.call_count == 1
+
+
+@patch("src.main.get_institutional_ownership", return_value=[{"fund_name": "Vanguard Group", "total_shares": 1000000}])
+def test_institutional_ownership_returns_records(mock_fn, client):
+    r = client.get("/equity/ownership/institutional/AAPL")
+    assert r.status_code == 200
+    assert r.json() == [{"fund_name": "Vanguard Group", "total_shares": 1000000}]
+    mock_fn.assert_called_once_with("AAPL")
+
+
+@patch("src.main.get_institutional_ownership", return_value=None)
+def test_institutional_ownership_not_found_returns_404(mock_fn, client):
+    assert client.get("/equity/ownership/institutional/UNKNOWN").status_code == 404
+
+
+@patch("src.main.get_filings", return_value=[{"form_type": "10-K", "filing_date": "2026-08-21"}])
+def test_filings_returns_records(mock_fn, client):
+    r = client.get("/equity/filings/AAPL")
+    assert r.status_code == 200
+    assert r.json() == [{"form_type": "10-K", "filing_date": "2026-08-21"}]
+    mock_fn.assert_called_once_with("AAPL")
+
+
+@patch("src.main.get_filings", return_value=None)
+def test_filings_not_found_returns_404(mock_fn, client):
+    assert client.get("/equity/filings/UNKNOWN").status_code == 404
+
+
+@patch("src.main.get_mda", return_value={"period": "FY2025", "content": "Results of Operations..."})
+def test_mda_returns_record(mock_fn, client):
+    r = client.get("/equity/fundamentals/AAPL/mda")
+    assert r.status_code == 200
+    assert r.json()["period"] == "FY2025"
+    mock_fn.assert_called_once_with("AAPL")
+
+
+@patch("src.main.get_mda", return_value=None)
+def test_mda_not_found_returns_404(mock_fn, client):
+    assert client.get("/equity/fundamentals/UNKNOWN/mda").status_code == 404
