@@ -264,6 +264,23 @@ def _df_records(df: "pd.DataFrame") -> list[dict]:
     return [{str(k): _plain(v) for k, v in row.items()} for _, row in df.iterrows()]
 
 
+def _df_single_long_records(df: "pd.DataFrame") -> dict | None:
+    """Return the single record from an OpenBB to_df() result.
+
+    Most OpenBB endpoints return a wide frame where every row is one record;
+    management_discussion_analysis returns a *long* two-column frame
+    (``index`` field labels mapped to a single value column), i.e. one row per
+    field. Pivot the long shape back into {field: value} and fall back to the
+    wide frame otherwise.
+    """
+    cols = list(df.columns)
+    if len(cols) == 2 and str(cols[0]).lower() == "index":
+        value_col = cols[1]
+        return {str(k): _plain(v) for k, v in zip(df[cols[0]], df[value_col])}
+    records = _df_records(df)
+    return records[0] if records else None
+
+
 def _single_record(providers, call, ticker: str) -> dict | None:
     got_data = False
     for provider in providers:
@@ -541,9 +558,9 @@ def get_mda(ticker: str) -> dict | None:
             df = obb.equity.fundamental.management_discussion_analysis(ticker, provider=provider).to_df()
             if df.empty:
                 continue
-            records = _df_records(df)
-            if records:
-                return records[0]
+            record = _df_single_long_records(df)
+            if record:
+                return record
             continue
         except Exception as e:
             err = str(e)

@@ -802,6 +802,19 @@ def _mda_df() -> pd.DataFrame:
     )
 
 
+def _mda_long_df() -> pd.DataFrame:
+    return pd.DataFrame(
+        [
+            {"index": "symbol", "SecManagementDiscussionAnalysisData": "AAPL"},
+            {"index": "calendar_year", "SecManagementDiscussionAnalysisData": 2026},
+            {"index": "calendar_period", "SecManagementDiscussionAnalysisData": 2},
+            {"index": "period_ending", "SecManagementDiscussionAnalysisData": "2026-06-27"},
+            {"index": "content", "SecManagementDiscussionAnalysisData": "## Item 2. Management's Discussion and Analysis"},
+            {"index": "url", "SecManagementDiscussionAnalysisData": "https://www.sec.gov/Archives/edgar/data/320193/x.htm"},
+        ]
+    )
+
+
 @patch("src.openbb_client.obb")
 def test_get_insider_trading_returns_records(mock_obb):
     mock_result = MagicMock()
@@ -888,6 +901,24 @@ def test_get_mda_returns_first_record(mock_obb):
     mock_obb.equity.fundamental.management_discussion_analysis.assert_called_once_with(
         "AAPL", provider="sec"
     )
+
+
+@patch("src.openbb_client.obb")
+def test_get_mda_pivots_long_two_column_frame(mock_obb):
+    mock_result = MagicMock()
+    mock_result.to_df.return_value = _mda_long_df()
+    mock_obb.equity.fundamental.management_discussion_analysis.return_value = mock_result
+
+    result = get_mda("AAPL")
+
+    assert result == {
+        "symbol": "AAPL",
+        "calendar_year": 2026,
+        "calendar_period": 2,
+        "period_ending": "2026-06-27",
+        "content": "## Item 2. Management's Discussion and Analysis",
+        "url": "https://www.sec.gov/Archives/edgar/data/320193/x.htm",
+    }
 
 
 @patch("src.openbb_client.obb")
