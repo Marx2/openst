@@ -20,6 +20,8 @@ STATEMENTS = ("income", "balance", "cash")
 PERIODS = ("annual", "quarter")
 CALENDAR_KINDS = ("earnings", "dividend")
 
+SEC_PROVIDERS = ["sec"]
+
 logger = logging.getLogger(__name__)
 
 # In-process cache: None = unknown, True/False = confirmed
@@ -450,6 +452,110 @@ def search_equities(query: str) -> list[dict]:
             logger.warning("Provider %s failed for search '%s': %s", provider, query, e)
             continue
     return []
+
+
+def get_insider_trading(ticker: str) -> list[dict]:
+    """SEC Form 4 insider transactions (director/officer purchases & sales)."""
+    for provider in SEC_PROVIDERS:
+        if _provider_is_blocked(provider):
+            continue
+        try:
+            df = obb.equity.ownership.insider_trading(ticker, provider=provider).to_df()
+            if df.empty:
+                continue
+            records = _df_records(df)
+            if records:
+                return records
+            continue
+        except Exception as e:
+            err = str(e)
+            if _is_rate_limited(err):
+                _block_provider(provider)
+                continue
+            if _is_invalid_ticker(err):
+                logger.warning("Invalid/delisted ticker %s (provider %s)", ticker, provider)
+                return []
+            logger.warning("Provider %s failed insider_trading for %s: %s", provider, ticker, e)
+            continue
+    return []
+
+
+def get_institutional_ownership(ticker: str) -> list[dict]:
+    """SEC Form 13F institutional holdings (filed quarterly by $100M+ AUM managers)."""
+    for provider in SEC_PROVIDERS:
+        if _provider_is_blocked(provider):
+            continue
+        try:
+            df = obb.equity.ownership.form_13f(ticker, provider=provider).to_df()
+            if df.empty:
+                continue
+            records = _df_records(df)
+            if records:
+                return records
+            continue
+        except Exception as e:
+            err = str(e)
+            if _is_rate_limited(err):
+                _block_provider(provider)
+                continue
+            if _is_invalid_ticker(err):
+                logger.warning("Invalid/delisted ticker %s (provider %s)", ticker, provider)
+                return []
+            logger.warning("Provider %s failed form_13f for %s: %s", provider, ticker, e)
+            continue
+    return []
+
+
+def get_filings(ticker: str) -> list[dict]:
+    """SEC EDGAR filing index (10-K, 10-Q, 8-K, etc.) with access URLs."""
+    for provider in SEC_PROVIDERS:
+        if _provider_is_blocked(provider):
+            continue
+        try:
+            df = obb.equity.fundamental.filings(ticker, provider=provider).to_df()
+            if df.empty:
+                continue
+            records = _df_records(df)
+            if records:
+                return records
+            continue
+        except Exception as e:
+            err = str(e)
+            if _is_rate_limited(err):
+                _block_provider(provider)
+                continue
+            if _is_invalid_ticker(err):
+                logger.warning("Invalid/delisted ticker %s (provider %s)", ticker, provider)
+                return []
+            logger.warning("Provider %s failed filings for %s: %s", provider, ticker, e)
+            continue
+    return []
+
+
+def get_mda(ticker: str) -> dict | None:
+    """Management Discussion & Analysis section from the latest SEC 10-K/10-Q (SEC-only)."""
+    for provider in SEC_PROVIDERS:
+        if _provider_is_blocked(provider):
+            continue
+        try:
+            df = obb.equity.fundamental.management_discussion_analysis(ticker, provider=provider).to_df()
+            if df.empty:
+                continue
+            records = _df_records(df)
+            if records:
+                return records[0]
+            continue
+        except Exception as e:
+            err = str(e)
+            if _is_rate_limited(err):
+                _block_provider(provider)
+                continue
+            if _is_invalid_ticker(err):
+                logger.warning("Invalid/delisted ticker %s (provider %s)", ticker, provider)
+                return None
+            logger.warning("Provider %s failed management_discussion_analysis for %s: %s", provider, ticker, e)
+            continue
+    return None
 
 
 _FAVICON_URL = "https://www.google.com/s2/favicons?domain={domain}&sz=128"

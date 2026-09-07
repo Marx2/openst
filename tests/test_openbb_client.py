@@ -12,7 +12,11 @@ from src.openbb_client import (
     get_calendar,
     get_dividend_history,
     get_dividend_yield,
+    get_filings,
     get_fundamentals,
+    get_insider_trading,
+    get_institutional_ownership,
+    get_mda,
     get_metrics,
     get_price_history,
     get_profile,
@@ -750,3 +754,154 @@ def test_dividend_history_handles_non_datetime_index():
         rows = openbb_client.get_dividend_history("AAPL")
     assert [r["date"] for r in rows] == ["2026-05-12", "2026-02-09"]
     assert rows[0]["amount"] == "0.2600"
+
+
+# ---------------------------------------------------------------------------
+# SEC endpoints — insider trading / institutional ownership / filings / MD&A
+# ---------------------------------------------------------------------------
+
+
+def _insider_trading_df() -> pd.DataFrame:
+    return pd.DataFrame(
+        [{
+            "transaction_type": "P",
+            "shares_transacted": 1000,
+            "value_transacted": 195000.0,
+            "insider_name": "Tim Cook",
+            "insider_title": "CEO",
+        }]
+    )
+
+
+def _form_13f_df() -> pd.DataFrame:
+    return pd.DataFrame(
+        [{
+            "symbol": "AAPL",
+            "fund_name": "Vanguard Group",
+            "total_shares": 1000000,
+            "value": 195000000.0,
+            "pct_ownership": 6.2,
+        }]
+    )
+
+
+def _filings_df() -> pd.DataFrame:
+    return pd.DataFrame(
+        [{
+            "symbol": "AAPL",
+            "filing_date": "2026-08-21",
+            "form_type": "10-K",
+            "report_url": "https://www.sec.gov/Archives/edgar/data/0000320193/...",
+        }]
+    )
+
+
+def _mda_df() -> pd.DataFrame:
+    return pd.DataFrame(
+        [{"symbol": "AAPL", "period": "FY2025", "content": "Results of Operations..."}]
+    )
+
+
+@patch("src.openbb_client.obb")
+def test_get_insider_trading_returns_records(mock_obb):
+    mock_result = MagicMock()
+    mock_result.to_df.return_value = _insider_trading_df()
+    mock_obb.equity.ownership.insider_trading.return_value = mock_result
+
+    result = get_insider_trading("AAPL")
+
+    assert result == [{
+        "transaction_type": "P",
+        "shares_transacted": 1000,
+        "value_transacted": 195000.0,
+        "insider_name": "Tim Cook",
+        "insider_title": "CEO",
+    }]
+    mock_obb.equity.ownership.insider_trading.assert_called_once_with("AAPL", provider="sec")
+
+
+@patch("src.openbb_client.obb")
+def test_get_insider_trading_invalid_ticker_returns_empty(mock_obb):
+    mock_obb.equity.ownership.insider_trading.side_effect = Exception("possibly delisted")
+    assert get_insider_trading("FAKE") == []
+    assert mock_obb.equity.ownership.insider_trading.call_count == 1
+
+
+@patch("src.openbb_client.obb")
+def test_get_insider_trading_all_fail_returns_empty(mock_obb):
+    mock_obb.equity.ownership.insider_trading.side_effect = Exception("connection error")
+    assert get_insider_trading("AAPL") == []
+
+
+@patch("src.openbb_client.obb")
+def test_get_institutional_ownership_returns_records(mock_obb):
+    mock_result = MagicMock()
+    mock_result.to_df.return_value = _form_13f_df()
+    mock_obb.equity.ownership.form_13f.return_value = mock_result
+
+    result = get_institutional_ownership("AAPL")
+
+    assert result == [{
+        "symbol": "AAPL",
+        "fund_name": "Vanguard Group",
+        "total_shares": 1000000,
+        "value": 195000000.0,
+        "pct_ownership": 6.2,
+    }]
+    mock_obb.equity.ownership.form_13f.assert_called_once_with("AAPL", provider="sec")
+
+
+@patch("src.openbb_client.obb")
+def test_get_institutional_ownership_all_fail_returns_empty(mock_obb):
+    mock_obb.equity.ownership.form_13f.side_effect = Exception("connection error")
+    assert get_institutional_ownership("AAPL") == []
+
+
+@patch("src.openbb_client.obb")
+def test_get_filings_returns_records(mock_obb):
+    mock_result = MagicMock()
+    mock_result.to_df.return_value = _filings_df()
+    mock_obb.equity.fundamental.filings.return_value = mock_result
+
+    result = get_filings("AAPL")
+
+    assert result[0]["form_type"] == "10-K"
+    assert result[0]["report_url"].startswith("https://www.sec.gov/")
+    mock_obb.equity.fundamental.filings.assert_called_once_with("AAPL", provider="sec")
+
+
+@patch("src.openbb_client.obb")
+def test_get_filings_invalid_ticker_returns_empty(mock_obb):
+    mock_obb.equity.fundamental.filings.side_effect = Exception("not found for symbol FAKE")
+    assert get_filings("FAKE") == []
+
+
+@patch("src.openbb_client.obb")
+def test_get_mda_returns_first_record(mock_obb):
+    mock_result = MagicMock()
+    mock_result.to_df.return_value = _mda_df()
+    mock_obb.equity.fundamental.management_discussion_analysis.return_value = mock_result
+
+    result = get_mda("AAPL")
+
+    assert result["period"] == "FY2025"
+    mock_obb.equity.fundamental.management_discussion_analysis.assert_called_once_with(
+        "AAPL", provider="sec"
+    )
+
+
+@patch("src.openbb_client.obb")
+def test_get_mda_no_data_returns_none(mock_obb):
+    mock_result = MagicMock()
+    mock_result.to_df.return_value = pd.DataFrame()
+    mock_obb.equity.fundamental.management_discussion_analysis.return_value = mock_result
+    assert get_mda("AAPL") is None
+
+
+@patch("src.openbb_client.obb")
+def test_get_mda_invalid_ticker_returns_none(mock_obb):
+    mock_obb.equity.fundamental.management_discussion_analysis.side_effect = Exception(
+        "possibly delisted"
+    )
+    assert get_mda("FAKE") is None
+    assert mock_obb.equity.fundamental.management_discussion_analysis.call_count == 1

@@ -26,8 +26,12 @@ from .openbb_client import (
     get_calendar,
     get_dividend_history,
     get_dividend_yield,
+    get_filings,
     get_fundamentals,
+    get_insider_trading,
+    get_institutional_ownership,
     get_logo,
+    get_mda,
     get_metrics,
     get_ohlcv_history,
     get_price_history,
@@ -319,6 +323,57 @@ def equity_search(query: str):
         f"equity_search:{normalized}",
         fetch,
         f"No search results for '{query}'",
+    )
+
+
+@app.get("/equity/ownership/institutional/{ticker}")
+def equity_institutional_ownership(ticker: str):
+    def fetch():
+        records = get_institutional_ownership(ticker)
+        return records or None
+
+    return _cached_or_404(
+        f"sec_institutional:{ticker.upper()}",
+        fetch,
+        f"No institutional ownership data for {ticker}",
+    )
+
+
+@app.get("/equity/ownership/{ticker}")
+def equity_ownership(ticker: str):
+    def fetch():
+        records = get_insider_trading(ticker)
+        return records or None
+
+    return _cached_or_404(
+        f"sec_ownership:{ticker.upper()}",
+        fetch,
+        f"No insider trading data for {ticker}",
+    )
+
+
+@app.get("/equity/filings/{ticker}")
+def equity_filings(ticker: str):
+    def fetch():
+        records = get_filings(ticker)
+        return records or None
+
+    return _cached_or_404(
+        f"sec_filings:{ticker.upper()}",
+        fetch,
+        f"No filings found for {ticker}",
+    )
+
+
+@app.get("/equity/fundamentals/{ticker}/mda")
+def equity_mda(ticker: str):
+    def fetch():
+        return get_mda(ticker)
+
+    return _cached_or_404(
+        f"sec_mda:{ticker.upper()}",
+        fetch,
+        f"No management discussion & analysis for {ticker}",
     )
 
 
