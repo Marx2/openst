@@ -24,6 +24,7 @@ from .openbb_client import (
     PERIODS,
     STATEMENTS,
     get_calendar,
+    get_company_news,
     get_dividend_history,
     get_dividend_yield,
     get_filings,
@@ -323,6 +324,31 @@ def equity_search(query: str):
         f"equity_search:{normalized}",
         fetch,
         f"No search results for '{query}'",
+    )
+
+
+@app.get("/news/company/{ticker}")
+def news_company(
+    ticker: str,
+    limit: int = Query(default=50, ge=1, le=500),
+    start_date: str | None = Query(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    end_date: str | None = Query(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    provider: str | None = None,
+):
+    def fetch():
+        records = get_company_news(
+            ticker,
+            limit=limit,
+            start_date=start_date,
+            end_date=end_date,
+            provider=provider,
+        )
+        return records or None
+
+    return _cached_or_404(
+        f"news_company:{ticker}:{limit}:{start_date}:{end_date}:{provider}",
+        fetch,
+        f"No company news for {ticker}",
     )
 
 

@@ -21,6 +21,7 @@ OpenBB wrapper service. Exposes financial data via HTTP with 24h Redis cache.
 | GET | `/equity/ownership/institutional/{ticker}` | SEC institutional holdings (Form 13F) |
 | GET | `/equity/filings/{ticker}` | SEC filing index (10-K, 10-Q, 8-K) |
 | GET | `/equity/fundamentals/{ticker}/mda` | Management Discussion & Analysis from latest report |
+| GET | `/news/company/{ticker}?limit&start_date&end_date&provider` | Company news articles `[{"date", "title", "text", "url", "symbols", "source"}]` |
 
 Returns `404` if no data found for the ticker.
 
@@ -42,6 +43,7 @@ Requests try providers in fallback order until one returns data:
 | Ownership (institutional) | sec | — |
 | Filings | sec | — |
 | MD&A | sec | — |
+| Company news | polygon → fmp → yfinance | polygon, fmp |
 
 A provider returning rate-limit/paywall errors is blocked in-process for 24h.
 Keyless providers (`cboe`, `sec`, `tmx`, `yfinance`) need no configuration.
