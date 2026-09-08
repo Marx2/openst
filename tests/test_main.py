@@ -298,3 +298,50 @@ def test_mda_returns_record(mock_fn, client):
 @patch("src.main.get_mda", return_value=None)
 def test_mda_not_found_returns_404(mock_fn, client):
     assert client.get("/equity/fundamentals/UNKNOWN/mda").status_code == 404
+
+
+# ---------------------------------------------------------------------------
+# News routes — /news/company/{ticker}
+# ---------------------------------------------------------------------------
+
+
+@patch(
+    "src.main.get_company_news",
+    return_value=[{
+        "date": "2026-09-07T16:02:29+00:00",
+        "title": "Apple launches new iPhone",
+        "text": "Apple unveiled its latest iPhone today.",
+        "url": "https://example.com/iphone",
+        "symbols": ["AAPL"],
+        "source": "The Motley Fool",
+    }],
+)
+def test_news_company_miss_fetches_and_returns(mock_fn, client):
+    r = client.get("/news/company/AAPL?limit=5")
+    assert r.status_code == 200
+    body = r.json()
+    assert body[0]["title"] == "Apple launches new iPhone"
+    assert body[0]["symbols"] == ["AAPL"]
+    mock_fn.assert_called_once_with(
+        "AAPL", limit=5, start_date=None, end_date=None, provider=None
+    )
+
+
+@patch("src.main.get_company_news", return_value=[])
+def test_news_company_no_data_returns_404(mock_fn, client):
+    assert client.get("/news/company/UNKNOWN").status_code == 404
+
+
+@patch("src.main.get_company_news", return_value=[{"title": "x"}])
+def test_news_company_hit_returns_cached(mock_fn, client):
+    client.get("/news/company/AAPL")
+    client.get("/news/company/AAPL")
+    assert mock_fn.call_count == 1
+
+
+def test_news_company_rejects_bad_date_format(client):
+    assert client.get("/news/company/AAPL?start_date=nope").status_code == 422
+
+
+def test_news_company_validates_limit(client):
+    assert client.get("/news/company/AAPL?limit=0").status_code == 422

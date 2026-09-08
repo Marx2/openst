@@ -15,6 +15,7 @@ STATEMENT_PROVIDERS = ["fmp", "yfinance", "polygon", "sec"]
 PROJECTION_PROVIDERS = ["fmp", "yfinance", "tmx"]
 CALENDAR_PROVIDERS = ["fmp"]
 SEARCH_PROVIDERS = ["sec", "nasdaq", "cboe"]
+COMPANY_NEWS_PROVIDERS = ["polygon", "fmp", "yfinance"]
 
 STATEMENTS = ("income", "balance", "cash")
 PERIODS = ("annual", "quarter")
@@ -467,6 +468,87 @@ def search_equities(query: str) -> list[dict]:
                 _block_provider(provider)
                 continue
             logger.warning("Provider %s failed for search '%s': %s", provider, query, e)
+            continue
+    return []
+
+
+def _split_symbols(value) -> list[str]:
+    """Normalize an OpenBB `symbols` cell (comma string or list) to a symbol list."""
+    if isinstance(value, (list, tuple)):
+        out = []
+        for s in value:
+            s = _plain(s)
+            if s:
+                out.append(str(s).strip().upper())
+        return out
+    value = _plain(value)  # NaN -> None
+    if value is None:
+        return []
+    return [s.strip().upper() for s in str(value).split(",") if s.strip()]
+
+
+def _news_source(row) -> str | None:
+    """Resolve the news outlet name: prefer `publisher.name`, else the author string."""
+    pub = row.get("publisher")
+    if isinstance(pub, dict):
+        name = pub.get("name")
+        if name:
+            return str(name)
+    src = _plain(row.get("source"))
+    return str(src) if src else None
+
+
+def get_company_news(
+    ticker: str,
+    limit: int = 50,
+    start_date: str | None = None,
+    end_date: str | None = None,
+    provider: str | None = None,
+) -> list[dict]:
+    """Company news articles, provider-fallback across COMPANY_NEWS_PROVIDERS.
+
+    Records map to ``{date, title, text, url, symbols, source}``. ``symbols`` is
+    normalized to a list (empty when the provider omits it); ``source`` is the
+    outlet (publisher name, else author). OpenBB's day-granularity
+    start/end dates mean the URL-primary-key dedup in the instruments layer
+    absorbs overlapping windows.
+    """
+    providers = [provider] if provider else COMPANY_NEWS_PROVIDERS
+    for p in providers:
+        if _provider_is_blocked(p):
+            continue
+        try:
+            kwargs = {}
+            if start_date:
+                kwargs["start_date"] = start_date
+            if end_date:
+                kwargs["end_date"] = end_date
+            df = obb.news.company(symbol=ticker, limit=limit, provider=p, **kwargs).to_df()
+            if df.empty:
+                continue
+            rows = []
+            for idx, row in df.iterrows():
+                date = idx.isoformat() if hasattr(idx, "isoformat") else str(idx)
+                rows.append({
+                    "date": date,
+                    "title": _plain(row.get("title")),
+                    "text": _plain(row.get("text")),
+                    "url": _plain(row.get("url")),
+                    "symbols": _split_symbols(row.get("symbols")),
+                    "source": _news_source(row),
+                })
+            if rows:
+                return rows
+            continue
+        except Exception as e:
+            err = str(e)
+            if _is_rate_limited(err):
+                _block_provider(p)
+                continue
+            if _is_invalid_ticker(err):
+                logger.warning("Invalid/delisted ticker %s (provider %s)", ticker, p)
+                return []
+            logger.warning("Provider %s failed company news for %s: %s", p, ticker, e)
             continue
     return []
 
