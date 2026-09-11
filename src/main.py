@@ -10,12 +10,24 @@ load_dotenv()
 
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import Response
+from pythonjsonlogger.json import JsonFormatter
+
+from .otel import setup_otel
 
 logger = logging.getLogger("openst")
 logger.setLevel(logging.INFO)
 if not logger.handlers:
     _handler = logging.StreamHandler()
-    _handler.setFormatter(logging.Formatter("%(levelname)s:     %(message)s"))
+    _handler.setFormatter(
+        JsonFormatter(
+            "%(asctime)s %(levelname)s %(name)s %(message)s",
+            rename_fields={
+                "asctime": "timestamp",
+                "levelname": "level",
+                "name": "service",
+            },
+        )
+    )
     logger.addHandler(_handler)
 
 from .cache import RedisCache
@@ -59,6 +71,8 @@ class _SafeJSONResponse(_JSONResponse):
 
 app = FastAPI(default_response_class=_SafeJSONResponse)
 
+setup_otel(app, "openst")
+
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
@@ -66,31 +80,17 @@ async def log_requests(request: Request, call_next):
     response = await call_next(request)
     elapsed = (time.perf_counter() - start) * 1000
 
-    body_chunks = []
-    async for chunk in response.body_iterator:
-        body_chunks.append(chunk)
-    body = b"".join(body_chunks)
-
-    try:
-        body_str = json.loads(body)
-    except Exception:
-        body_str = body.decode(errors="replace")
-
-    try:
-        log_body = json.dumps(body_str, ensure_ascii=False)
-    except (ValueError, TypeError):
-        log_body = repr(body_str)
-
     logger.info(
-        f"{request.method} {request.url.path} -> {response.status_code} ({elapsed:.1f}ms) {log_body}"
+        "http_request",
+        extra={
+            "method": request.method,
+            "path": request.url.path,
+            "status_code": response.status_code,
+            "duration_ms": round(elapsed, 1),
+        },
     )
 
-    return Response(
-        content=body,
-        status_code=response.status_code,
-        headers=dict(response.headers),
-        media_type=response.media_type,
-    )
+    return response
 
 
 _FAVICON = base64.b64decode(
@@ -113,6 +113,11 @@ def meta():
         "impl": "real",
         "version": os.environ.get("APP_VERSION") or "0.0.0-dev",
     }
+
+
+@app.get("/health", include_in_schema=False)
+def health():
+    return {"status": "ok"}
 
 
 _cache = RedisCache(
