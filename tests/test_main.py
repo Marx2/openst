@@ -92,11 +92,32 @@ def test_price_history_not_found_returns_404(mock_fn, client):
 
 
 @patch("src.main.get_dividend_yield", return_value=2.45)
-def test_middleware_logs_response(mock_fn, client, caplog):
+def test_middleware_logs_structured_json(mock_fn, client, caplog):
     with caplog.at_level(logging.INFO, logger="openst"):
         r = client.get("/dividend/yield/AAPL")
     assert r.status_code == 200
-    assert any("2.45" in m and "/dividend/yield/AAPL" in m and "200" in m for m in caplog.messages)
+    records = [rec for rec in caplog.records if rec.name == "openst"]
+    assert records
+    rec = records[-1]
+    assert rec.getMessage() == "http_request"
+    assert rec.method == "GET"
+    assert rec.path == "/dividend/yield/AAPL"
+    assert rec.status_code == 200
+    assert isinstance(rec.duration_ms, float)
+
+
+def test_health_returns_ok(client):
+    r = client.get("/health")
+    assert r.status_code == 200
+    assert r.json() == {"status": "ok"}
+
+
+def test_metrics_returns_prometheus_text(client):
+    client.get("/health")  # ensure an instrumented request is recorded
+    r = client.get("/metrics")
+    assert r.status_code == 200
+    assert r.headers["content-type"].startswith("text/plain")
+    assert "http_server_request_duration" in r.text
 
 
 # ---------------------------------------------------------------------------
