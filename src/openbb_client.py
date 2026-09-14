@@ -14,7 +14,7 @@ QUOTE_PROVIDERS = ["fmp", "yfinance", "cboe"]
 STATEMENT_PROVIDERS = ["fmp", "yfinance", "polygon", "sec"]
 PROJECTION_PROVIDERS = ["fmp", "yfinance", "tmx"]
 CALENDAR_PROVIDERS = ["fmp"]
-SEARCH_PROVIDERS = ["sec", "nasdaq", "cboe"]
+SEARCH_PROVIDERS = ["sec", "nasdaq", "cboe", "biznesradar"]
 COMPANY_NEWS_PROVIDERS = ["polygon", "fmp", "yfinance"]
 
 STATEMENTS = ("income", "balance", "cash")

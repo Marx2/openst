@@ -760,6 +760,28 @@ def test_search_equities_uses_sec_provider(mock_obb):
 
 
 @patch("src.openbb_client.obb")
+def test_search_equities_sec_nasdaq_cboe_empty_falls_back_to_biznesradar(mock_obb):
+    empty = MagicMock()
+    empty.to_df.return_value = pd.DataFrame()
+    biznes = MagicMock()
+    biznes.to_df.return_value = pd.DataFrame(
+        [{"name": "BEST S.A.", "symbol": "BST0327.WA", "cik": None}]
+    )
+    mock_obb.equity.search.side_effect = [empty, empty, empty, biznes]
+
+    result = search_equities("bst0327.wa")
+
+    assert result == [{"name": "BEST S.A.", "symbol": "BST0327.WA", "cik": None}]
+    assert mock_obb.equity.search.call_count == 4
+    assert [c.kwargs["provider"] for c in mock_obb.equity.search.call_args_list] == [
+        "sec",
+        "nasdaq",
+        "cboe",
+        "biznesradar",
+    ]
+
+
+@patch("src.openbb_client.obb")
 def test_search_equities_failure_returns_empty(mock_obb):
     mock_obb.equity.search.side_effect = Exception("boom")
     assert search_equities("apple") == []
