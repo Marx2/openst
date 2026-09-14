@@ -50,9 +50,15 @@ from bs4 import BeautifulSoup
 
 BASE_URL = "https://www.biznesradar.pl"
 HISTORY_PATH = "/notowania-historyczne"
+NOTOWANIA_PATH = "/notowania"
 USER_AGENT = "Mozilla/5.0"
 DATE_FORMAT = "%d.%m.%Y"
 REQUEST_TIMEOUT = 30.0
+
+# Page-title wrapping used for the /notowania probe: "Notowania {NAME}..."
+# followed by "...- BiznesRadar.pl".
+_TITLE_PREFIX = "Notowania"
+_TITLE_SUFFIX = "- BiznesRadar.pl"
 
 # Dotted exchange tags that upstream providers append (yfinance/FMP use `.WA`
 # for the Warsaw Stock Exchange). biznesradar URLs must NOT carry them, while
@@ -78,6 +84,54 @@ def strip_wa_suffix(symbol: str) -> str:
         if symbol.endswith(tag):
             return symbol[: -len(tag)]
     return symbol
+
+
+def probe_notowania(symbol: str, fetch_delay_s: float = 0.0) -> str | None:
+    """Probe ``/notowania/{symbol}`` for a resolvable instrument name (D78).
+
+    Returns the instrument's display name when the page resolves — HTTP 200
+    plus at least one ``qTableFull`` quote table — otherwise ``None``.  ``.WA``
+    is stripped for the URL (biznesradar never carries it); the name is read
+    from the page title (``Notowania {NAME}- BiznesRadar.pl``), with the page
+    ``h2`` as a fallback.  Reuses the D77 fetch infrastructure (User-Agent,
+    timeout, ``BeautifulSoup``), so politeness/rate-limit behaviour stays in a
+    single place.  ``fetch_delay_s``, when > 0, sleeps before the request.
+    """
+    symbol = strip_wa_suffix(symbol)
+    if fetch_delay_s > 0:
+        time.sleep(fetch_delay_s)
+    url = f"{BASE_URL}{NOTOWANIA_PATH}/{symbol}"
+    try:
+        response = httpx.get(
+            url, headers={"User-Agent": USER_AGENT}, timeout=REQUEST_TIMEOUT
+        )
+    except httpx.HTTPError:
+        return None
+    if response.status_code != 200:
+        return None
+    soup = BeautifulSoup(response.text, "lxml")
+    if soup.find("table", class_=lambda c: c and "qTableFull" in c) is None:
+        return None
+    name = _name_from_soup(soup)
+    return name
+
+
+def _name_from_soup(soup) -> str | None:
+    """Read the instrument name from a page title, ``h2`` as fallback."""
+    title = soup.title.get_text(strip=True) if soup.title else ""
+    name = title
+    if name.startswith(_TITLE_PREFIX):
+        name = name[len(_TITLE_PREFIX):].lstrip()
+    if _TITLE_SUFFIX in name:
+        name = name.split(_TITLE_SUFFIX, 1)[0].strip()
+    if name:
+        return name
+    h2 = soup.find("h2")
+    if h2:
+        text = h2.get_text(strip=True)
+        if text:
+            return text
+    return None
 
 
 def _parse_cell(text: str, name: str):

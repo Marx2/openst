@@ -3,12 +3,14 @@
 from openbb_core.provider.abstract.provider import Provider
 
 from openbb_biznesradar.models.equity_historical import EquityHistoricalFetcher
+from openbb_biznesradar.models.equity_search import EquitySearchFetcher
 
 biznesradar_provider = Provider(
     name="biznesradar",
     description="BiznesRadar.pl scraper — Polish TFI funds and Catalyst bonds",
     fetcher_dict={
         "EquityHistorical": EquityHistoricalFetcher,
+        "EquitySearch": EquitySearchFetcher,
     },
 )
 
