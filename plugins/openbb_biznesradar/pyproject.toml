@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta:__legacy__"
+
+[project]
+name = "openbb-biznesradar"
+version = "0.1.0"
+description = "BiznesRadar.pl OpenBB provider — Polish TFI funds and Catalyst bonds"
+dependencies = ["openbb-core", "beautifulsoup4", "lxml", "httpx"]
+
+[project.entry-points."openbb_provider_extension"]
+biznesradar = "openbb_biznesradar:biznesradar_provider"

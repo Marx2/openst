@@ -3,6 +3,7 @@ __pycache__/
 .pytest_cache/
 *.pyc
 *.iml
+*.egg-info/
 # mtime-based, breaks after git clone
 graphify-out/manifest.json
 # local only
