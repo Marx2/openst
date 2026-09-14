@@ -18,6 +18,8 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+    environment:
+      REDIS_HOST: redis
     env_file:
       - path: .env
         required: false
