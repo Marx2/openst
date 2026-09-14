@@ -110,7 +110,7 @@ def get_dividend_yield(ticker: str) -> float | None:
                 _pays_dividend[ticker] = False
                 return 0.0
             raw = df.iloc[0]["dividend_yield"]
-            v = _safe_float(raw, ndigits=4)
+            v = _safe_float(raw, ndigits=2)
             return v if v is not None else 0.0
         except Exception as e:
             err = str(e)
@@ -193,7 +193,7 @@ def get_dividend_history(ticker: str) -> list[dict] | None:
                 amount = _safe_float(row.get("amount"), ndigits=4)
                 if amount is None:
                     continue
-                rows.append({"date": str(date), "amount": str(amount)})
+                rows.append({"date": str(date), "amount": f"{amount:.4f}"})
             _pays_dividend[ticker] = True
             return rows
         except Exception as e:
