@@ -306,7 +306,7 @@ def _single_record(providers, call, ticker: str) -> dict | None:
                 continue
             if _is_invalid_ticker(err):
                 logger.warning("Invalid/delisted ticker %s (provider %s)", ticker, provider)
-                return None
+                continue
             logger.warning("Provider %s failed for %s: %s", provider, ticker, e)
             continue
     return None
