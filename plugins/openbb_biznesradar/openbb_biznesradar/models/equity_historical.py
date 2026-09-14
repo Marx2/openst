@@ -69,9 +69,11 @@ class EquityHistoricalFetcher(
     def extract_data(
         query: BiznesRadarEquityHistoricalQueryParams,
         credentials: dict | None = None,
+        **kwargs,
     ) -> list[dict]:
         """Scrape biznesradar pages for the symbol, returning raw rows."""
-        del credentials  # no credentials needed — public pages
+        del credentials
+        del kwargs  # router forwards router-level extras (preferences, timeframe,…)
         symbol = strip_wa_suffix(query.symbol)
         cols = FUND_COLUMNS if _is_fund(symbol) else BOND_COLUMNS
         return list(

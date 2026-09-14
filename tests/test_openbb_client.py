@@ -475,6 +475,17 @@ def _ohlcv_df() -> pd.DataFrame:
     )
 
 
+def _fund_ohlcv_df() -> pd.DataFrame:
+    """OpenBB to_df shape for a biznesradar fund (NNEP25.TFI): OHLC identical, volume 0."""
+    return pd.DataFrame(
+        [
+            {"open": 14.70, "high": 14.70, "low": 14.70, "close": 14.70, "volume": 0.0},
+            {"open": 14.68, "high": 14.68, "low": 14.68, "close": 14.68, "volume": 0.0},
+        ],
+        index=pd.to_datetime(["2026-09-01", "2026-09-02"]),
+    )
+
+
 def _income_df() -> pd.DataFrame:
     df = pd.DataFrame(
         [
@@ -637,6 +648,42 @@ def test_get_ohlcv_history_rate_limit_blocks_provider_tries_next(mock_obb):
 
     assert len(result) == 1
     assert "yfinance" in openbb_client._provider_blocked_until
+
+
+def test_pride_providers_biznesradar_is_last_resort():
+    assert openbb_client.PRICE_PROVIDERS[-1] == "biznesradar"
+
+
+@patch("src.openbb_client.obb")
+def test_get_ohlcv_history_biznesradar_fallback(mock_obb):
+    """All free US venues fail → biznesradar serves fixture-shaped NNEP25.TFI rows."""
+    biz = openbb_client.PRICE_PROVIDERS.index("biznesradar")
+    mock_fund = MagicMock()
+    mock_fund.to_df.return_value = _fund_ohlcv_df()
+    mock_obb.equity.price.historical.side_effect = (
+        [Exception("provider down")] * biz + [mock_fund]
+    )
+
+    result = openbb_client.get_ohlcv_history("NNEP25.TFI", "2026-09-01", "2026-09-11")
+
+    assert result == [
+        {"date": "2026-09-01", "open": 14.7, "high": 14.7, "low": 14.7, "close": 14.7, "volume": 0},
+        {"date": "2026-09-02", "open": 14.68, "high": 14.68, "low": 14.68, "close": 14.68, "volume": 0},
+    ]
+    calls = mock_obb.equity.price.historical.call_args_list
+    assert len(calls) == biz + 1
+    assert calls[biz].kwargs["provider"] == "biznesradar"
+    assert calls[biz].args[0] == "NNEP25.TFI"
+
+
+@patch("src.openbb_client.obb")
+def test_get_ohlcv_history_biznesradar_empty_then_none(mock_obb):
+    biz = openbb_client.PRICE_PROVIDERS.index("biznesradar")
+    mock_empty = MagicMock()
+    mock_empty.to_df.return_value = pd.DataFrame()
+    mock_obb.equity.price.historical.side_effect = [mock_empty] * (biz + 1)
+
+    assert openbb_client.get_ohlcv_history("NNEP25.TFI", "2026-09-01", "2026-09-11") is None
 
 
 @patch("src.openbb_client.obb")
