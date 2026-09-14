@@ -132,7 +132,10 @@ def get_dividend_yield(ticker: str) -> float | None:
     return None
 
 
-PRICE_PROVIDERS = ["yfinance", "fmp", "intrinio", "polygon", "cboe", "tiingo"]
+# Last-resort fallback for PL-venue symbols (funds/bonds) that free US venues
+# don't cover. biznesradar reads BIZNESRADAR_FETCH_DELAY_S straight from env in
+# its fetcher — no extra plumbing needed here.
+PRICE_PROVIDERS = ["yfinance", "fmp", "intrinio", "polygon", "cboe", "tiingo", "biznesradar"]
 
 
 def get_price_history(ticker: str, start_date: str, end_date: str) -> list[dict] | None:
