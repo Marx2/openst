@@ -557,7 +557,44 @@ def test_get_quote_all_fail_returns_none(mock_obb):
 
 
 @patch("src.openbb_client.obb")
-def test_get_metrics_returns_first_record(mock_obb):
+def test_get_quote_fmp_yfinance_cboe_empty_falls_back_to_biznesradar(mock_obb):
+    empty = MagicMock()
+    empty.to_df.return_value = pd.DataFrame()
+    biznes = MagicMock()
+    biznes.to_df.return_value = pd.DataFrame(
+        [{"symbol": "BST0327.WA", "last_price": 101.30, "change_percent": 0.003}]
+    )
+    mock_obb.equity.price.quote.side_effect = [empty, empty, empty, biznes]
+
+    result = get_quote("BST0327.WA")
+
+    assert result == {"symbol": "BST0327.WA", "last_price": 101.30, "change_percent": 0.003}
+    assert mock_obb.equity.price.quote.call_count == 4
+    assert [c.kwargs["provider"] for c in mock_obb.equity.price.quote.call_args_list] == [
+        "fmp", "yfinance", "cboe", "biznesradar"
+    ]
+
+
+@patch("src.openbb_client.obb")
+def test_get_profile_fmp_yfinance_empty_falls_back_to_biznesradar(mock_obb):
+    empty = MagicMock()
+    empty.to_df.return_value = pd.DataFrame()
+    biznes = MagicMock()
+    biznes.to_df.return_value = pd.DataFrame(
+        [{"symbol": "BST0327.WA", "name": "BEST SA", "hq_country": "PL"}]
+    )
+    mock_obb.equity.profile.side_effect = [empty, empty, biznes]
+
+    result = get_profile("BST0327.WA")
+
+    assert result == {"symbol": "BST0327.WA", "name": "BEST SA", "hq_country": "PL"}
+    assert mock_obb.equity.profile.call_count == 3
+    assert [c.kwargs["provider"] for c in mock_obb.equity.profile.call_args_list] == [
+        "fmp", "yfinance", "biznesradar"
+    ]
+
+
+
     mock_result = MagicMock()
     mock_result.to_df.return_value = pd.DataFrame([{"market_cap": 3.1e12, "dividend_yield": 0.44}])
     mock_obb.equity.fundamental.metrics.return_value = mock_result

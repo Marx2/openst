@@ -147,6 +147,89 @@ def _parse_cell(text: str, name: str):
         return None
 
 
+def scrape_quote(symbol: str) -> dict | None:
+    """Scrape the current quote from ``/notowania/{symbol}`` (D78 17.3).
+
+    Returns a dict with keys ``symbol``, ``name``, ``last_price``,
+    ``change``, ``change_percent``, ``prev_close``, ``open``, ``high``,
+    ``low``, ``volume`` when the page resolves; ``None`` otherwise.
+
+    All numeric values are ``float`` (volume is ``int``); missing fields are
+    ``None``.  ``.WA`` is stripped for the URL as in other scraper helpers.
+    """
+    clean = strip_wa_suffix(symbol)
+    url = f"{BASE_URL}{NOTOWANIA_PATH}/{clean}"
+    try:
+        response = httpx.get(
+            url, headers={"User-Agent": USER_AGENT}, timeout=REQUEST_TIMEOUT
+        )
+    except httpx.HTTPError:
+        return None
+    if response.status_code != 200:
+        return None
+    soup = BeautifulSoup(response.text, "lxml")
+    # Require a qTableFull table — confirms it is an instrument page.
+    if soup.find("table", class_=lambda c: c and "qTableFull" in c) is None:
+        return None
+
+    def _td(id_: str) -> str | None:
+        tag = soup.find("td", id=id_)
+        return tag.get_text(strip=True) if tag else None
+
+    def _flt(id_: str) -> float | None:
+        raw = _td(id_)
+        if raw is None:
+            return None
+        return _parse_cell(raw, "price")
+
+    def _int_val(id_: str) -> int | None:
+        raw = _td(id_)
+        if raw is None:
+            return None
+        v = _parse_cell(raw, "volume")
+        return int(v) if v is not None else None
+
+    # Change and change_percent come from the tr.current.compare_past row spans.
+    change: float | None = None
+    change_percent: float | None = None
+    prev_close: float | None = None
+    for tr in soup.find_all("tr", class_="current"):
+        if "compare_past" in (tr.get("class") or []):
+            pkt = tr.find("span", class_="q_ch_pkt")
+            per = tr.find("span", class_="q_ch_per")
+            prev = tr.find("span", class_="q_ch_prev")
+            if pkt:
+                try:
+                    change = float(pkt.get_text(strip=True).replace(",", "."))
+                except ValueError:
+                    pass
+            if per:
+                raw_per = per.get_text(strip=True).strip("()")
+                try:
+                    change_percent = float(raw_per.rstrip("%").replace(",", ".")) / 100
+                except ValueError:
+                    pass
+            if prev:
+                try:
+                    prev_close = float(prev.get_text(strip=True).replace(",", "."))
+                except ValueError:
+                    pass
+            break
+
+    return {
+        "symbol": symbol,
+        "name": _name_from_soup(soup),
+        "last_price": _flt("pr_t_close"),
+        "open": _flt("pr_t_open"),
+        "high": _flt("pr_t_max"),
+        "low": _flt("pr_t_min"),
+        "volume": _int_val("pr_t_vol"),
+        "change": change,
+        "change_percent": change_percent,
+        "prev_close": prev_close,
+    }
+
+
 def _scrape_pages(
     symbol: str,
     start_date: date,

@@ -9,8 +9,8 @@ from openbb import obb
 
 DIVIDEND_PROVIDERS = ["yfinance", "fmp", "intrinio", "nasdaq"]
 METRICS_PROVIDERS  = ["yfinance", "fmp", "intrinio"]
-PROFILE_PROVIDERS = ["fmp", "yfinance"]
-QUOTE_PROVIDERS = ["fmp", "yfinance", "cboe"]
+PROFILE_PROVIDERS = ["fmp", "yfinance", "biznesradar"]
+QUOTE_PROVIDERS = ["fmp", "yfinance", "cboe", "biznesradar"]
 STATEMENT_PROVIDERS = ["fmp", "yfinance", "polygon", "sec"]
 PROJECTION_PROVIDERS = ["fmp", "yfinance", "tmx"]
 CALENDAR_PROVIDERS = ["fmp"]
