@@ -75,9 +75,6 @@ class _SafeJSONResponse(_JSONResponse):
         return raw.encode("utf-8")
 
 
-app = FastAPI(default_response_class=_SafeJSONResponse, lifespan=lifespan)
-
-
 def _run_migrations() -> None:
     """Apply schema migrations at boot when a database is configured.
 
@@ -95,6 +92,11 @@ def _run_migrations() -> None:
 async def lifespan(_: FastAPI):
     _run_migrations()
     yield
+
+
+app = FastAPI(default_response_class=_SafeJSONResponse, lifespan=lifespan)
+
+setup_otel(app, "openst")
 
 
 @app.middleware("http")

@@ -82,7 +82,7 @@ def migrate(conn=None, migrations_dir: pathlib.Path | None = None) -> list[str]:
                 )
             conn.commit()
             logger.info("applied migration %s", name)
-            applied.append(name)
+            applied.add(name)
         return applied
     finally:
         if own_conn:
