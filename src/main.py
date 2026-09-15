@@ -37,6 +37,8 @@ from .openbb_client import (
     STATEMENTS,
     get_calendar,
     get_company_news,
+    get_crypto_ohlcv,
+    get_crypto_quote,
     get_dividend_history,
     get_dividend_yield,
     get_filings,
@@ -271,6 +273,33 @@ def price_ohlcv(
         f"price_ohlcv:{ticker}:{start}:{end}",
         fetch,
         f"No OHLCV history for {ticker}",
+    )
+
+
+@app.get("/crypto/ohlcv/{pair}")
+def crypto_ohlcv(
+    pair: str,
+    start: str | None = Query(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    end: str | None = Query(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+):
+    if start is None or end is None:
+        default_start, default_end = _default_dates()
+        start = start or default_start
+        end = end or default_end
+
+    return _cached_or_404(
+        f"crypto_ohlcv:{pair}:{start}:{end}",
+        lambda: get_crypto_ohlcv(pair, start, end),
+        f"No OHLCV history for {pair}",
+    )
+
+
+@app.get("/crypto/quote/{pair}")
+def crypto_quote(pair: str):
+    return _cached_or_404(
+        f"crypto_quote:{pair}",
+        lambda: get_crypto_quote(pair),
+        f"No quote for {pair}",
     )
 
 

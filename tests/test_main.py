@@ -195,6 +195,56 @@ def test_price_ohlcv_rejects_bad_date_format(client):
 
 
 @patch(
+    "src.main.get_crypto_ohlcv",
+    return_value=[{"date": "2026-06-01", "open": 40000.0, "high": 40800.0, "low": 39600.0, "close": 40500.0, "volume": 900}],
+)
+def test_crypto_ohlcv_defaults_to_default_window(mock_fn, client):
+    from datetime import date, timedelta
+
+    end = date.today()
+    start = end - timedelta(days=365)
+
+    r = client.get("/crypto/ohlcv/BTC-USD")
+    assert r.status_code == 200
+    assert len(r.json()) == 1
+    mock_fn.assert_called_once_with("BTC-USD", str(start), str(end))
+
+
+@patch(
+    "src.main.get_crypto_ohlcv",
+    return_value=[{"date": "2026-06-01", "open": 40000.0, "high": 40800.0, "low": 39600.0, "close": 40500.0, "volume": 900}],
+)
+def test_crypto_ohlcv_explicit_window_forwarded(mock_fn, client):
+    r = client.get("/crypto/ohlcv/BTC-USD?start=2026-01-01&end=2026-06-30")
+    assert r.status_code == 200
+    mock_fn.assert_called_once_with("BTC-USD", "2026-01-01", "2026-06-30")
+
+
+@patch("src.main.get_crypto_ohlcv", return_value=None)
+def test_crypto_ohlcv_not_found_returns_404(mock_fn, client):
+    r = client.get("/crypto/ohlcv/FAKE-USD")
+    assert r.status_code == 404
+
+
+def test_crypto_ohlcv_rejects_bad_date_format(client):
+    assert client.get("/crypto/ohlcv/BTC-USD?start=nope").status_code == 422
+
+
+@patch("src.main.get_crypto_quote", return_value={"symbol": "ETH-USD", "price": 40500.0, "date": "2026-06-01"})
+def test_crypto_quote_returns_json_body(mock_fn, client):
+    r = client.get("/crypto/quote/ETH-USD")
+    assert r.status_code == 200
+    assert r.json() == {"symbol": "ETH-USD", "price": 40500.0, "date": "2026-06-01"}
+    mock_fn.assert_called_once_with("ETH-USD")
+
+
+@patch("src.main.get_crypto_quote", return_value=None)
+def test_crypto_quote_not_found_returns_404(mock_fn, client):
+    r = client.get("/crypto/quote/FAKE-USD")
+    assert r.status_code == 404
+
+
+@patch(
     "src.main.get_fundamentals",
     return_value=[{"fiscal_year": 2024, "net_income": 93736}],
 )
