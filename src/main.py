@@ -38,7 +38,9 @@ from .openbb_client import (
     get_calendar,
     get_company_news,
     get_crypto_ohlcv,
+    get_crypto_profile,
     get_crypto_quote,
+    get_crypto_search,
     get_dividend_history,
     get_dividend_yield,
     get_filings,
@@ -300,6 +302,30 @@ def crypto_quote(pair: str):
         f"crypto_quote:{pair}",
         lambda: get_crypto_quote(pair),
         f"No quote for {pair}",
+    )
+
+
+@app.get("/crypto/search/{query}")
+def crypto_search(query: str):
+    normalized = query.strip().lower()
+
+    def fetch():
+        records = get_crypto_search(normalized)
+        return records or None
+
+    return _cached_or_404(
+        f"crypto_search:{normalized}",
+        fetch,
+        f"No search results for '{query}'",
+    )
+
+
+@app.get("/crypto/profile/{pair}")
+def crypto_profile(pair: str):
+    return _cached_or_404(
+        f"crypto_profile:{pair}",
+        lambda: get_crypto_profile(pair),
+        f"No profile for {pair}",
     )
 
 

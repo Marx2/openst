@@ -530,6 +530,16 @@ def get_crypto_search(query: str) -> list[dict]:
     return []
 
 
+def get_crypto_profile(pair: str) -> dict | None:
+    """Crypto profile derived from the quote response (no dedicated profile endpoint)."""
+    quote = get_crypto_quote(pair)
+    if quote is None:
+        return None
+    parts = pair.upper().split("-")
+    currency = parts[-1] if len(parts) > 1 else None
+    return {"symbol": pair, "name": quote.get("name"), "currency": currency}
+
+
 def get_fundamentals(ticker: str, statement: str, period: str) -> list[dict]:
     fn = getattr(obb.equity.fundamental, statement)
     for provider in STATEMENT_PROVIDERS:
