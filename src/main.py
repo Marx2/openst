@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import time
+from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
 
@@ -12,6 +13,7 @@ from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import Response
 from pythonjsonlogger.json import JsonFormatter
 
+from . import db
 from .otel import setup_otel
 
 logger = logging.getLogger("openst")
@@ -73,9 +75,26 @@ class _SafeJSONResponse(_JSONResponse):
         return raw.encode("utf-8")
 
 
-app = FastAPI(default_response_class=_SafeJSONResponse)
+app = FastAPI(default_response_class=_SafeJSONResponse, lifespan=lifespan)
 
-setup_otel(app, "openst")
+
+def _run_migrations() -> None:
+    """Apply schema migrations at boot when a database is configured.
+
+    Guarded by ``DATABASE_URL`` presence — openst still starts without a DB so
+    non-bond routes keep working (D79).
+    """
+    if db.database_url() is None:
+        logger.info("DATABASE_URL not set — skipping DB migrations (non-bond routes only)")
+        return
+    applied = db.migrate()
+    logger.info("openst DB migrations applied: %s", applied)
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    _run_migrations()
+    yield
 
 
 @app.middleware("http")
