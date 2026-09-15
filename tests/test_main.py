@@ -244,6 +244,32 @@ def test_crypto_quote_not_found_returns_404(mock_fn, client):
     assert r.status_code == 404
 
 
+@patch("src.main.get_crypto_search", return_value=[{"symbol": "BTC-USD", "name": "Bitcoin USD"}])
+def test_crypto_search_normalizes_and_returns(mock_fn, client):
+    r = client.get("/crypto/search/%20BTC%20")
+    assert r.status_code == 200
+    assert r.json()[0]["symbol"] == "BTC-USD"
+    mock_fn.assert_called_once_with("btc")
+
+
+@patch("src.main.get_crypto_search", return_value=[])
+def test_crypto_search_empty_returns_404(mock_fn, client):
+    assert client.get("/crypto/search/unknown").status_code == 404
+
+
+@patch("src.main.get_crypto_profile", return_value={"symbol": "BTC-USD", "name": None, "currency": "USD"})
+def test_crypto_profile_returns_json(mock_fn, client):
+    r = client.get("/crypto/profile/BTC-USD")
+    assert r.status_code == 200
+    assert r.json() == {"symbol": "BTC-USD", "name": None, "currency": "USD"}
+    mock_fn.assert_called_once_with("BTC-USD")
+
+
+@patch("src.main.get_crypto_profile", return_value=None)
+def test_crypto_profile_not_found_returns_404(mock_fn, client):
+    assert client.get("/crypto/profile/FAKE-USD").status_code == 404
+
+
 @patch(
     "src.main.get_fundamentals",
     return_value=[{"fiscal_year": 2024, "net_income": 93736}],
