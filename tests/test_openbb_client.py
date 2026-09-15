@@ -793,7 +793,9 @@ def test_get_crypto_ohlcv_rate_limit_blocks_provider_tries_next(mock_obb, monkey
 
 
 @patch("src.openbb_client.obb")
-def test_get_crypto_ohlcv_skips_keyless_providers(mock_obb):
+def test_get_crypto_ohlcv_skips_keyless_providers(mock_obb, monkeypatch):
+    monkeypatch.delenv("FMP_API_KEY", raising=False)
+    monkeypatch.delenv("TIINGO_TOKEN", raising=False)
     mock_result = MagicMock()
     mock_result.to_df.return_value = pd.DataFrame()
     mock_obb.crypto.price.historical.return_value = mock_result
