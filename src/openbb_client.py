@@ -404,6 +404,7 @@ def get_ohlcv_history(ticker: str, start_date: str, end_date: str) -> list[dict]
 
 
 CRYPTO_PROVIDERS = ["yfinance", "fmp", "tiingo"]
+CRYPTO_SEARCH_PROVIDERS = ["fmp"]  # fmp is the only provider exposing crypto.search
 _CRYPTO_KEY_ENV = {"fmp": "FMP_API_KEY", "tiingo": "TIINGO_TOKEN"}
 
 
@@ -505,6 +506,28 @@ def get_crypto_quote(pair: str) -> dict | None:
             logger.warning("Provider %s failed crypto quote for %s: %s", provider, pair, e)
             continue
     return None
+
+
+def get_crypto_search(query: str) -> list[dict]:
+    for provider in CRYPTO_SEARCH_PROVIDERS:
+        if _provider_is_blocked(provider) or not _provider_has_key(provider):
+            continue
+        try:
+            df = obb.crypto.search(query, provider=provider).to_df()
+            if df.empty:
+                continue
+            records = _df_records(df)
+            if records:
+                return records
+            continue
+        except Exception as e:
+            err = str(e)
+            if _is_rate_limited(err):
+                _block_provider(provider)
+                continue
+            logger.warning("Provider %s failed crypto search for '%s': %s", provider, query, e)
+            continue
+    return []
 
 
 def get_fundamentals(ticker: str, statement: str, period: str) -> list[dict]:
