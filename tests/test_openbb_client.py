@@ -525,6 +525,15 @@ def _search_df() -> pd.DataFrame:
     return pd.DataFrame([{"cik": 320193, "name": "Apple Inc", "symbol": "AAPL"}])
 
 
+def _crypto_search_df() -> pd.DataFrame:
+    return pd.DataFrame(
+        [
+            {"symbol": "BTC-USD", "name": "Bitcoin USD"},
+            {"symbol": "ETH-USD", "name": "Ethereum USD"},
+        ]
+    )
+
+
 @patch("src.openbb_client.obb")
 def test_get_profile_returns_first_record(mock_obb):
     mock_result = MagicMock()
@@ -846,6 +855,56 @@ def test_get_crypto_quote_all_fail_returns_none(mock_obb, monkeypatch):
     mock_obb.crypto.price.historical.side_effect = Exception("timeout")
 
     assert openbb_client.get_crypto_quote("ETH-USD") is None
+
+
+@patch("src.openbb_client.obb")
+def test_get_crypto_search_returns_rows(mock_obb, monkeypatch):
+    monkeypatch.setenv("FMP_API_KEY", "test-key")
+    mock_result = MagicMock()
+    mock_result.to_df.return_value = _crypto_search_df()
+    mock_obb.crypto.search.return_value = mock_result
+
+    result = openbb_client.get_crypto_search("btc")
+
+    assert result == [
+        {"symbol": "BTC-USD", "name": "Bitcoin USD"},
+        {"symbol": "ETH-USD", "name": "Ethereum USD"},
+    ]
+    mock_obb.crypto.search.assert_called_once_with("btc", provider="fmp")
+
+
+@patch("src.openbb_client.obb")
+def test_get_crypto_search_empty_df_returns_empty(mock_obb, monkeypatch):
+    monkeypatch.setenv("FMP_API_KEY", "test-key")
+    mock_empty = MagicMock()
+    mock_empty.to_df.return_value = pd.DataFrame()
+    mock_obb.crypto.search.return_value = mock_empty
+
+    assert openbb_client.get_crypto_search("btc") == []
+
+
+@patch("src.openbb_client.obb")
+def test_get_crypto_search_rate_limit_blocks_provider(mock_obb, monkeypatch):
+    monkeypatch.setenv("FMP_API_KEY", "test-key")
+    mock_obb.crypto.search.side_effect = Exception("402 premium")
+
+    assert openbb_client.get_crypto_search("btc") == []
+    assert "fmp" in openbb_client._provider_blocked_until
+
+    # subsequent call sees the blocked provider and is skipped, yet still returns []
+    mock_obb.crypto.search.side_effect = None
+    mock_obb.crypto.search.return_value = MagicMock(to_df=lambda: _crypto_search_df())
+    assert openbb_client.get_crypto_search("btc") == []
+    assert mock_obb.crypto.search.call_count == 1
+
+
+@patch("src.openbb_client.obb")
+def test_get_crypto_search_skips_keyless_provider(mock_obb, monkeypatch):
+    monkeypatch.delenv("FMP_API_KEY", raising=False)
+    mock_obb.crypto.search.return_value = MagicMock(to_df=lambda: _crypto_search_df())
+
+    assert openbb_client.get_crypto_search("btc") == []
+    mock_obb.crypto.search.assert_not_called()
 
 
 @patch("src.openbb_client.obb")
