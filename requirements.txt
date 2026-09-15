@@ -1,4 +1,5 @@
 openbb==4.7.2
+openbb-crypto==1.6.2
 openbb-polygon==1.5.1
 openbb-nasdaq==1.6.3
 openbb-cboe==1.6.1
