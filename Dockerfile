@@ -15,6 +15,7 @@ COPY plugins/ /app/plugins/
 COPY pytest.ini ./
 COPY src/ ./src/
 COPY tests/ ./tests/
+COPY migrations/ ./migrations/
 CMD ["python", "-m", "pytest", "tests/", "-v"]
 
 FROM python:3.12-slim AS runtime
@@ -26,5 +27,6 @@ COPY --from=builder /install /usr/local
 # the editable-install finder points at the source tree's absolute build path
 COPY plugins/ /build/plugins/
 COPY src/ ./src/
+COPY migrations/ ./migrations/
 EXPOSE 8080
 CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8080"]
