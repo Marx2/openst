@@ -486,6 +486,23 @@ def _fund_ohlcv_df() -> pd.DataFrame:
     )
 
 
+def _crypto_ohlcv_df() -> pd.DataFrame:
+    return pd.DataFrame(
+        [
+            {"open": 40000.0, "high": 40800.0, "low": 39600.0, "close": 40500.0, "volume": 900.0},
+            {"open": 40500.0, "high": 41200.0, "low": 40200.0, "close": 41000.0, "volume": 1200.0},
+        ],
+        index=pd.to_datetime(["2026-06-01", "2026-06-02"]),
+    )
+
+
+def _crypto_single_df() -> pd.DataFrame:
+    return pd.DataFrame(
+        [{"open": 40000.0, "high": 40800.0, "low": 39600.0, "close": 40500.0, "volume": 900.0}],
+        index=pd.to_datetime(["2026-06-01"]),
+    )
+
+
 def _income_df() -> pd.DataFrame:
     df = pd.DataFrame(
         [
@@ -727,6 +744,106 @@ def test_get_ohlcv_history_biznesradar_empty_then_none(mock_obb):
 def test_get_ohlcv_history_all_fail_returns_none(mock_obb):
     mock_obb.equity.price.historical.side_effect = Exception("timeout")
     assert openbb_client.get_ohlcv_history("AAPL", "2025-08-01", "2026-08-01") is None
+
+
+@patch("src.openbb_client.obb")
+def test_get_crypto_ohlcv_row_shape(mock_obb):
+    mock_result = MagicMock()
+    mock_result.to_df.return_value = _crypto_ohlcv_df()
+    mock_obb.crypto.price.historical.return_value = mock_result
+
+    result = openbb_client.get_crypto_ohlcv("BTC-USD", "2026-06-01", "2026-06-05")
+
+    assert result == [
+        {"date": "2026-06-01", "open": 40000.0, "high": 40800.0, "low": 39600.0, "close": 40500.0, "volume": 900},
+        {"date": "2026-06-02", "open": 40500.0, "high": 41200.0, "low": 40200.0, "close": 41000.0, "volume": 1200},
+    ]
+    mock_obb.crypto.price.historical.assert_called_with(
+        "BTC-USD", start_date="2026-06-01", end_date="2026-06-05", provider="yfinance"
+    )
+
+
+@patch("src.openbb_client.obb")
+def test_get_crypto_ohlcv_all_empty_returns_none(mock_obb, monkeypatch):
+    monkeypatch.setenv("FMP_API_KEY", "test-key")
+    monkeypatch.setenv("TIINGO_TOKEN", "test-key")
+    mock_empty = MagicMock()
+    mock_empty.to_df.return_value = pd.DataFrame()
+    mock_obb.crypto.price.historical.return_value = mock_empty
+
+    assert openbb_client.get_crypto_ohlcv("BTC-USD", "2026-06-01", "2026-06-05") is None
+    assert mock_obb.crypto.price.historical.call_count == len(openbb_client.CRYPTO_PROVIDERS)
+
+
+@patch("src.openbb_client.obb")
+def test_get_crypto_ohlcv_rate_limit_blocks_provider_tries_next(mock_obb, monkeypatch):
+    monkeypatch.setenv("FMP_API_KEY", "test-key")
+    mock_ok = MagicMock()
+    mock_ok.to_df.return_value = _crypto_ohlcv_df()
+    mock_obb.crypto.price.historical.side_effect = [
+        Exception("402 premium"),
+        mock_ok,
+    ]
+
+    result = openbb_client.get_crypto_ohlcv("BTC-USD", "2026-06-01", "2026-06-05")
+
+    assert len(result) == 2
+    assert "yfinance" in openbb_client._provider_blocked_until
+    assert result[0]["date"] == "2026-06-01"
+
+
+@patch("src.openbb_client.obb")
+def test_get_crypto_ohlcv_skips_keyless_providers(mock_obb):
+    mock_result = MagicMock()
+    mock_result.to_df.return_value = pd.DataFrame()
+    mock_obb.crypto.price.historical.return_value = mock_result
+
+    assert openbb_client.get_crypto_ohlcv("BTC-USD", "2026-06-01", "2026-06-05") is None
+    calls = [
+        c.kwargs["provider"]
+        for c in mock_obb.crypto.price.historical.call_args_list
+    ]
+    assert calls == ["yfinance"]
+
+
+@patch("src.openbb_client.obb")
+def test_get_crypto_quote_happy_path(mock_obb):
+    mock_result = MagicMock()
+    mock_result.to_df.return_value = _crypto_ohlcv_df()
+    mock_obb.crypto.price.historical.return_value = mock_result
+
+    result = openbb_client.get_crypto_quote("ETH-USD")
+
+    assert set(result) == {
+        "symbol", "price", "change", "change_percent", "open", "high", "low", "volume", "date",
+    }
+    assert result["symbol"] == "ETH-USD"
+    assert result["price"] == 41000.0
+    assert result["change"] == 500.0
+    assert result["change_percent"] == pytest.approx(round(500.0 / 40500.0, 2))
+    assert result["date"] == "2026-06-02"
+
+
+@patch("src.openbb_client.obb")
+def test_get_crypto_quote_single_row_omits_change_fields(mock_obb):
+    mock_result = MagicMock()
+    mock_result.to_df.return_value = _crypto_single_df()
+    mock_obb.crypto.price.historical.return_value = mock_result
+
+    result = openbb_client.get_crypto_quote("ETH-USD")
+
+    assert result["price"] == 40500.0
+    assert "change" not in result
+    assert "change_percent" not in result
+
+
+@patch("src.openbb_client.obb")
+def test_get_crypto_quote_all_fail_returns_none(mock_obb, monkeypatch):
+    monkeypatch.setenv("FMP_API_KEY", "test-key")
+    monkeypatch.setenv("TIINGO_TOKEN", "test-key")
+    mock_obb.crypto.price.historical.side_effect = Exception("timeout")
+
+    assert openbb_client.get_crypto_quote("ETH-USD") is None
 
 
 @patch("src.openbb_client.obb")
