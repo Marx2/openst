@@ -153,6 +153,22 @@ def test_parse_emission_none_without_series_row():
     assert b.parse_emission("<html><body><h1>Obligacje</h1><p>no list</p></body></html>") is None
 
 
+def test_parse_emission_rod1033_historical():
+    # The 21.1 rod1033.html fixture: an *archived* emission (sold 01-31.10.2021)
+    # whose own page renders its historical parameters, unlike the current ROD
+    # page (rod0938) used for the active emission.
+    e = b.parse_emission(_fixture("rod1033.html"))
+    assert e is not None
+    assert e["symbol"] == "ROD1033"
+    assert e["series_code"] == "ROD"
+    assert e["rate_rule"] == "cpi_12m+margin"
+    assert e["issue_date"] == date(2021, 10, 1)
+    assert e["maturity_date"] == date(2033, 10, 1)
+    assert e["margin"] == Decimal("1.50")
+    assert e["term_months"] == 144
+    assert e["name"]  # a non-empty product name
+
+
 # ---------------------------------------------------------------------------
 # parse_offer_emissions (incremental entry point)
 # ---------------------------------------------------------------------------
@@ -168,6 +184,36 @@ def test_parse_offer_emissions_eight_unique():
 
 def test_parse_offer_emissions_empty_for_unrelated():
     assert b.parse_offer_emissions("<html></html>") == []
+
+
+# ---------------------------------------------------------------------------
+# parse_archive_codes (archive entry point)
+# ---------------------------------------------------------------------------
+
+
+def test_parse_archive_codes_fixture():
+    codes = b.parse_archive_codes(_fixture("emission_archive.html"))
+    assert len(codes) >= 400
+    symbols = {sym for _, sym in codes}
+    assert "ROD1033" in symbols
+    # The selector only enumerates the 8 modern series; legacy POS/DOS/TOZ/KOS
+    # never appear as emission rows and are skipped by the series filter.
+    assert {series for series, _ in codes} <= set(b.SERIES_SLUGS)
+    assert {series for series, _ in codes} == set(b.SERIES_SLUGS)
+
+
+def test_parse_archive_codes_uses_display_text_not_url_id():
+    # The archive ships URL id typos for old EDO codes (id=edo07829 renders the
+    # EDO0829 emission) - the symbol must come from the display text.
+    html = (
+        '<option class="choices__inner" value="/listy-emisyjne/?id=edo07829,edo"'
+        ' data-id="edo">EDO0829</option>'
+    )
+    assert b.parse_archive_codes(html) == [("EDO", "EDO0829")]
+
+
+def test_parse_archive_codes_empty_for_unrelated():
+    assert b.parse_archive_codes("<html></html>") == []
 
 
 # ---------------------------------------------------------------------------
@@ -257,6 +303,33 @@ def test_run_incremental_uses_offer_page(no_db, mock_fetch):
     assert set(summary["symbols"]) == {v[0] for v in _EXPECTED.values()}
 
 
+def test_run_archive_backfills_all_modern_series(no_db, monkeypatch):
+    calls: list[str] = []
+
+    def fake_fetch(path_or_url):
+        calls.append(path_or_url)
+        if path_or_url == "/listy-emisyjne/":
+            return _fixture("emission_archive.html")
+        if path_or_url.endswith("/rod1033/"):
+            return _fixture("rod1033.html")  # the sampled historical emission
+        return _fixture(f"{_code_from_path(path_or_url)}.html")
+
+    monkeypatch.setattr(b, "fetch_page", fake_fetch)
+    monkeypatch.setattr(b.time, "sleep", lambda _s: None)
+
+    summary = b.run("archive")
+    assert summary["mode"] == "archive"
+    assert summary["fetched"] == 449  # one page per /listy-emisyjne/ row
+    assert summary["emissions"] == 449
+    assert "inserted" not in summary
+    assert calls[0] == "/listy-emisyjne/"  # archive selector is fetched first
+    # A sampled emission resolves to its own historical per-series page…
+    assert "/oferta-obligacji/obligacje-12-letnie-rod/rod1033/" in calls
+    # …and the EDO URL typo (id=edo07829) resolves via the display symbol.
+    assert "/oferta-obligacji/obligacje-10-letnie-edo/edo0829/" in calls
+    assert "ROD1033" in summary["symbols"]
+
+
 def test_run_unknown_mode_raises(no_db, mock_fetch):
     with pytest.raises(ValueError):
         b.run("bogus")
@@ -276,6 +349,7 @@ def test_main_returns_zero(no_db, mock_fetch, capsys):
 @pytest.fixture
 def conn():
     c = db.get_conn()
+    db.migrate(conn=c)  # ensure openst schema/tables exist (fresh test Postgres)
     yield c
     c.close()
 

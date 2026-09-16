@@ -10,12 +10,16 @@ Sprzedaż, Cena sprzedaży, …) plus the redemption-fee schedule in the "Zamian
 prose. There is no HTML data-table, so this is a DOM-field scraper (same
 regex-based spirit as :mod:`src.importers.cpi`, not the biznesradar table pattern).
 
-Site limitation (verified 2026-09): the offer/series page *always* renders the
-currently-active emission — the URL's trailing symbol is cosmetic and every
-parameter (dates, rate, fee) is the live one. So the catalogue accumulates the
-emission active per series at each import; ``ON CONFLICT DO NOTHING`` makes imports
-idempotent and new monthly emissions are picked up over time. True per-emission
-historical parameters live in the official ``listy-emisyjne`` PDFs (out of scope).
+Site behaviour (verified 2026-09): the *offer/series* pages (``full``/``incremental``)
+*always* render the currently-active emission — the URL's trailing symbol is cosmetic
+there and every parameter (dates, rate, fee) is the live one. Those modes therefore
+accumulate at most one emission per series per run, and new monthly emissions are
+picked up over time. Archived emissions are different: each one has its own
+``/oferta-obligacji/{slug}/{symbol}/`` page that renders its own historical parameters
+(e.g. ``rod1033`` shows the sold-in-2021 emission, not the current one). The full
+catalogue is enumerable from ``/listy-emisyjne/``, and ``--mode archive`` backfills it
+by parsing every emission code from that selector and fetching each emission page;
+``ON CONFLICT DO NOTHING`` keeps re-runs idempotent.
 
 ``rate_rule`` classification (from the "Oprocentowanie" row):
   * ``cpi_12m+margin``  — "… + inflacja" (COI, ROS, EDO, ROD)  -> margin = the "marża X%" add-on
@@ -30,6 +34,8 @@ history that is deferred to D83, so the 19.5 engine prices the ``fixed`` and
 Modes (the importer runs as a one-shot k8s Job reusing the openst image):
   full        — ``--mode full``         scrape all 8 series offer pages (initial import)
   incremental — ``--mode incremental``  scrape the current-offer page (~8 active) (daily CronJob)
+  archive     — ``--mode archive``      backfill every emission enumerated on /listy-emisyjne/
+                                        (all modern-series emissions, ~450 pages; monthly CronJob)
 """
 
 from __future__ import annotations
@@ -104,6 +110,15 @@ _OFFER_HREF_RE = re.compile(r'href="(/oferta-obligacji/([a-z0-9\-]+)/([a-z0-9]+)
 _H1_RE = re.compile(r"<h1[^>]*>(.*?)</h1>", flags=re.S)
 _SYMBOL_RE = re.compile(r"\b([A-Za-z]{3}\d{4})\b")
 _PL_DATE_RE = re.compile(r"(\d{2})\.(\d{2})\.(\d{4})")
+
+# One `<option … data-id="{series}">{SYMBOL}</option>` row of the /listy-emisyjne/
+# emission selector. data-id is the series code (lower-case); the symbol is the
+# option's display text — NOT the URL id, which the site has shipped with typos
+# (e.g. id=edo07829 for the EDO0829 emission).
+_ARCHIVE_ROW_RE = re.compile(
+    r'<option\b[^>]*?\bdata-id="([a-z]{3})"[^>]*>\s*([A-Z]{3}\d{4})\s*</option>',
+    flags=re.S,
+)
 
 
 class BondFetchError(RuntimeError):
@@ -287,6 +302,17 @@ def parse_offer_emissions(html: str) -> list[str]:
     return urls
 
 
+def parse_archive_codes(html: str) -> list[tuple[str, str]]:
+    """Emission ``(series_code, symbol)`` pairs from the ``/listy-emisyjne/`` selector.
+
+    The selector enumerates the full catalogue — past and active emissions across
+    all series — as ``<option data-id="{series}">{SYMBOL}</option>`` rows. The
+    symbol is always read from the display text (not the URL ``id=``), which is the
+    site's typos for archived EDO codes (``id=edo07829`` renders ``EDO0829``).
+    """
+    return [(series.upper(), symbol) for series, symbol in _ARCHIVE_ROW_RE.findall(html)]
+
+
 # ---------------------------------------------------------------------------
 # fetching
 # ---------------------------------------------------------------------------
@@ -324,6 +350,17 @@ def run(mode: str) -> dict:
     elif mode == "incremental":
         offer_html = fetch_page(OFFER_URL)
         paths = parse_offer_emissions(offer_html)
+    elif mode == "archive":
+        # Backfill: enumerate every emission code on /listy-emisyjne/, then parse
+        # each emission's own historical page. The modern 8 series only — the
+        # selector also carries the legacy POS/DOS/TOZ/KOS codes, which have no
+        # term map and are out of scope.
+        archive_html = fetch_page("/listy-emisyjne/")
+        paths = [
+            f"/oferta-obligacji/{SERIES_SLUGS[series]}/{symbol.lower()}/"
+            for series, symbol in parse_archive_codes(archive_html)
+            if series in SERIES_SLUGS
+        ]
     else:
         raise ValueError(f"unknown mode: {mode}")
 
@@ -395,11 +432,12 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--mode",
-        choices=["full", "incremental"],
+        choices=["full", "incremental", "archive"],
         default="incremental",
         help=(
             "full = all 8 series offer pages (initial import); "
-            "incremental = current-offer page only (default, daily CronJob)"
+            "incremental = current-offer page only (default, daily CronJob); "
+            "archive = backfill every emission on /listy-emisyjne/ (monthly CronJob)"
         ),
     )
     args = parser.parse_args(argv)
