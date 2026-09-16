@@ -8,6 +8,7 @@ fixture, plus synthetic snippets for the parsing edge cases. The live site alway
 renders the *currently-active* emission per series, so each fixture is one emission.
 """
 
+import logging
 from datetime import date
 from decimal import Decimal
 
@@ -347,6 +348,76 @@ def test_main_returns_zero(no_db, mock_fetch, capsys):
 
 
 # ---------------------------------------------------------------------------
+# logging — the CronJob pod must show what a run did (plan 22.0)
+# ---------------------------------------------------------------------------
+
+
+def test_run_logs_every_discovered_emission(no_db, mock_fetch, caplog):
+    with caplog.at_level(logging.INFO, logger="openst.bond_series"):
+        summary = b.run("incremental")
+
+    text = caplog.text
+    assert "bond_series: starting mode=incremental" in text
+    assert "lists 8 active emission page(s)" in text
+    for symbol in ("EDO0936", "ROD0938"):  # the current emissions in the fixtures
+        assert f"bond_series: parsed {symbol} series=" in text
+    assert "bond_series: DATABASE_URL not set — dry run, nothing written" in text
+    assert (
+        f"bond_series: done mode=incremental fetched=8 parsed={summary['emissions']} "
+        "inserted=n/a" in text
+    )
+
+
+def test_run_logs_archive_catalogue_size(no_db, monkeypatch, caplog):
+    calls: list[str] = []
+
+    def fake_fetch(path_or_url):
+        calls.append(path_or_url)
+        if path_or_url == "/listy-emisyjne/":
+            return _fixture("emission_archive.html")
+        if path_or_url.endswith("/rod1033/"):
+            return _fixture("rod1033.html")
+        return _fixture(f"{_code_from_path(path_or_url)}.html")
+
+    monkeypatch.setattr(b, "fetch_page", fake_fetch)
+    monkeypatch.setattr(b.time, "sleep", lambda _s: None)
+
+    with caplog.at_level(logging.INFO, logger="openst.bond_series"):
+        b.run("archive")
+
+    assert "bond_series: /listy-emisyjne/ enumerates 449 modern-series emission(s)" in caplog.text
+
+
+def test_run_warns_on_a_page_without_an_emission(no_db, monkeypatch, caplog):
+    monkeypatch.setattr(b, "fetch_page", lambda _path: "<html><body>blank</body></html>")
+    monkeypatch.setattr(b.time, "sleep", lambda _s: None)
+
+    with caplog.at_level(logging.WARNING, logger="openst.bond_series"):
+        summary = b.run("full")
+
+    assert summary["emissions"] == 0
+    assert "no emission rows on /oferta-obligacji/obligacje-3-miesieczne-ots/ — skipped" in caplog.text
+
+
+def test_configure_logging_writes_to_stdout(capsys):
+    """basicConfig is a no-op under pytest's root logger, so drive it on a clean root."""
+    root = logging.getLogger()
+    saved = list(root.handlers)
+    for handler in saved:
+        root.removeHandler(handler)
+    try:
+        b.configure_logging()
+        b.logger.info("hello from the cron pod")
+    finally:
+        for handler in list(root.handlers):
+            root.removeHandler(handler)
+        for handler in saved:
+            root.addHandler(handler)
+
+    assert "hello from the cron pod" in capsys.readouterr().out
+
+
+# ---------------------------------------------------------------------------
 # upsert_bonds — idempotent on symbol (needs Postgres)
 # ---------------------------------------------------------------------------
 
@@ -399,3 +470,30 @@ def test_upsert_ignores_duplicate_symbols(conn):
     with conn.cursor() as cur:
         cur.execute("DELETE FROM openst.bond_series")
     conn.commit()
+
+
+@needs_pg
+def test_upsert_logs_new_rows_and_stays_quiet_on_duplicates(conn, caplog):
+    with conn.cursor() as cur:
+        cur.execute("DELETE FROM openst.bond_series WHERE symbol IN ('EDO9997', 'ROD9997')")
+    conn.commit()
+
+    try:
+        with caplog.at_level(logging.INFO, logger="openst.bond_series"):
+            assert b.upsert_bonds(conn, [_emission("EDO9997"), _emission("ROD9997")]) == 2
+        assert "bond_series: inserted EDO9997" in caplog.text
+        assert "bond_series: inserted ROD9997" in caplog.text
+
+        # A re-run inserts nothing, so it must not claim a new row at INFO.
+        caplog.clear()
+        with caplog.at_level(logging.INFO, logger="openst.bond_series"):
+            assert b.upsert_bonds(conn, [_emission("EDO9997")]) == 0
+        assert "bond_series: inserted" not in caplog.text
+
+        with caplog.at_level(logging.DEBUG, logger="openst.bond_series"):
+            assert b.upsert_bonds(conn, [_emission("EDO9997")]) == 0
+        assert "EDO9997 already present — kept existing row" in caplog.text
+    finally:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM openst.bond_series WHERE symbol IN ('EDO9997', 'ROD9997')")
+        conn.commit()
