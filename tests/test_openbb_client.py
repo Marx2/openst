@@ -1,6 +1,6 @@
 import logging
 import types
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
@@ -1220,3 +1220,168 @@ def test_get_mda_invalid_ticker_returns_none(mock_obb):
     )
     assert get_mda("FAKE") is None
     assert mock_obb.equity.fundamental.management_discussion_analysis.call_count == 1
+
+
+# ---------------------------------------------------------------------------
+# Savings-bond DB-first search / profile (D79 21.3)
+# ---------------------------------------------------------------------------
+
+
+def _bond_series(
+    symbol: str = "EDO0936",
+    name: str = "Obligacje 10-letnie EDO",
+    series_code: str = "EDO",
+    issue_date: date = date(2026, 1, 1),
+    maturity_date: date = date(2036, 1, 1),
+    term_months: int = 120,
+    rate_rule: str = "fixed",
+    margin: Decimal = Decimal("3.50"),
+    fee_b: Decimal = Decimal("3.00"),
+    nominal: Decimal = Decimal("100.00"),
+):
+    from openbb_obligacje.engine import BondSeries
+
+    return BondSeries(
+        symbol=symbol,
+        name=name,
+        series_code=series_code,
+        issue_date=issue_date,
+        maturity_date=maturity_date,
+        term_months=term_months,
+        rate_rule=rate_rule,
+        margin=margin,
+        fee_b=fee_b,
+        nominal=nominal,
+    )
+
+
+def _use_bond_db(monkeypatch) -> None:
+    monkeypatch.setattr(
+        openbb_client.db, "database_url", lambda: "postgresql://user:pass@host/openst"
+    )
+
+
+_SEARCH_ROW = [{"symbol": "EDO0936", "name": "Obligacje 10-letnie EDO", "maturity_date": "2036-01-01"}]
+
+
+@patch("src.openbb_client.obb")
+def test_search_bonds_db_row_maps_to_search_shape_and_skips_openbb(mock_obb, monkeypatch):
+    _use_bond_db(monkeypatch)
+    from openbb_obligacje import store
+
+    monkeypatch.setattr(store, "search_bond_series", lambda term, is_symbol=False: [_bond_series()])
+
+    result = openbb_client.search_bonds("edo")
+
+    assert result == _SEARCH_ROW
+    mock_obb.equity.search.assert_not_called()
+
+
+@patch("src.openbb_client.obb")
+def test_search_bonds_db_empty_falls_back_to_openbb(mock_obb, monkeypatch):
+    _use_bond_db(monkeypatch)
+    from openbb_obligacje import store
+
+    monkeypatch.setattr(store, "search_bond_series", lambda term, is_symbol=False: [])
+    mock_result = MagicMock()
+    mock_result.to_df.return_value = pd.DataFrame(_SEARCH_ROW)
+    mock_obb.equity.search.return_value = mock_result
+
+    result = openbb_client.search_bonds("edo")
+
+    assert result == _SEARCH_ROW
+    mock_obb.equity.search.assert_called_once_with("edo", provider="obligacje")
+
+
+@patch("src.openbb_client.obb")
+def test_search_bonds_db_error_falls_back_to_openbb(mock_obb, monkeypatch):
+    _use_bond_db(monkeypatch)
+    from openbb_obligacje import store
+
+    def boom(term, is_symbol=False):
+        raise RuntimeError("db down")
+
+    monkeypatch.setattr(store, "search_bond_series", boom)
+    mock_result = MagicMock()
+    mock_result.to_df.return_value = pd.DataFrame(_SEARCH_ROW)
+    mock_obb.equity.search.return_value = mock_result
+
+    assert openbb_client.search_bonds("edo") == _SEARCH_ROW
+    mock_obb.equity.search.assert_called_once_with("edo", provider="obligacje")
+
+
+@patch("src.openbb_client.obb")
+def test_search_bonds_no_db_uses_pure_openbb_path(mock_obb, monkeypatch):
+    monkeypatch.setattr(openbb_client.db, "database_url", lambda: None)
+    mock_result = MagicMock()
+    mock_result.to_df.return_value = pd.DataFrame(_SEARCH_ROW)
+    mock_obb.equity.search.return_value = mock_result
+
+    result = openbb_client.search_bonds("edo")
+
+    assert result == _SEARCH_ROW
+    mock_obb.equity.search.assert_called_once_with("edo", provider="obligacje")
+
+
+@patch("src.openbb_client.obb")
+def test_get_bond_profile_db_row_maps_ten_columns_and_skips_openbb(mock_obb, monkeypatch):
+    _use_bond_db(monkeypatch)
+    from openbb_obligacje import store
+
+    seen = {}
+
+    def fake_fetch(symbol):
+        seen["symbol"] = symbol
+        return _bond_series()
+
+    monkeypatch.setattr(store, "fetch_bond_series", fake_fetch)
+
+    result = openbb_client.get_bond_profile("edo0936")
+
+    assert result == {
+        "symbol": "EDO0936",
+        "name": "Obligacje 10-letnie EDO",
+        "series_code": "EDO",
+        "issue_date": "2026-01-01",
+        "maturity_date": "2036-01-01",
+        "term_months": 120,
+        "rate_rule": "fixed",
+        "margin": "3.50",
+        "fee_b": "3.00",
+        "nominal": "100.00",
+    }
+    assert seen == {"symbol": "EDO0936"}
+    mock_obb.equity.profile.assert_not_called()
+
+
+@patch("src.openbb_client.obb")
+def test_get_bond_profile_db_empty_falls_back_to_openbb(mock_obb, monkeypatch):
+    _use_bond_db(monkeypatch)
+    from openbb_obligacje import store
+
+    monkeypatch.setattr(store, "fetch_bond_series", lambda symbol: None)
+    mock_result = MagicMock()
+    mock_result.to_df.return_value = pd.DataFrame(
+        [{"symbol": "EDO0936", "name": "Obligacje 10-letnie EDO"}]
+    )
+    mock_obb.equity.profile.return_value = mock_result
+
+    result = openbb_client.get_bond_profile("EDO0936")
+
+    assert result == {"symbol": "EDO0936", "name": "Obligacje 10-letnie EDO"}
+    mock_obb.equity.profile.assert_called_once_with("EDO0936", provider="obligacje")
+
+
+@patch("src.openbb_client.obb")
+def test_get_bond_profile_no_db_uses_pure_openbb_path(mock_obb, monkeypatch):
+    monkeypatch.setattr(openbb_client.db, "database_url", lambda: None)
+    mock_result = MagicMock()
+    mock_result.to_df.return_value = pd.DataFrame(
+        [{"symbol": "EDO0936", "name": "Obligacje 10-letnie EDO"}]
+    )
+    mock_obb.equity.profile.return_value = mock_result
+
+    result = openbb_client.get_bond_profile("EDO0936")
+
+    assert result == {"symbol": "EDO0936", "name": "Obligacje 10-letnie EDO"}
+    mock_obb.equity.profile.assert_called_once_with("EDO0936", provider="obligacje")
