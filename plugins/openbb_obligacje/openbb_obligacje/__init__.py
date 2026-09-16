@@ -1,14 +1,17 @@
 """obligacje.pl OpenBB provider extension — Polish retail savings bonds (D79).
 
 The ``openbb_obligacje`` provider prices the eight Polish retail savings-bond
-series (OTS, ROR, DOR, TOS, COI, ROS, EDO, ROD) on demand via the pure pricing
-engine in :mod:`openbb_obligacje.engine`. There is no market price for these
-instruments — the redemption value is computed from the issue parameters
-(``openst.bond_series``) and the 12-month CPI history (``openst.cpi_12m``).
+series (OTS, ROR, DOR, TOS, COI, ROS, EDO, ROD) on demand: the fetchers read
+``openst.bond_series`` + ``openst.cpi_12m`` from Postgres and run the pure
+pricing engine in :mod:`openbb_obligacje.engine`. There is no market price for
+these instruments — the redemption value is computed from the issue parameters
+and the 12-month CPI history.
 
-The fetcher stubs live in ``models/``; the DB-backed implementations land in
-step 19.6. The engine (and its worked-example tests) is the source of truth for
-the pricing math.
+The fetchre are registered under the *equity* model keys because OpenBB 4.7.x
+ships no fixed-income price router or ``FixedIncomeHistorical`` standard model
+(verified in the 19.6 notes) — the same overload the biznesradar plugin uses for
+Catalyst bonds. They are therefore reachable as ``obb.equity.price.historical``,
+``obb.equity.search`` and ``obb.equity.profile`` with ``provider="obligacje"``.
 """
 
 from openbb_core.provider.abstract.provider import Provider
@@ -24,9 +27,9 @@ obligacje_provider = Provider(
         "and CPI history (no market price exists)"
     ),
     fetcher_dict={
-        "FixedIncomeHistorical": FixedIncomeHistoricalFetcher,
-        "FixedIncomeSearch": FixedIncomeSearchFetcher,
-        "FixedIncomeProfile": FixedIncomeProfileFetcher,
+        "EquityHistorical": FixedIncomeHistoricalFetcher,
+        "EquitySearch": FixedIncomeSearchFetcher,
+        "EquityInfo": FixedIncomeProfileFetcher,
     },
 )
 

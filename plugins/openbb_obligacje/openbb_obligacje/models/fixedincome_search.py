@@ -1,71 +1,81 @@
-"""Obligacje FixedIncomeSearch fetcher — emissions by symbol/name (D79 19.5 stub).
+"""Obligacje EquitySearch fetcher — emissions by symbol/name (D79 19.6).
 
-Like :mod:`openbb_obligacje.models.fixedincome_historical` this is a scaffold:
-``OpenBB`` has no fixed-income search standard model either, so the classes
-derive from the abstract bases and ``extract_data`` is stubbed until 19.6
-queries ``openst.bond_series``.
+Queries ``openst.bond_series`` by symbol prefix or name substring (see
+:func:`openbb_obligacje.store.search_bond_series`). Output rows carry the
+standard ``{symbol, name}`` pair plus ``maturity_date`` as a provider-specific
+extra field, mirroring how the biznesradar plugin overloads the equity models.
 """
 
 from __future__ import annotations
 
 from datetime import date
+from typing import Optional
 
-from openbb_core.provider.abstract.data import Data
 from openbb_core.provider.abstract.fetcher import Fetcher
-from openbb_core.provider.abstract.query_params import QueryParams
+from openbb_core.provider.standard_models.equity_search import (
+    EquitySearchData,
+    EquitySearchQueryParams,
+)
+
+from openbb_obligacje import store
 
 
-class ObligacjeFixedIncomeSearchQueryParams(QueryParams):
-    """Search query: a free-text term (name/series) or an exact symbol."""
-
-    query: str
-    is_symbol: bool = False
+class ObligacjeEquitySearchQueryParams(EquitySearchQueryParams):
+    """Search query over the savings-bond catalogue."""
 
 
-class ObligacjeFixedIncomeSearchData(Data):
-    """One matching emission."""
+class ObligacjeEquitySearchData(EquitySearchData):
+    """One matching emission (``maturity_date`` is obligacje-specific)."""
 
-    symbol: str
-    name: str
-    series_code: str
-    maturity_date: date
+    maturity_date: Optional[date] = None
 
 
 class FixedIncomeSearchFetcher(
     Fetcher[
-        ObligacjeFixedIncomeSearchQueryParams,
-        list[ObligacjeFixedIncomeSearchData],
+        ObligacjeEquitySearchQueryParams,
+        list[ObligacjeEquitySearchData],
     ]
 ):
-    """Find savings-bond emissions matching the query (stub)."""
+    """Find savings-bond emissions matching the free-text query."""
 
     require_credentials = False
 
     @staticmethod
-    def transform_query(params: dict) -> ObligacjeFixedIncomeSearchQueryParams:
+    def transform_query(params: dict) -> ObligacjeEquitySearchQueryParams:
         """Build the query params."""
-        return ObligacjeFixedIncomeSearchQueryParams(
-            query=params.get("query", params.get("symbol", "")),
-            is_symbol=bool(params.get("is_symbol", params.get("provider", ""))),
+        return ObligacjeEquitySearchQueryParams(
+            query=params.get("query") or params.get("q") or params.get("symbol", ""),
+            is_symbol=params.get("is_symbol", False),
         )
 
     @staticmethod
     def extract_data(
-        query: ObligacjeFixedIncomeSearchQueryParams,
+        query: ObligacjeEquitySearchQueryParams,
         credentials: dict | None = None,
         **kwargs,
     ) -> list[dict]:
-        """Stub: the ``bond_series`` lookup is wired in step 19.6."""
+        """Return matching catalogue rows; ``[]`` for an empty query."""
         del credentials
-        del kwargs
-        return []
+        del kwargs  # router forwards router-level extras (preferences, …)
+        term = query.query.strip().upper()
+        if not term:
+            return []
+        matches = store.search_bond_series(term, query.is_symbol)
+        return [
+            {
+                "symbol": bond.symbol,
+                "name": bond.name,
+                "maturity_date": bond.maturity_date,
+            }
+            for bond in matches
+        ]
 
     @staticmethod
     def transform_data(
-        query: ObligacjeFixedIncomeSearchQueryParams,
+        query: ObligacjeEquitySearchQueryParams,
         data: list[dict],
         **kwargs,
-    ) -> list[ObligacjeFixedIncomeSearchData]:
-        """Map raw rows to the output model."""
+    ) -> list[ObligacjeEquitySearchData]:
+        """Map raw rows to the standard search shape."""
         del kwargs
-        return [ObligacjeFixedIncomeSearchData(**row) for row in data]
+        return [ObligacjeEquitySearchData(**row) for row in data]
