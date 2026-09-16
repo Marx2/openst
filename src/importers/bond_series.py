@@ -31,11 +31,15 @@ value for the short-term NBP-indexed series. Pricing those needs a reference-rat
 history that is deferred to D83, so the 19.5 engine prices the ``fixed`` and
 ``cpi_12m+margin`` series and treats ``nbp_ref+margin`` as "variable, not yet priced".
 
-Modes (the importer runs as a one-shot k8s Job reusing the openst image):
+Modes (the importer runs as a CronJob reusing the openst image):
   full        — ``--mode full``         scrape all 8 series offer pages (initial import)
   incremental — ``--mode incremental``  scrape the current-offer page (~8 active) (daily CronJob)
   archive     — ``--mode archive``      backfill every emission enumerated on /listy-emisyjne/
                                         (all modern-series emissions, ~450 pages; monthly CronJob)
+
+Every run logs one INFO line per emission page discovered and per symbol newly
+inserted (duplicates log at DEBUG only), so ``kubectl logs`` on a CronJob pod
+shows what the run did; the last stdout line stays the JSON summary.
 """
 
 from __future__ import annotations
@@ -43,7 +47,9 @@ from __future__ import annotations
 import argparse
 import calendar
 import json
+import logging
 import re
+import sys
 import time
 from datetime import date
 from decimal import Decimal
@@ -51,6 +57,10 @@ from decimal import Decimal
 import httpx
 
 from src import db
+
+# One log line per event, on stdout, so `kubectl logs` on a CronJob pod shows what
+# a run discovered and imported instead of going silent until the final summary.
+logger = logging.getLogger("openst.bond_series")
 
 BASE = "https://www.obligacjeskarbowe.pl"
 OFFER_URL = f"{BASE}/oferta-obligacji/"
@@ -350,8 +360,26 @@ def _sleep() -> None:
         time.sleep(SLEEP_BETWEEN)
 
 
+def configure_logging(level: int = logging.INFO) -> None:
+    """Route importer log lines to stdout (the summary JSON stays on stdout too).
+
+    Only the standalone Job/CronJob entry point (:func:`main`) calls this, and it
+    defers to :func:`logging.basicConfig`: a root logger that is already
+    configured (the API process importing this module, pytest's logging plugin)
+    is left untouched.
+    """
+    logging.basicConfig(
+        stream=sys.stdout,
+        level=level,
+        format="%(asctime)s %(levelname)-7s %(message)s",
+    )
+    logging.getLogger("openst").setLevel(level)
+
+
 def run(mode: str) -> dict:
     """Fetch (and, with a DB, insert) emissions for a mode; returns a summary dict."""
+    started = time.monotonic()
+    logger.info("bond_series: starting mode=%s", mode)
     if mode == "full":
         # Authoritative pass: one page per series (all eight), robust even if a
         # series drops off the aggregated offer page.
@@ -359,6 +387,7 @@ def run(mode: str) -> dict:
     elif mode == "incremental":
         offer_html = fetch_page(OFFER_URL)
         paths = parse_offer_emissions(offer_html)
+        logger.info("bond_series: %s lists %d active emission page(s)", OFFER_URL, len(paths))
     elif mode == "archive":
         # Backfill: enumerate every emission code on /listy-emisyjne/, then parse
         # each emission's own historical page. The modern 8 series only — the
@@ -367,10 +396,17 @@ def run(mode: str) -> dict:
         # url_id (the site ships typos there, e.g. EDO0829 lives at id=edo07829);
         # the display-text symbol — same value for the well-formed ids — is stored.
         archive_html = fetch_page("/listy-emisyjne/")
+        rows = parse_archive_codes(archive_html)
+        codes = [row for row in rows if row[0] in SERIES_SLUGS]
+        logger.info(
+            "bond_series: /listy-emisyjne/ enumerates %d modern-series emission(s) "
+            "(%d rows total, the rest legacy series)",
+            len(codes),
+            len(rows),
+        )
         paths = [
             f"/oferta-obligacji/{SERIES_SLUGS[series]}/{url_id}/"
-            for series, _symbol, url_id in parse_archive_codes(archive_html)
-            if series in SERIES_SLUGS
+            for series, _symbol, url_id in codes
         ]
     else:
         raise ValueError(f"unknown mode: {mode}")
@@ -381,8 +417,19 @@ def run(mode: str) -> dict:
             _sleep()
         page = fetch_page(path)
         emission = parse_emission(page)
-        if emission is not None:
-            emissions.append(emission)
+        if emission is None:
+            logger.warning("bond_series: no emission rows on %s — skipped", path)
+            continue
+        emissions.append(emission)
+        logger.info(
+            "bond_series: parsed %s series=%s issue=%s %s margin=%s fee=%s",
+            emission["symbol"],
+            emission["series_code"],
+            emission["issue_date"],
+            emission["rate_rule"],
+            emission["margin"],
+            emission["fee_b"],
+        )
 
     summary: dict = {"mode": mode, "fetched": len(paths), "emissions": len(emissions)}
     symbols = [e["symbol"] for e in emissions]
@@ -395,6 +442,17 @@ def run(mode: str) -> dict:
             summary["inserted"] = upsert_bonds(conn, emissions)
         finally:
             conn.close()
+    else:
+        logger.info("bond_series: DATABASE_URL not set — dry run, nothing written")
+
+    logger.info(
+        "bond_series: done mode=%s fetched=%d parsed=%d inserted=%s in %.1fs",
+        mode,
+        summary["fetched"],
+        summary["emissions"],
+        summary.get("inserted", "n/a"),
+        time.monotonic() - started,
+    )
     return summary
 
 
@@ -403,6 +461,10 @@ def upsert_bonds(conn, emissions: list[dict]) -> int:
 
     Emissions are immutable once published, so re-imports of a known symbol are
     no-ops (``ON CONFLICT DO NOTHING``). Returns the number of rows inserted.
+
+    Every newly inserted symbol logs at INFO (that is the signal a scheduled run
+    really picked something up); duplicates already in the table log at DEBUG, so
+    a no-op run stays short.
     """
     inserted = 0
     with conn.cursor() as cur:
@@ -428,6 +490,16 @@ def upsert_bonds(conn, emissions: list[dict]) -> int:
                     e["nominal"],
                 ),
             )
+            if cur.rowcount:
+                logger.info(
+                    "bond_series: inserted %s (issue %s, %s margin %s)",
+                    e["symbol"],
+                    e["issue_date"],
+                    e["rate_rule"],
+                    e["margin"],
+                )
+            else:
+                logger.debug("bond_series: %s already present — kept existing row", e["symbol"])
             inserted += cur.rowcount
     conn.commit()
     return inserted
@@ -452,6 +524,7 @@ def main(argv: list[str] | None = None) -> int:
         ),
     )
     args = parser.parse_args(argv)
+    configure_logging()
     summary = run(args.mode)
     print(json.dumps(summary, ensure_ascii=False, default=str))
     return 0
