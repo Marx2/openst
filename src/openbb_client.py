@@ -8,6 +8,8 @@ import httpx
 import pandas as pd
 from openbb import obb
 
+from src import db
+
 DIVIDEND_PROVIDERS = ["yfinance", "fmp", "intrinio", "nasdaq"]
 METRICS_PROVIDERS  = ["yfinance", "fmp", "intrinio"]
 PROFILE_PROVIDERS = ["fmp", "yfinance", "biznesradar"]
@@ -577,12 +579,49 @@ def get_bond_ohlcv(symbol: str, start_date: str, end_date: str) -> list[dict] | 
         return None
 
 
+def _bond_profile_from_db(symbol: str) -> dict | None:
+    """Read a bond emission's 10-column row from Postgres (D79 21.3).
+
+    Returns ``None`` when the DB is unset, raises, or has no such symbol — the
+    caller then falls back to the ``obligacje`` provider. Values are normalized
+    through ``_plain`` so the DB-first path is wire-identical to the OpenBB path.
+    """
+    if not db.database_url():
+        return None
+    try:
+        from openbb_obligacje import store as bond_store
+
+        bond = bond_store.fetch_bond_series(symbol.strip().upper())
+    except Exception as e:
+        logger.warning("bond DB profile failed for %s: %s", symbol, e)
+        return None
+    if bond is None:
+        return None
+    return {
+        "symbol": bond.symbol,
+        "name": bond.name,
+        "series_code": bond.series_code,
+        "issue_date": _plain(bond.issue_date),
+        "maturity_date": _plain(bond.maturity_date),
+        "term_months": _plain(bond.term_months),
+        "rate_rule": bond.rate_rule,
+        "margin": _plain(bond.margin),
+        "fee_b": _plain(bond.fee_b),
+        "nominal": _plain(bond.nominal),
+    }
+
+
 def get_bond_profile(symbol: str) -> dict | None:
     """Issue parameters for a known savings-bond emission (D79 19.7).
 
-    Calls ``obb.equity.profile`` with ``provider="obligacje"``.
+    DB-first: reads ``openst.bond_series`` directly when Postgres is configured.
+    Falls back to ``obb.equity.profile`` with ``provider="obligacje"`` when the
+    DB yields nothing (import not yet run / DB-less / DB error).
     Returns ``None`` when the symbol is unknown.
     """
+    row = _bond_profile_from_db(symbol)
+    if row is not None:
+        return row
     try:
         df = obb.equity.profile(symbol, provider="obligacje").to_df()
         if df.empty:
@@ -594,12 +633,43 @@ def get_bond_profile(symbol: str) -> dict | None:
         return None
 
 
+def _bond_search_from_db(query: str) -> list[dict] | None:
+    """Search savings-bond emissions in Postgres (D79 21.3).
+
+    Matches every emission whose symbol starts with ``query`` or whose name
+    contains it, and maps rows to the ``obligacje`` search shape
+    (``{symbol, name, maturity_date}``). Returns ``None`` when the DB is unset
+    or raises — the caller then falls back to the ``obligacje`` provider.
+    """
+    if not db.database_url():
+        return None
+    try:
+        from openbb_obligacje import store as bond_store
+
+        return [
+            {
+                "symbol": bond.symbol,
+                "name": bond.name,
+                "maturity_date": _plain(bond.maturity_date),
+            }
+            for bond in bond_store.search_bond_series(query.strip(), is_symbol=False)
+        ]
+    except Exception as e:
+        logger.warning("bond DB search failed for '%s': %s", query, e)
+        return None
+
+
 def search_bonds(query: str) -> list[dict]:
     """Search savings-bond emissions by symbol prefix or name substring (D79 19.7).
 
-    Calls ``obb.equity.search`` with ``provider="obligacje"``.
+    DB-first: reads ``openst.bond_series`` directly when Postgres is configured.
+    Falls back to ``obb.equity.search`` with ``provider="obligacje"`` when the
+    DB yields nothing (import not yet run / DB-less / DB error).
     Returns an empty list when there are no results.
     """
+    rows = _bond_search_from_db(query)
+    if rows:
+        return rows
     try:
         df = obb.equity.search(query, provider="obligacje").to_df()
         if df.empty:
