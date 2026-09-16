@@ -165,6 +165,7 @@ def test_fetch_cpi_raises_when_no_rows_parsed(monkeypatch):
 @pytest.fixture
 def conn():
     c = db.get_conn()
+    db.migrate(conn=c)  # ensure openst schema/tables exist (fresh test Postgres)
     yield c
     c.close()
 
