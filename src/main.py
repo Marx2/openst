@@ -37,6 +37,8 @@ from .openbb_client import (
     CALENDAR_KINDS,
     PERIODS,
     STATEMENTS,
+    get_bond_ohlcv,
+    get_bond_profile,
     get_calendar,
     get_company_news,
     get_crypto_ohlcv,
@@ -57,6 +59,7 @@ from .openbb_client import (
     get_profile,
     get_projections,
     get_quote,
+    search_bonds,
     search_equities,
 )
 
@@ -490,4 +493,51 @@ def equity_logo(ticker: str):
         f"equity_logo:{ticker.upper()}",
         lambda: get_logo(ticker),
         f"No logo resolvable for {ticker}",
+    )
+
+
+# ---------------------------------------------------------------------------
+# Fixed-income routes — D79 19.7
+# ---------------------------------------------------------------------------
+
+
+@app.get("/fixedincome/ohlcv/{symbol}")
+def fixedincome_ohlcv(
+    symbol: str,
+    start: str | None = Query(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    end: str | None = Query(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+):
+    if start is None or end is None:
+        default_start, default_end = _default_dates()
+        start = start or default_start
+        end = end or default_end
+
+    return _cached_or_404(
+        f"fixedincome_ohlcv:{symbol}:{start}:{end}",
+        lambda: get_bond_ohlcv(symbol, start, end),
+        f"No bond OHLCV history for {symbol}",
+    )
+
+
+@app.get("/fixedincome/profile/{symbol}")
+def fixedincome_profile(symbol: str):
+    return _cached_or_404(
+        f"fixedincome_profile:{symbol}",
+        lambda: get_bond_profile(symbol),
+        f"No bond profile for {symbol}",
+    )
+
+
+@app.get("/fixedincome/search/{query}")
+def fixedincome_search(query: str):
+    normalized = query.strip().lower()
+
+    def fetch():
+        records = search_bonds(normalized)
+        return records or None
+
+    return _cached_or_404(
+        f"fixedincome_search:{normalized}",
+        fetch,
+        f"No bond search results for '{query}'",
     )

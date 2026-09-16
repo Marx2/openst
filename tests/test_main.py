@@ -442,3 +442,58 @@ def test_news_company_rejects_bad_date_format(client):
 
 def test_news_company_validates_limit(client):
     assert client.get("/news/company/AAPL?limit=0").status_code == 422
+
+
+# ---------------------------------------------------------------------------
+# Fixed-income routes — D79 19.7
+# ---------------------------------------------------------------------------
+
+
+@patch(
+    "src.main.get_bond_ohlcv",
+    return_value=[{"date": "2026-01-15", "open": 100.0, "high": 100.5, "low": 99.8, "close": 100.2, "volume": 0}],
+)
+def test_fixedincome_ohlcv_returns_rows(mock_fn, client):
+    r = client.get("/fixedincome/ohlcv/EDO0936?start=2026-01-01&end=2026-06-30")
+    assert r.status_code == 200
+    assert len(r.json()) == 1
+    mock_fn.assert_called_once_with("EDO0936", "2026-01-01", "2026-06-30")
+
+
+@patch("src.main.get_bond_ohlcv", return_value=None)
+def test_fixedincome_ohlcv_not_found_returns_404(mock_fn, client):
+    r = client.get("/fixedincome/ohlcv/UNKNOWN?start=2026-01-01&end=2026-06-30")
+    assert r.status_code == 404
+
+
+def test_fixedincome_ohlcv_rejects_bad_date_format(client):
+    assert client.get("/fixedincome/ohlcv/EDO0936?start=nope").status_code == 422
+
+
+@patch(
+    "src.main.get_bond_profile",
+    return_value={"symbol": "EDO0936", "name": "10-letnie EDO", "maturity_date": "2036-09-15"},
+)
+def test_fixedincome_profile_returns_record(mock_fn, client):
+    r = client.get("/fixedincome/profile/EDO0936")
+    assert r.status_code == 200
+    assert r.json()["symbol"] == "EDO0936"
+    mock_fn.assert_called_once_with("EDO0936")
+
+
+@patch("src.main.get_bond_profile", return_value=None)
+def test_fixedincome_profile_not_found_returns_404(mock_fn, client):
+    assert client.get("/fixedincome/profile/UNKNOWN").status_code == 404
+
+
+@patch("src.main.search_bonds", return_value=[{"symbol": "EDO0936", "name": "10-letnie EDO"}])
+def test_fixedincome_search_returns_results(mock_fn, client):
+    r = client.get("/fixedincome/search/EDO")
+    assert r.status_code == 200
+    assert r.json()[0]["symbol"] == "EDO0936"
+    mock_fn.assert_called_once_with("edo")
+
+
+@patch("src.main.search_bonds", return_value=[])
+def test_fixedincome_search_no_results_returns_404(mock_fn, client):
+    assert client.get("/fixedincome/search/zzzznope").status_code == 404

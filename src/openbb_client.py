@@ -540,6 +540,77 @@ def get_crypto_profile(pair: str) -> dict | None:
     return {"symbol": pair, "name": quote.get("name"), "currency": currency}
 
 
+# ---------------------------------------------------------------------------
+# Polish retail savings bonds (D79) — obligacje provider
+# ---------------------------------------------------------------------------
+
+
+def get_bond_ohlcv(symbol: str, start_date: str, end_date: str) -> list[dict] | None:
+    """Priced redemption OHLCV series for a savings-bond emission (D79 19.7).
+
+    Calls ``obb.equity.price.historical`` with ``provider="obligacje"``.
+    Returns ``None`` when the symbol is unknown or the DB is unavailable.
+    """
+    try:
+        df = obb.equity.price.historical(
+            symbol, start_date=start_date, end_date=end_date, provider="obligacje"
+        ).to_df()
+        if df.empty:
+            return None
+        rows = []
+        for idx, row in df.iterrows():
+            date = idx.date() if hasattr(idx, "date") else idx
+            close = _safe_float(row.get("close"))
+            if close is None:
+                continue
+            rows.append({
+                "date": str(date),
+                "open": _safe_float(row.get("open")) or close,
+                "high": _safe_float(row.get("high")) or close,
+                "low": _safe_float(row.get("low")) or close,
+                "close": close,
+                "volume": _safe_int(row.get("volume")) or 0,
+            })
+        return rows if rows else None
+    except Exception as e:
+        logger.warning("obligacje OHLCV failed for %s: %s", symbol, e)
+        return None
+
+
+def get_bond_profile(symbol: str) -> dict | None:
+    """Issue parameters for a known savings-bond emission (D79 19.7).
+
+    Calls ``obb.equity.profile`` with ``provider="obligacje"``.
+    Returns ``None`` when the symbol is unknown.
+    """
+    try:
+        df = obb.equity.profile(symbol, provider="obligacje").to_df()
+        if df.empty:
+            return None
+        records = _df_records(df)
+        return records[0] if records else None
+    except Exception as e:
+        logger.warning("obligacje profile failed for %s: %s", symbol, e)
+        return None
+
+
+def search_bonds(query: str) -> list[dict]:
+    """Search savings-bond emissions by symbol prefix or name substring (D79 19.7).
+
+    Calls ``obb.equity.search`` with ``provider="obligacje"``.
+    Returns an empty list when there are no results.
+    """
+    try:
+        df = obb.equity.search(query, provider="obligacje").to_df()
+        if df.empty:
+            return []
+        records = _df_records(df)
+        return records if records else []
+    except Exception as e:
+        logger.warning("obligacje search failed for '%s': %s", query, e)
+        return []
+
+
 def get_fundamentals(ticker: str, statement: str, period: str) -> list[dict]:
     fn = getattr(obb.equity.fundamental, statement)
     for provider in STATEMENT_PROVIDERS:
