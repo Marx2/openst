@@ -4598,9 +4598,9 @@
       "source_file": "main.py",
       "source_location": "L79",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_rationale_79",
-      "target": "src_main_run_migrations",
-      "confidence_score": 1.0
+      "target": "src_main_run_migrations"
     },
     {
       "relation": "rationale_for",
@@ -4662,9 +4662,9 @@
       "source_file": "main.py",
       "source_location": "L205",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_rationale_205",
-      "target": "src_main_safe_json_dumps",
-      "confidence_score": 1.0
+      "target": "src_main_safe_json_dumps"
     },
     {
       "relation": "rationale_for",
@@ -4963,9 +4963,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L109",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_py",
-      "target": "importers_bond_series_bondfetcherror",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_bondfetcherror"
     },
     {
       "relation": "contains",
@@ -4973,9 +4973,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L118",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_py",
-      "target": "importers_bond_series_strip_tags",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_strip_tags"
     },
     {
       "relation": "contains",
@@ -4983,9 +4983,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L126",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_py",
-      "target": "importers_bond_series_dec",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_dec"
     },
     {
       "relation": "contains",
@@ -4993,9 +4993,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L135",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_py",
-      "target": "importers_bond_series_page_text",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_page_text"
     },
     {
       "relation": "contains",
@@ -5003,9 +5003,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L144",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_py",
-      "target": "importers_bond_series_parse_pl_date",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_parse_pl_date"
     },
     {
       "relation": "contains",
@@ -5013,9 +5013,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L153",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_py",
-      "target": "importers_bond_series_add_months",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_add_months"
     },
     {
       "relation": "contains",
@@ -5023,9 +5023,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L167",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_py",
-      "target": "importers_bond_series_parse_detail_list",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_parse_detail_list"
     },
     {
       "relation": "contains",
@@ -5033,9 +5033,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L182",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_py",
-      "target": "importers_bond_series_row",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_row"
     },
     {
       "relation": "contains",
@@ -5043,9 +5043,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L190",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_py",
-      "target": "importers_bond_series_classify_rate",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_classify_rate"
     },
     {
       "relation": "contains",
@@ -5053,9 +5053,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L200",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_py",
-      "target": "importers_bond_series_extract_margin",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_extract_margin"
     },
     {
       "relation": "contains",
@@ -5063,9 +5063,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L221",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_py",
-      "target": "importers_bond_series_extract_fee",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_extract_fee"
     },
     {
       "relation": "contains",
@@ -5073,9 +5073,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L230",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_py",
-      "target": "importers_bond_series_parse_emission",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_parse_emission"
     },
     {
       "relation": "contains",
@@ -5083,9 +5083,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L278",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_py",
-      "target": "importers_bond_series_parse_offer_emissions",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_parse_offer_emissions"
     },
     {
       "relation": "contains",
@@ -5093,9 +5093,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L295",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_py",
-      "target": "importers_bond_series_fetch_page",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_fetch_page"
     },
     {
       "relation": "contains",
@@ -5103,9 +5103,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L313",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_py",
-      "target": "importers_bond_series_sleep",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_sleep"
     },
     {
       "relation": "contains",
@@ -5113,9 +5113,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L318",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_py",
-      "target": "importers_bond_series_run",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_run"
     },
     {
       "relation": "contains",
@@ -5123,9 +5123,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L353",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_py",
-      "target": "importers_bond_series_upsert_bonds",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_upsert_bonds"
     },
     {
       "relation": "contains",
@@ -5133,9 +5133,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L388",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_py",
-      "target": "importers_bond_series_main",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_main"
     },
     {
       "relation": "rationale_for",
@@ -5143,9 +5143,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_rationale_1",
-      "target": "importers_bond_series_py",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_py"
     },
     {
       "relation": "inherits",
@@ -5153,9 +5153,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L109",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_bondfetcherror",
-      "target": "runtimeerror",
-      "confidence_score": 1.0
+      "target": "runtimeerror"
     },
     {
       "relation": "calls",
@@ -5164,9 +5164,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L309",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_fetch_page",
-      "target": "importers_bond_series_bondfetcherror",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_bondfetcherror"
     },
     {
       "relation": "rationale_for",
@@ -5174,9 +5174,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L110",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_rationale_110",
-      "target": "importers_bond_series_bondfetcherror",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_bondfetcherror"
     },
     {
       "relation": "inherits",
@@ -5184,9 +5184,9 @@
       "source_file": "importers/cpi.py",
       "source_location": "L42",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_cpi_cpifetcherror",
-      "target": "runtimeerror",
-      "confidence_score": 1.0
+      "target": "runtimeerror"
     },
     {
       "relation": "calls",
@@ -5195,9 +5195,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L176",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_parse_detail_list",
-      "target": "importers_bond_series_strip_tags",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_strip_tags"
     },
     {
       "relation": "calls",
@@ -5206,9 +5206,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L248",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_parse_emission",
-      "target": "importers_bond_series_strip_tags",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_strip_tags"
     },
     {
       "relation": "rationale_for",
@@ -5216,9 +5216,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L119",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_rationale_119",
-      "target": "importers_bond_series_strip_tags",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_strip_tags"
     },
     {
       "relation": "calls",
@@ -5227,9 +5227,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L210",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_extract_margin",
-      "target": "importers_bond_series_dec",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_dec"
     },
     {
       "relation": "calls",
@@ -5238,9 +5238,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L226",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_extract_fee",
-      "target": "importers_bond_series_dec",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_dec"
     },
     {
       "relation": "rationale_for",
@@ -5248,9 +5248,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L127",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_rationale_127",
-      "target": "importers_bond_series_dec",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_dec"
     },
     {
       "relation": "calls",
@@ -5259,9 +5259,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L268",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_parse_emission",
-      "target": "importers_bond_series_page_text",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_page_text"
     },
     {
       "relation": "rationale_for",
@@ -5269,9 +5269,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L136",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_rationale_136",
-      "target": "importers_bond_series_page_text",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_page_text"
     },
     {
       "relation": "calls",
@@ -5280,9 +5280,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L250",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_parse_emission",
-      "target": "importers_bond_series_parse_pl_date",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_parse_pl_date"
     },
     {
       "relation": "rationale_for",
@@ -5290,9 +5290,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L145",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_rationale_145",
-      "target": "importers_bond_series_parse_pl_date",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_parse_pl_date"
     },
     {
       "relation": "calls",
@@ -5301,9 +5301,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L264",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_parse_emission",
-      "target": "importers_bond_series_add_months",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_add_months"
     },
     {
       "relation": "rationale_for",
@@ -5311,9 +5311,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L154",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_rationale_154",
-      "target": "importers_bond_series_add_months",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_add_months"
     },
     {
       "relation": "calls",
@@ -5322,9 +5322,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L236",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_parse_emission",
-      "target": "importers_bond_series_parse_detail_list",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_parse_detail_list"
     },
     {
       "relation": "rationale_for",
@@ -5332,9 +5332,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L168",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_rationale_168",
-      "target": "importers_bond_series_parse_detail_list",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_parse_detail_list"
     },
     {
       "relation": "calls",
@@ -5343,9 +5343,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L237",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_parse_emission",
-      "target": "importers_bond_series_row",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_row"
     },
     {
       "relation": "rationale_for",
@@ -5353,9 +5353,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L183",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_rationale_183",
-      "target": "importers_bond_series_row",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_row"
     },
     {
       "relation": "calls",
@@ -5364,9 +5364,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L256",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_parse_emission",
-      "target": "importers_bond_series_classify_rate",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_classify_rate"
     },
     {
       "relation": "rationale_for",
@@ -5374,9 +5374,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L191",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_rationale_191",
-      "target": "importers_bond_series_classify_rate",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_classify_rate"
     },
     {
       "relation": "calls",
@@ -5385,9 +5385,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L257",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_parse_emission",
-      "target": "importers_bond_series_extract_margin",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_extract_margin"
     },
     {
       "relation": "rationale_for",
@@ -5395,9 +5395,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L201",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_rationale_201",
-      "target": "importers_bond_series_extract_margin",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_extract_margin"
     },
     {
       "relation": "calls",
@@ -5406,9 +5406,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L268",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_parse_emission",
-      "target": "importers_bond_series_extract_fee",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_extract_fee"
     },
     {
       "relation": "rationale_for",
@@ -5416,9 +5416,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L222",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_rationale_222",
-      "target": "importers_bond_series_extract_fee",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_extract_fee"
     },
     {
       "relation": "calls",
@@ -5427,9 +5427,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L335",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_run",
-      "target": "importers_bond_series_parse_emission",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_parse_emission"
     },
     {
       "relation": "rationale_for",
@@ -5437,9 +5437,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L231",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_rationale_231",
-      "target": "importers_bond_series_parse_emission",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_parse_emission"
     },
     {
       "relation": "calls",
@@ -5448,9 +5448,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L326",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_run",
-      "target": "importers_bond_series_parse_offer_emissions",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_parse_offer_emissions"
     },
     {
       "relation": "rationale_for",
@@ -5458,9 +5458,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L279",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_rationale_279",
-      "target": "importers_bond_series_parse_offer_emissions",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_parse_offer_emissions"
     },
     {
       "relation": "calls",
@@ -5469,9 +5469,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L325",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_run",
-      "target": "importers_bond_series_fetch_page",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_fetch_page"
     },
     {
       "relation": "rationale_for",
@@ -5479,9 +5479,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L296",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_rationale_296",
-      "target": "importers_bond_series_fetch_page",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_fetch_page"
     },
     {
       "relation": "calls",
@@ -5490,9 +5490,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L333",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_run",
-      "target": "importers_bond_series_sleep",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_sleep"
     },
     {
       "relation": "calls",
@@ -5501,9 +5501,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L347",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_run",
-      "target": "importers_bond_series_upsert_bonds",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_upsert_bonds"
     },
     {
       "relation": "calls",
@@ -5512,9 +5512,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L406",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_main",
-      "target": "importers_bond_series_run",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_run"
     },
     {
       "relation": "rationale_for",
@@ -5522,9 +5522,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L319",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_rationale_319",
-      "target": "importers_bond_series_run",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_run"
     },
     {
       "relation": "rationale_for",
@@ -5532,9 +5532,9 @@
       "source_file": "importers/bond_series.py",
       "source_location": "L354",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_bond_series_rationale_354",
-      "target": "importers_bond_series_upsert_bonds",
-      "confidence_score": 1.0
+      "target": "importers_bond_series_upsert_bonds"
     },
     {
       "relation": "contains",
@@ -5542,9 +5542,9 @@
       "source_file": "importers/cpi.py",
       "source_location": "L42",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_cpi_py",
-      "target": "importers_cpi_cpifetcherror",
-      "confidence_score": 1.0
+      "target": "importers_cpi_cpifetcherror"
     },
     {
       "relation": "contains",
@@ -5552,9 +5552,9 @@
       "source_file": "importers/cpi.py",
       "source_location": "L46",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_cpi_py",
-      "target": "importers_cpi_build_url",
-      "confidence_score": 1.0
+      "target": "importers_cpi_build_url"
     },
     {
       "relation": "contains",
@@ -5562,9 +5562,9 @@
       "source_file": "importers/cpi.py",
       "source_location": "L58",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_cpi_py",
-      "target": "importers_cpi_parse_cpi_rows",
-      "confidence_score": 1.0
+      "target": "importers_cpi_parse_cpi_rows"
     },
     {
       "relation": "contains",
@@ -5572,9 +5572,9 @@
       "source_file": "importers/cpi.py",
       "source_location": "L75",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_cpi_py",
-      "target": "importers_cpi_fetch_cpi",
-      "confidence_score": 1.0
+      "target": "importers_cpi_fetch_cpi"
     },
     {
       "relation": "contains",
@@ -5582,9 +5582,9 @@
       "source_file": "importers/cpi.py",
       "source_location": "L91",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_cpi_py",
-      "target": "importers_cpi_upsert_cpi",
-      "confidence_score": 1.0
+      "target": "importers_cpi_upsert_cpi"
     },
     {
       "relation": "contains",
@@ -5592,9 +5592,9 @@
       "source_file": "importers/cpi.py",
       "source_location": "L109",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_cpi_py",
-      "target": "importers_cpi_run",
-      "confidence_score": 1.0
+      "target": "importers_cpi_run"
     },
     {
       "relation": "contains",
@@ -5602,9 +5602,9 @@
       "source_file": "importers/cpi.py",
       "source_location": "L129",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_cpi_py",
-      "target": "importers_cpi_main",
-      "confidence_score": 1.0
+      "target": "importers_cpi_main"
     },
     {
       "relation": "rationale_for",
@@ -5612,9 +5612,9 @@
       "source_file": "importers/cpi.py",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_cpi_rationale_1",
-      "target": "importers_cpi_py",
-      "confidence_score": 1.0
+      "target": "importers_cpi_py"
     },
     {
       "relation": "calls",
@@ -5623,9 +5623,9 @@
       "source_file": "importers/cpi.py",
       "source_location": "L84",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_cpi_fetch_cpi",
-      "target": "importers_cpi_cpifetcherror",
-      "confidence_score": 1.0
+      "target": "importers_cpi_cpifetcherror"
     },
     {
       "relation": "rationale_for",
@@ -5633,9 +5633,9 @@
       "source_file": "importers/cpi.py",
       "source_location": "L43",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_cpi_rationale_43",
-      "target": "importers_cpi_cpifetcherror",
-      "confidence_score": 1.0
+      "target": "importers_cpi_cpifetcherror"
     },
     {
       "relation": "calls",
@@ -5644,9 +5644,9 @@
       "source_file": "importers/cpi.py",
       "source_location": "L79",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_cpi_fetch_cpi",
-      "target": "importers_cpi_build_url",
-      "confidence_score": 1.0
+      "target": "importers_cpi_build_url"
     },
     {
       "relation": "rationale_for",
@@ -5654,9 +5654,9 @@
       "source_file": "importers/cpi.py",
       "source_location": "L47",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_cpi_rationale_47",
-      "target": "importers_cpi_build_url",
-      "confidence_score": 1.0
+      "target": "importers_cpi_build_url"
     },
     {
       "relation": "calls",
@@ -5665,9 +5665,9 @@
       "source_file": "importers/cpi.py",
       "source_location": "L85",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_cpi_fetch_cpi",
-      "target": "importers_cpi_parse_cpi_rows",
-      "confidence_score": 1.0
+      "target": "importers_cpi_parse_cpi_rows"
     },
     {
       "relation": "rationale_for",
@@ -5675,9 +5675,9 @@
       "source_file": "importers/cpi.py",
       "source_location": "L59",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_cpi_rationale_59",
-      "target": "importers_cpi_parse_cpi_rows",
-      "confidence_score": 1.0
+      "target": "importers_cpi_parse_cpi_rows"
     },
     {
       "relation": "calls",
@@ -5686,9 +5686,9 @@
       "source_file": "importers/cpi.py",
       "source_location": "L112",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_cpi_run",
-      "target": "importers_cpi_fetch_cpi",
-      "confidence_score": 1.0
+      "target": "importers_cpi_fetch_cpi"
     },
     {
       "relation": "rationale_for",
@@ -5696,9 +5696,9 @@
       "source_file": "importers/cpi.py",
       "source_location": "L78",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_cpi_rationale_78",
-      "target": "importers_cpi_fetch_cpi",
-      "confidence_score": 1.0
+      "target": "importers_cpi_fetch_cpi"
     },
     {
       "relation": "calls",
@@ -5707,9 +5707,9 @@
       "source_file": "importers/cpi.py",
       "source_location": "L123",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_cpi_run",
-      "target": "importers_cpi_upsert_cpi",
-      "confidence_score": 1.0
+      "target": "importers_cpi_upsert_cpi"
     },
     {
       "relation": "rationale_for",
@@ -5717,9 +5717,9 @@
       "source_file": "importers/cpi.py",
       "source_location": "L92",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_cpi_rationale_92",
-      "target": "importers_cpi_upsert_cpi",
-      "confidence_score": 1.0
+      "target": "importers_cpi_upsert_cpi"
     },
     {
       "relation": "calls",
@@ -5728,9 +5728,9 @@
       "source_file": "importers/cpi.py",
       "source_location": "L141",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_cpi_main",
-      "target": "importers_cpi_run",
-      "confidence_score": 1.0
+      "target": "importers_cpi_run"
     },
     {
       "relation": "rationale_for",
@@ -5738,11 +5738,11 @@
       "source_file": "importers/cpi.py",
       "source_location": "L110",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "importers_cpi_rationale_110",
-      "target": "importers_cpi_run",
-      "confidence_score": 1.0
+      "target": "importers_cpi_run"
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "d21677e67a4cd3d28dcca6d01831ab506d3681a0"
+  "built_at_commit": "aef5cd3dab2d07b972c3ad1f0e02feaf7e5feaa3"
 }
