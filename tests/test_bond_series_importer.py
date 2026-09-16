@@ -194,22 +194,25 @@ def test_parse_offer_emissions_empty_for_unrelated():
 def test_parse_archive_codes_fixture():
     codes = b.parse_archive_codes(_fixture("emission_archive.html"))
     assert len(codes) >= 400
-    symbols = {sym for _, sym in codes}
+    symbols = {sym for _, sym, _url in codes}
     assert "ROD1033" in symbols
     # The selector only enumerates the 8 modern series; legacy POS/DOS/TOZ/KOS
     # never appear as emission rows and are skipped by the series filter.
-    assert {series for series, _ in codes} <= set(b.SERIES_SLUGS)
-    assert {series for series, _ in codes} == set(b.SERIES_SLUGS)
+    assert {series for series, _, _ in codes} <= set(b.SERIES_SLUGS)
+    assert {series for series, _, _ in codes} == set(b.SERIES_SLUGS)
+    # The classic EDO typo is captured as a (series, symbol, url_id) triple.
+    assert ("EDO", "EDO0829", "edo07829") in codes
 
 
 def test_parse_archive_codes_uses_display_text_not_url_id():
     # The archive ships URL id typos for old EDO codes (id=edo07829 renders the
-    # EDO0829 emission) - the symbol must come from the display text.
+    # EDO0829 emission) - the symbol must come from the display text, while the
+    # raw url_id stays available for building the fetch path.
     html = (
         '<option class="choices__inner" value="/listy-emisyjne/?id=edo07829,edo"'
         ' data-id="edo">EDO0829</option>'
     )
-    assert b.parse_archive_codes(html) == [("EDO", "EDO0829")]
+    assert b.parse_archive_codes(html) == [("EDO", "EDO0829", "edo07829")]
 
 
 def test_parse_archive_codes_empty_for_unrelated():
@@ -325,8 +328,10 @@ def test_run_archive_backfills_all_modern_series(no_db, monkeypatch):
     assert calls[0] == "/listy-emisyjne/"  # archive selector is fetched first
     # A sampled emission resolves to its own historical per-series page…
     assert "/oferta-obligacji/obligacje-12-letnie-rod/rod1033/" in calls
-    # …and the EDO URL typo (id=edo07829) resolves via the display symbol.
-    assert "/oferta-obligacji/obligacje-10-letnie-edo/edo0829/" in calls
+    # …and the EDO URL typo (id=edo07829) resolves via the raw url_id — the
+    # display symbol lowercased (edo0829) 404s on the live site.
+    assert "/oferta-obligacji/obligacje-10-letnie-edo/edo07829/" in calls
+    assert "/oferta-obligacji/obligacje-10-letnie-edo/edo0829/" not in calls
     assert "ROD1033" in summary["symbols"]
 
 
