@@ -31,8 +31,11 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+      postgres:
+        condition: service_healthy
     environment:
       REDIS_HOST: redis
+      DATABASE_URL: postgresql://openst:openst@postgres:5432/openst
     env_file:
       - path: .env
         required: false

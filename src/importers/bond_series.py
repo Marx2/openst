@@ -111,12 +111,15 @@ _H1_RE = re.compile(r"<h1[^>]*>(.*?)</h1>", flags=re.S)
 _SYMBOL_RE = re.compile(r"\b([A-Za-z]{3}\d{4})\b")
 _PL_DATE_RE = re.compile(r"(\d{2})\.(\d{2})\.(\d{4})")
 
-# One `<option … data-id="{series}">{SYMBOL}</option>` row of the /listy-emisyjne/
-# emission selector. data-id is the series code (lower-case); the symbol is the
-# option's display text — NOT the URL id, which the site has shipped with typos
-# (e.g. id=edo07829 for the EDO0829 emission).
+# One `<option … value="/listy-emisyjne/?id={code},{series}" data-id="{series}">{SYMBOL}</option>`
+# row of the /listy-emisyjne/ emission selector. The option's display text is the
+# authoritative symbol (what gets stored in bond_series), while the ``value``
+# ``id=`` is the raw URL code the emission page is served under — the site ships
+# typos there (e.g. id=edo07829 for the EDO0829 emission), so the archive fetches
+# each emission by its raw id while keeping the display symbol in the row.
 _ARCHIVE_ROW_RE = re.compile(
-    r'<option\b[^>]*?\bdata-id="([a-z]{3})"[^>]*>\s*([A-Z]{3}\d{4})\s*</option>',
+    r'<option\b[^>]*?\bvalue="/listy-emisyjne/\?id=([a-z0-9]+),[a-z]{3}"'
+    r'[^>]*?\bdata-id="([a-z]{3})"[^>]*>\s*([A-Z]{3}\d{4})\s*</option>',
     flags=re.S,
 )
 
@@ -302,15 +305,21 @@ def parse_offer_emissions(html: str) -> list[str]:
     return urls
 
 
-def parse_archive_codes(html: str) -> list[tuple[str, str]]:
-    """Emission ``(series_code, symbol)`` pairs from the ``/listy-emisyjne/`` selector.
+def parse_archive_codes(html: str) -> list[tuple[str, str, str]]:
+    """Emission ``(series_code, symbol, url_id)`` triples from the ``/listy-emisyjne/`` selector.
 
     The selector enumerates the full catalogue — past and active emissions across
-    all series — as ``<option data-id="{series}">{SYMBOL}</option>`` rows. The
-    symbol is always read from the display text (not the URL ``id=``), which is the
-    site's typos for archived EDO codes (``id=edo07829`` renders ``EDO0829``).
+    all series — as ``<option data-id="{series}" value="?id={url_id}">{SYMBOL}</option>``
+    rows. The ``symbol`` is always read from the display text, which is the
+    authoritative emission code; ``url_id`` is the raw ``id=`` code the emission
+    page is served under, which the site has shipped with typos for archived EDO
+    emissions (``id=edo07829`` renders ``EDO0829``) — so the archive fetches pages
+    by ``url_id`` but stores the display ``symbol``.
     """
-    return [(series.upper(), symbol) for series, symbol in _ARCHIVE_ROW_RE.findall(html)]
+    return [
+        (series.upper(), symbol, url_id)
+        for url_id, series, symbol in _ARCHIVE_ROW_RE.findall(html)
+    ]
 
 
 # ---------------------------------------------------------------------------
@@ -354,11 +363,13 @@ def run(mode: str) -> dict:
         # Backfill: enumerate every emission code on /listy-emisyjne/, then parse
         # each emission's own historical page. The modern 8 series only — the
         # selector also carries the legacy POS/DOS/TOZ/KOS codes, which have no
-        # term map and are out of scope.
+        # term map and are out of scope. Pages are fetched at each emission's raw
+        # url_id (the site ships typos there, e.g. EDO0829 lives at id=edo07829);
+        # the display-text symbol — same value for the well-formed ids — is stored.
         archive_html = fetch_page("/listy-emisyjne/")
         paths = [
-            f"/oferta-obligacji/{SERIES_SLUGS[series]}/{symbol.lower()}/"
-            for series, symbol in parse_archive_codes(archive_html)
+            f"/oferta-obligacji/{SERIES_SLUGS[series]}/{url_id}/"
+            for series, _symbol, url_id in parse_archive_codes(archive_html)
             if series in SERIES_SLUGS
         ]
     else:
