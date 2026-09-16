@@ -54,7 +54,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L64",
       "id": "src_openbb_client_check_pays_dividend",
-      "community": 7,
+      "community": 0,
       "norm_label": "_check_pays_dividend()"
     },
     {
@@ -90,7 +90,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L223",
       "id": "src_openbb_client_plain",
-      "community": 2,
+      "community": 3,
       "norm_label": "_plain()"
     },
     {
@@ -108,7 +108,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L253",
       "id": "src_openbb_client_safe_int",
-      "community": 10,
+      "community": 3,
       "norm_label": "_safe_int()"
     },
     {
@@ -126,7 +126,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L272",
       "id": "src_openbb_client_df_single_long_records",
-      "community": 4,
+      "community": 6,
       "norm_label": "_df_single_long_records()"
     },
     {
@@ -171,7 +171,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L340",
       "id": "src_openbb_client_get_projections",
-      "community": 2,
+      "community": 3,
       "norm_label": "get_projections()"
     },
     {
@@ -225,7 +225,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L533",
       "id": "src_openbb_client_get_crypto_profile",
-      "community": 14,
+      "community": 0,
       "norm_label": "get_crypto_profile()"
     },
     {
@@ -261,7 +261,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L616",
       "id": "src_openbb_client_split_symbols",
-      "community": 2,
+      "community": 3,
       "norm_label": "_split_symbols()"
     },
     {
@@ -270,7 +270,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L631",
       "id": "src_openbb_client_news_source",
-      "community": 2,
+      "community": 3,
       "norm_label": "_news_source()"
     },
     {
@@ -279,7 +279,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L642",
       "id": "src_openbb_client_get_company_news",
-      "community": 2,
+      "community": 3,
       "norm_label": "get_company_news()"
     },
     {
@@ -288,7 +288,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L697",
       "id": "src_openbb_client_get_insider_trading",
-      "community": 9,
+      "community": 0,
       "norm_label": "get_insider_trading()"
     },
     {
@@ -315,7 +315,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L775",
       "id": "src_openbb_client_get_mda",
-      "community": 4,
+      "community": 6,
       "norm_label": "get_mda()"
     },
     {
@@ -333,7 +333,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L65",
       "id": "src_openbb_client_rationale_65",
-      "community": 7,
+      "community": 0,
       "norm_label": "return true if ticker has any dividend history across all providers."
     },
     {
@@ -342,7 +342,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L224",
       "id": "src_openbb_client_rationale_224",
-      "community": 2,
+      "community": 3,
       "norm_label": "convert a pandas/numpy cell into a json-safe primitive."
     },
     {
@@ -360,7 +360,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L254",
       "id": "src_openbb_client_rationale_254",
-      "community": 10,
+      "community": 3,
       "norm_label": "return an int, or none for nan/none/non-numeric values."
     },
     {
@@ -369,7 +369,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L273",
       "id": "src_openbb_client_rationale_273",
-      "community": 4,
+      "community": 6,
       "norm_label": "return the single record from an openbb to_df() result.      most openbb endpoin"
     },
     {
@@ -387,7 +387,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L534",
       "id": "src_openbb_client_rationale_534",
-      "community": 14,
+      "community": 0,
       "norm_label": "crypto profile derived from the quote response (no dedicated profile endpoint)."
     },
     {
@@ -396,7 +396,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L617",
       "id": "src_openbb_client_rationale_617",
-      "community": 2,
+      "community": 3,
       "norm_label": "normalize an openbb `symbols` cell (comma string or list) to a symbol list."
     },
     {
@@ -405,7 +405,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L632",
       "id": "src_openbb_client_rationale_632",
-      "community": 2,
+      "community": 3,
       "norm_label": "resolve the news outlet name: prefer `publisher.name`, else the author string."
     },
     {
@@ -414,7 +414,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L649",
       "id": "src_openbb_client_rationale_649",
-      "community": 2,
+      "community": 3,
       "norm_label": "company news articles, provider-fallback across company_news_providers.      rec"
     },
     {
@@ -423,7 +423,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L698",
       "id": "src_openbb_client_rationale_698",
-      "community": 9,
+      "community": 0,
       "norm_label": "sec form 4 insider transactions (director/officer purchases & sales)."
     },
     {
@@ -450,7 +450,7 @@
       "source_file": "openbb_client.py",
       "source_location": "L776",
       "id": "src_openbb_client_rationale_776",
-      "community": 4,
+      "community": 6,
       "norm_label": "management discussion & analysis section from the latest sec 10-k/10-q (sec-only"
     },
     {
@@ -468,7 +468,7 @@
       "source_file": "db.py",
       "source_location": "L1",
       "id": "db_py",
-      "community": 5,
+      "community": 7,
       "norm_label": "db.py"
     },
     {
@@ -477,7 +477,7 @@
       "source_file": "db.py",
       "source_location": "L22",
       "id": "src_db_database_url",
-      "community": 5,
+      "community": 7,
       "norm_label": "database_url()"
     },
     {
@@ -486,7 +486,7 @@
       "source_file": "db.py",
       "source_location": "L26",
       "id": "src_db_get_conn",
-      "community": 5,
+      "community": 7,
       "norm_label": "get_conn()"
     },
     {
@@ -495,7 +495,7 @@
       "source_file": "db.py",
       "source_location": "L36",
       "id": "src_db_ensure_journal",
-      "community": 5,
+      "community": 7,
       "norm_label": "_ensure_journal()"
     },
     {
@@ -504,7 +504,7 @@
       "source_file": "db.py",
       "source_location": "L51",
       "id": "src_db_pending",
-      "community": 5,
+      "community": 7,
       "norm_label": "_pending()"
     },
     {
@@ -513,7 +513,7 @@
       "source_file": "db.py",
       "source_location": "L59",
       "id": "src_db_migrate",
-      "community": 5,
+      "community": 7,
       "norm_label": "migrate()"
     },
     {
@@ -522,7 +522,7 @@
       "source_file": "db.py",
       "source_location": "L1",
       "id": "src_db_rationale_1",
-      "community": 5,
+      "community": 7,
       "norm_label": "thin postgres access for openst (d79 \u2014 retail savings bonds).  reads ``database_"
     },
     {
@@ -531,7 +531,7 @@
       "source_file": "db.py",
       "source_location": "L27",
       "id": "src_db_rationale_27",
-      "community": 5,
+      "community": 7,
       "norm_label": "open a plain psycopg2 connection. requires ``database_url`` to be set."
     },
     {
@@ -540,7 +540,7 @@
       "source_file": "db.py",
       "source_location": "L60",
       "id": "src_db_rationale_60",
-      "community": 5,
+      "community": 7,
       "norm_label": "apply pending migrations from ``migrations/``, journaling each exactly once."
     },
     {
@@ -549,7 +549,7 @@
       "source_file": "cache.py",
       "source_location": "L1",
       "id": "cache_py",
-      "community": 3,
+      "community": 5,
       "norm_label": "cache.py"
     },
     {
@@ -558,7 +558,7 @@
       "source_file": "cache.py",
       "source_location": "L4",
       "id": "src_cache_rediscache",
-      "community": 3,
+      "community": 5,
       "norm_label": "rediscache"
     },
     {
@@ -567,7 +567,7 @@
       "source_file": "cache.py",
       "source_location": "L5",
       "id": "src_cache_rediscache_init",
-      "community": 3,
+      "community": 5,
       "norm_label": ".__init__()"
     },
     {
@@ -576,7 +576,7 @@
       "source_file": "cache.py",
       "source_location": "L14",
       "id": "src_cache_rediscache_get",
-      "community": 3,
+      "community": 5,
       "norm_label": ".get()"
     },
     {
@@ -585,7 +585,7 @@
       "source_file": "cache.py",
       "source_location": "L17",
       "id": "src_cache_rediscache_set",
-      "community": 3,
+      "community": 5,
       "norm_label": ".set()"
     },
     {
@@ -612,7 +612,7 @@
       "source_file": "main.py",
       "source_location": "L67",
       "id": "src_main_safejsonresponse",
-      "community": 3,
+      "community": 5,
       "norm_label": "_safejsonresponse"
     },
     {
@@ -621,7 +621,7 @@
       "source_file": "",
       "source_location": "",
       "id": "jsonresponse",
-      "community": 3,
+      "community": 5,
       "norm_label": "_jsonresponse"
     },
     {
@@ -630,32 +630,32 @@
       "source_file": "main.py",
       "source_location": "L70",
       "id": "src_main_safejsonresponse_render",
-      "community": 3,
+      "community": 5,
       "norm_label": ".render()"
     },
     {
       "label": "_run_migrations()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L81",
+      "source_location": "L78",
       "id": "src_main_run_migrations",
-      "community": 12,
+      "community": 1,
       "norm_label": "_run_migrations()"
     },
     {
       "label": "lifespan()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L95",
+      "source_location": "L92",
       "id": "src_main_lifespan",
-      "community": 12,
+      "community": 1,
       "norm_label": "lifespan()"
     },
     {
       "label": "log_requests()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L101",
+      "source_location": "L103",
       "id": "src_main_log_requests",
       "community": 1,
       "norm_label": "log_requests()"
@@ -664,7 +664,7 @@
       "label": "favicon()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L128",
+      "source_location": "L130",
       "id": "src_main_favicon",
       "community": 1,
       "norm_label": "favicon()"
@@ -673,7 +673,7 @@
       "label": "meta()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L133",
+      "source_location": "L135",
       "id": "src_main_meta",
       "community": 1,
       "norm_label": "meta()"
@@ -682,7 +682,7 @@
       "label": "health()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L142",
+      "source_location": "L144",
       "id": "src_main_health",
       "community": 1,
       "norm_label": "health()"
@@ -691,43 +691,43 @@
       "label": "dividend_yield()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L155",
+      "source_location": "L157",
       "id": "src_main_dividend_yield",
-      "community": 6,
+      "community": 1,
       "norm_label": "dividend_yield()"
     },
     {
       "label": "price_history()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L170",
+      "source_location": "L172",
       "id": "src_main_price_history",
-      "community": 6,
+      "community": 1,
       "norm_label": "price_history()"
     },
     {
       "label": "dividend_history()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L188",
+      "source_location": "L190",
       "id": "src_main_dividend_history",
-      "community": 6,
+      "community": 1,
       "norm_label": "dividend_history()"
     },
     {
       "label": "_safe_json_dumps()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L202",
+      "source_location": "L204",
       "id": "src_main_safe_json_dumps",
-      "community": 6,
+      "community": 1,
       "norm_label": "_safe_json_dumps()"
     },
     {
       "label": "_cached_or_404()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L222",
+      "source_location": "L224",
       "id": "src_main_cached_or_404",
       "community": 1,
       "norm_label": "_cached_or_404()"
@@ -736,16 +736,16 @@
       "label": "_default_dates()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L235",
+      "source_location": "L237",
       "id": "src_main_default_dates",
-      "community": 11,
+      "community": 1,
       "norm_label": "_default_dates()"
     },
     {
       "label": "equity_profile()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L243",
+      "source_location": "L245",
       "id": "src_main_equity_profile",
       "community": 1,
       "norm_label": "equity_profile()"
@@ -754,7 +754,7 @@
       "label": "equity_quote()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L252",
+      "source_location": "L254",
       "id": "src_main_equity_quote",
       "community": 1,
       "norm_label": "equity_quote()"
@@ -763,7 +763,7 @@
       "label": "equity_metrics()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L261",
+      "source_location": "L263",
       "id": "src_main_equity_metrics",
       "community": 1,
       "norm_label": "equity_metrics()"
@@ -772,7 +772,7 @@
       "label": "equity_projections()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L270",
+      "source_location": "L272",
       "id": "src_main_equity_projections",
       "community": 1,
       "norm_label": "equity_projections()"
@@ -781,25 +781,25 @@
       "label": "price_ohlcv()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L279",
+      "source_location": "L281",
       "id": "src_main_price_ohlcv",
-      "community": 11,
+      "community": 1,
       "norm_label": "price_ohlcv()"
     },
     {
       "label": "crypto_ohlcv()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L301",
+      "source_location": "L303",
       "id": "src_main_crypto_ohlcv",
-      "community": 11,
+      "community": 1,
       "norm_label": "crypto_ohlcv()"
     },
     {
       "label": "crypto_quote()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L319",
+      "source_location": "L321",
       "id": "src_main_crypto_quote",
       "community": 1,
       "norm_label": "crypto_quote()"
@@ -808,7 +808,7 @@
       "label": "crypto_search()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L328",
+      "source_location": "L330",
       "id": "src_main_crypto_search",
       "community": 1,
       "norm_label": "crypto_search()"
@@ -817,7 +817,7 @@
       "label": "crypto_profile()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L343",
+      "source_location": "L345",
       "id": "src_main_crypto_profile",
       "community": 1,
       "norm_label": "crypto_profile()"
@@ -826,7 +826,7 @@
       "label": "equity_fundamentals()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L352",
+      "source_location": "L354",
       "id": "src_main_equity_fundamentals",
       "community": 1,
       "norm_label": "equity_fundamentals()"
@@ -835,16 +835,16 @@
       "label": "equity_calendar()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L370",
+      "source_location": "L372",
       "id": "src_main_equity_calendar",
-      "community": 11,
+      "community": 1,
       "norm_label": "equity_calendar()"
     },
     {
       "label": "equity_search()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L395",
+      "source_location": "L397",
       "id": "src_main_equity_search",
       "community": 1,
       "norm_label": "equity_search()"
@@ -853,7 +853,7 @@
       "label": "news_company()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L410",
+      "source_location": "L412",
       "id": "src_main_news_company",
       "community": 1,
       "norm_label": "news_company()"
@@ -862,7 +862,7 @@
       "label": "equity_institutional_ownership()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L435",
+      "source_location": "L437",
       "id": "src_main_equity_institutional_ownership",
       "community": 1,
       "norm_label": "equity_institutional_ownership()"
@@ -871,7 +871,7 @@
       "label": "equity_ownership()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L448",
+      "source_location": "L450",
       "id": "src_main_equity_ownership",
       "community": 1,
       "norm_label": "equity_ownership()"
@@ -880,7 +880,7 @@
       "label": "equity_filings()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L461",
+      "source_location": "L463",
       "id": "src_main_equity_filings",
       "community": 1,
       "norm_label": "equity_filings()"
@@ -889,7 +889,7 @@
       "label": "equity_mda()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L474",
+      "source_location": "L476",
       "id": "src_main_equity_mda",
       "community": 1,
       "norm_label": "equity_mda()"
@@ -898,7 +898,7 @@
       "label": "equity_logo()",
       "file_type": "code",
       "source_file": "main.py",
-      "source_location": "L486",
+      "source_location": "L488",
       "id": "src_main_equity_logo",
       "community": 1,
       "norm_label": "equity_logo()"
@@ -909,25 +909,25 @@
       "source_file": "main.py",
       "source_location": "L68",
       "id": "src_main_rationale_68",
-      "community": 3,
+      "community": 5,
       "norm_label": "jsonresponse that serializes nan/inf floats as null instead of crashing."
     },
     {
       "label": "Apply schema migrations at boot when a database is configured.      Guarded by `",
       "file_type": "rationale",
       "source_file": "main.py",
-      "source_location": "L82",
-      "id": "src_main_rationale_82",
-      "community": 12,
+      "source_location": "L79",
+      "id": "src_main_rationale_79",
+      "community": 1,
       "norm_label": "apply schema migrations at boot when a database is configured.      guarded by `"
     },
     {
       "label": "Serialize to JSON, replacing any NaN/Inf floats with null.",
       "file_type": "rationale",
       "source_file": "main.py",
-      "source_location": "L203",
-      "id": "src_main_rationale_203",
-      "community": 6,
+      "source_location": "L205",
+      "id": "src_main_rationale_205",
+      "community": 1,
       "norm_label": "serialize to json, replacing any nan/inf floats with null."
     },
     {
@@ -936,7 +936,7 @@
       "source_file": "otel.py",
       "source_location": "L1",
       "id": "otel_py",
-      "community": 13,
+      "community": 1,
       "norm_label": "otel.py"
     },
     {
@@ -945,7 +945,7 @@
       "source_file": "otel.py",
       "source_location": "L25",
       "id": "src_otel_setup_otel",
-      "community": 13,
+      "community": 1,
       "norm_label": "setup_otel()"
     },
     {
@@ -954,15 +954,510 @@
       "source_file": "otel.py",
       "source_location": "L1",
       "id": "src_otel_rationale_1",
-      "community": 13,
+      "community": 1,
       "norm_label": "opentelemetry bootstrap for openst (d56).  sets up the prometheus metric pipelin"
+    },
+    {
+      "label": "bond_series.py",
+      "file_type": "code",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L1",
+      "id": "importers_bond_series_py",
+      "community": 2,
+      "norm_label": "bond_series.py"
+    },
+    {
+      "label": "BondFetchError",
+      "file_type": "code",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L109",
+      "id": "importers_bond_series_bondfetcherror",
+      "community": 2,
+      "norm_label": "bondfetcherror"
+    },
+    {
+      "label": "RuntimeError",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "id": "runtimeerror",
+      "community": 2,
+      "norm_label": "runtimeerror"
+    },
+    {
+      "label": "_strip_tags()",
+      "file_type": "code",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L118",
+      "id": "importers_bond_series_strip_tags",
+      "community": 2,
+      "norm_label": "_strip_tags()"
+    },
+    {
+      "label": "_dec()",
+      "file_type": "code",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L126",
+      "id": "importers_bond_series_dec",
+      "community": 2,
+      "norm_label": "_dec()"
+    },
+    {
+      "label": "_page_text()",
+      "file_type": "code",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L135",
+      "id": "importers_bond_series_page_text",
+      "community": 2,
+      "norm_label": "_page_text()"
+    },
+    {
+      "label": "_parse_pl_date()",
+      "file_type": "code",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L144",
+      "id": "importers_bond_series_parse_pl_date",
+      "community": 2,
+      "norm_label": "_parse_pl_date()"
+    },
+    {
+      "label": "add_months()",
+      "file_type": "code",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L153",
+      "id": "importers_bond_series_add_months",
+      "community": 2,
+      "norm_label": "add_months()"
+    },
+    {
+      "label": "parse_detail_list()",
+      "file_type": "code",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L167",
+      "id": "importers_bond_series_parse_detail_list",
+      "community": 2,
+      "norm_label": "parse_detail_list()"
+    },
+    {
+      "label": "_row()",
+      "file_type": "code",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L182",
+      "id": "importers_bond_series_row",
+      "community": 2,
+      "norm_label": "_row()"
+    },
+    {
+      "label": "_classify_rate()",
+      "file_type": "code",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L190",
+      "id": "importers_bond_series_classify_rate",
+      "community": 2,
+      "norm_label": "_classify_rate()"
+    },
+    {
+      "label": "_extract_margin()",
+      "file_type": "code",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L200",
+      "id": "importers_bond_series_extract_margin",
+      "community": 2,
+      "norm_label": "_extract_margin()"
+    },
+    {
+      "label": "_extract_fee()",
+      "file_type": "code",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L221",
+      "id": "importers_bond_series_extract_fee",
+      "community": 2,
+      "norm_label": "_extract_fee()"
+    },
+    {
+      "label": "parse_emission()",
+      "file_type": "code",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L230",
+      "id": "importers_bond_series_parse_emission",
+      "community": 2,
+      "norm_label": "parse_emission()"
+    },
+    {
+      "label": "parse_offer_emissions()",
+      "file_type": "code",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L278",
+      "id": "importers_bond_series_parse_offer_emissions",
+      "community": 2,
+      "norm_label": "parse_offer_emissions()"
+    },
+    {
+      "label": "fetch_page()",
+      "file_type": "code",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L295",
+      "id": "importers_bond_series_fetch_page",
+      "community": 2,
+      "norm_label": "fetch_page()"
+    },
+    {
+      "label": "_sleep()",
+      "file_type": "code",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L313",
+      "id": "importers_bond_series_sleep",
+      "community": 2,
+      "norm_label": "_sleep()"
+    },
+    {
+      "label": "run()",
+      "file_type": "code",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L318",
+      "id": "importers_bond_series_run",
+      "community": 2,
+      "norm_label": "run()"
+    },
+    {
+      "label": "upsert_bonds()",
+      "file_type": "code",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L353",
+      "id": "importers_bond_series_upsert_bonds",
+      "community": 2,
+      "norm_label": "upsert_bonds()"
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L388",
+      "id": "importers_bond_series_main",
+      "community": 2,
+      "norm_label": "main()"
+    },
+    {
+      "label": "Savings-bond series importer (D79 19.4) \u2014 obligacjeskarbowe.pl -> openst.bond_se",
+      "file_type": "rationale",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L1",
+      "id": "importers_bond_series_rationale_1",
+      "community": 2,
+      "norm_label": "savings-bond series importer (d79 19.4) \u2014 obligacjeskarbowe.pl -> openst.bond_se"
+    },
+    {
+      "label": "Raised when obligacjeskarbowe.pl returns a non-200 for a fetch.",
+      "file_type": "rationale",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L110",
+      "id": "importers_bond_series_rationale_110",
+      "community": 2,
+      "norm_label": "raised when obligacjeskarbowe.pl returns a non-200 for a fetch."
+    },
+    {
+      "label": "Drop tags / entities-ish whitespace from an HTML fragment and normalise it.",
+      "file_type": "rationale",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L119",
+      "id": "importers_bond_series_rationale_119",
+      "community": 2,
+      "norm_label": "drop tags / entities-ish whitespace from an html fragment and normalise it."
+    },
+    {
+      "label": "Parse a Polish number (comma decimal, possible \"z\u0142\"/\"%\" suffix) as a Decimal.",
+      "file_type": "rationale",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L127",
+      "id": "importers_bond_series_rationale_127",
+      "community": 2,
+      "norm_label": "parse a polish number (comma decimal, possible \"z\u0142\"/\"%\" suffix) as a decimal."
+    },
+    {
+      "label": "Whole-page text with scripts/styles stripped and whitespace normalised.",
+      "file_type": "rationale",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L136",
+      "id": "importers_bond_series_rationale_136",
+      "community": 2,
+      "norm_label": "whole-page text with scripts/styles stripped and whitespace normalised."
+    },
+    {
+      "label": "Parse the first ``DD.MM.YYYY`` date in a fragment (Polish format).",
+      "file_type": "rationale",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L145",
+      "id": "importers_bond_series_rationale_145",
+      "community": 2,
+      "norm_label": "parse the first ``dd.mm.yyyy`` date in a fragment (polish format)."
+    },
+    {
+      "label": "Calendar-add whole months, clamping the day to the target month's last day.",
+      "file_type": "rationale",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L154",
+      "id": "importers_bond_series_rationale_154",
+      "community": 2,
+      "norm_label": "calendar-add whole months, clamping the day to the target month's last day."
+    },
+    {
+      "label": "Extract the ``product-details__list`` rows into a ``{label: value}`` map.      L",
+      "file_type": "rationale",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L168",
+      "id": "importers_bond_series_rationale_168",
+      "community": 2,
+      "norm_label": "extract the ``product-details__list`` rows into a ``{label: value}`` map.      l"
+    },
+    {
+      "label": "First value whose normalised label starts with ``prefix`` (ASCII-safe).",
+      "file_type": "rationale",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L183",
+      "id": "importers_bond_series_rationale_183",
+      "community": 2,
+      "norm_label": "first value whose normalised label starts with ``prefix`` (ascii-safe)."
+    },
+    {
+      "label": "Map the \"Oprocentowanie\" prose to a ``rate_rule`` value.",
+      "file_type": "rationale",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L191",
+      "id": "importers_bond_series_rationale_191",
+      "community": 2,
+      "norm_label": "map the \"oprocentowanie\" prose to a ``rate_rule`` value."
+    },
+    {
+      "label": "Pull the rate/margin percentage out of the \"Oprocentowanie\" prose.      * cpi-li",
+      "file_type": "rationale",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L201",
+      "id": "importers_bond_series_rationale_201",
+      "community": 2,
+      "norm_label": "pull the rate/margin percentage out of the \"oprocentowanie\" prose.      * cpi-li"
+    },
+    {
+      "label": "Redemption fee ``b``: the *last* \"op\u0142ata wynosi X z\u0142\" (current schedule),     fa",
+      "file_type": "rationale",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L222",
+      "id": "importers_bond_series_rationale_222",
+      "community": 2,
+      "norm_label": "redemption fee ``b``: the *last* \"op\u0142ata wynosi x z\u0142\" (current schedule),     fa"
+    },
+    {
+      "label": "Parse one emission offer page into a ``bond_series`` row dict.      Returns ``No",
+      "file_type": "rationale",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L231",
+      "id": "importers_bond_series_rationale_231",
+      "community": 2,
+      "norm_label": "parse one emission offer page into a ``bond_series`` row dict.      returns ``no"
+    },
+    {
+      "label": "Per-emission path URLs (``/oferta-obligacji/{slug}/{symbol}/``) listed on     th",
+      "file_type": "rationale",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L279",
+      "id": "importers_bond_series_rationale_279",
+      "community": 2,
+      "norm_label": "per-emission path urls (``/oferta-obligacji/{slug}/{symbol}/``) listed on     th"
+    },
+    {
+      "label": "GET a page (following redirects); raise :class:`BondFetchError` on a non-200.",
+      "file_type": "rationale",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L296",
+      "id": "importers_bond_series_rationale_296",
+      "community": 2,
+      "norm_label": "get a page (following redirects); raise :class:`bondfetcherror` on a non-200."
+    },
+    {
+      "label": "Fetch (and, with a DB, insert) emissions for a mode; returns a summary dict.",
+      "file_type": "rationale",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L319",
+      "id": "importers_bond_series_rationale_319",
+      "community": 2,
+      "norm_label": "fetch (and, with a db, insert) emissions for a mode; returns a summary dict."
+    },
+    {
+      "label": "Insert emissions into ``openst.bond_series``, ignoring duplicate symbols.      E",
+      "file_type": "rationale",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L354",
+      "id": "importers_bond_series_rationale_354",
+      "community": 2,
+      "norm_label": "insert emissions into ``openst.bond_series``, ignoring duplicate symbols.      e"
+    },
+    {
+      "label": "cpi.py",
+      "file_type": "code",
+      "source_file": "importers/cpi.py",
+      "source_location": "L1",
+      "id": "importers_cpi_py",
+      "community": 4,
+      "norm_label": "cpi.py"
+    },
+    {
+      "label": "CpiFetchError",
+      "file_type": "code",
+      "source_file": "importers/cpi.py",
+      "source_location": "L42",
+      "id": "importers_cpi_cpifetcherror",
+      "community": 4,
+      "norm_label": "cpifetcherror"
+    },
+    {
+      "label": "build_url()",
+      "file_type": "code",
+      "source_file": "importers/cpi.py",
+      "source_location": "L46",
+      "id": "importers_cpi_build_url",
+      "community": 4,
+      "norm_label": "build_url()"
+    },
+    {
+      "label": "parse_cpi_rows()",
+      "file_type": "code",
+      "source_file": "importers/cpi.py",
+      "source_location": "L58",
+      "id": "importers_cpi_parse_cpi_rows",
+      "community": 4,
+      "norm_label": "parse_cpi_rows()"
+    },
+    {
+      "label": "fetch_cpi()",
+      "file_type": "code",
+      "source_file": "importers/cpi.py",
+      "source_location": "L75",
+      "id": "importers_cpi_fetch_cpi",
+      "community": 4,
+      "norm_label": "fetch_cpi()"
+    },
+    {
+      "label": "upsert_cpi()",
+      "file_type": "code",
+      "source_file": "importers/cpi.py",
+      "source_location": "L91",
+      "id": "importers_cpi_upsert_cpi",
+      "community": 4,
+      "norm_label": "upsert_cpi()"
+    },
+    {
+      "label": "run()",
+      "file_type": "code",
+      "source_file": "importers/cpi.py",
+      "source_location": "L109",
+      "id": "importers_cpi_run",
+      "community": 4,
+      "norm_label": "run()"
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "importers/cpi.py",
+      "source_location": "L129",
+      "id": "importers_cpi_main",
+      "community": 4,
+      "norm_label": "main()"
+    },
+    {
+      "label": "CPI importer (D79 19.3) \u2014 obligacje.pl 12m inflation -> openst.cpi_12m.  Data so",
+      "file_type": "rationale",
+      "source_file": "importers/cpi.py",
+      "source_location": "L1",
+      "id": "importers_cpi_rationale_1",
+      "community": 4,
+      "norm_label": "cpi importer (d79 19.3) \u2014 obligacje.pl 12m inflation -> openst.cpi_12m.  data so"
+    },
+    {
+      "label": "Raised when obligacje.pl returns a non-200 or a page with no CPI rows.",
+      "file_type": "rationale",
+      "source_file": "importers/cpi.py",
+      "source_location": "L43",
+      "id": "importers_cpi_rationale_43",
+      "community": 4,
+      "norm_label": "raised when obligacje.pl returns a non-200 or a page with no cpi rows."
+    },
+    {
+      "label": "Build the obligacje.pl inflacja URL for a date range (MAX when empty).",
+      "file_type": "rationale",
+      "source_file": "importers/cpi.py",
+      "source_location": "L47",
+      "id": "importers_cpi_rationale_47",
+      "community": 4,
+      "norm_label": "build the obligacje.pl inflacja url for a date range (max when empty)."
+    },
+    {
+      "label": "Extract ``(date, value)`` rows from the arrayToDataTable JS block.      Rows com",
+      "file_type": "rationale",
+      "source_file": "importers/cpi.py",
+      "source_location": "L59",
+      "id": "importers_cpi_rationale_59",
+      "community": 4,
+      "norm_label": "extract ``(date, value)`` rows from the arraytodatatable js block.      rows com"
+    },
+    {
+      "label": "Fetch CPI rows from obligacje.pl for the given range (MAX when empty).",
+      "file_type": "rationale",
+      "source_file": "importers/cpi.py",
+      "source_location": "L78",
+      "id": "importers_cpi_rationale_78",
+      "community": 4,
+      "norm_label": "fetch cpi rows from obligacje.pl for the given range (max when empty)."
+    },
+    {
+      "label": "Insert CPI rows into ``openst.cpi_12m``, ignoring duplicate dates.      Returns",
+      "file_type": "rationale",
+      "source_file": "importers/cpi.py",
+      "source_location": "L92",
+      "id": "importers_cpi_rationale_92",
+      "community": 4,
+      "norm_label": "insert cpi rows into ``openst.cpi_12m``, ignoring duplicate dates.      returns"
+    },
+    {
+      "label": "Fetch (+ possibly insert) CPI data for a mode; returns a summary dict.",
+      "file_type": "rationale",
+      "source_file": "importers/cpi.py",
+      "source_location": "L110",
+      "id": "importers_cpi_rationale_110",
+      "community": 4,
+      "norm_label": "fetch (+ possibly insert) cpi data for a mode; returns a summary dict."
+    },
+    {
+      "label": "__init__.py",
+      "file_type": "code",
+      "source_file": "importers/__init__.py",
+      "source_location": "L1",
+      "id": "importers_init_py",
+      "community": 9,
+      "norm_label": "__init__.py"
+    },
+    {
+      "label": "Apply schema migrations at boot when a database is configured.      Guarded by `",
+      "file_type": "rationale",
+      "source_file": "main.py",
+      "source_location": "L82",
+      "community": 1,
+      "norm_label": "apply schema migrations at boot when a database is configured.      guarded by `",
+      "id": "src_main_rationale_82"
+    },
+    {
+      "label": "Serialize to JSON, replacing any NaN/Inf floats with null.",
+      "file_type": "rationale",
+      "source_file": "main.py",
+      "source_location": "L203",
+      "community": 1,
+      "norm_label": "serialize to json, replacing any nan/inf floats with null.",
+      "id": "src_main_rationale_203"
     },
     {
       "label": "Normalize an OpenBB `symbols` cell (comma string or list) to a symbol list.",
       "file_type": "rationale",
       "source_file": "openbb_client.py",
       "source_location": "L607",
-      "community": 2,
+      "community": 3,
       "norm_label": "normalize an openbb `symbols` cell (comma string or list) to a symbol list.",
       "id": "src_openbb_client_rationale_607"
     },
@@ -971,7 +1466,7 @@
       "file_type": "rationale",
       "source_file": "openbb_client.py",
       "source_location": "L622",
-      "community": 2,
+      "community": 3,
       "norm_label": "resolve the news outlet name: prefer `publisher.name`, else the author string.",
       "id": "src_openbb_client_rationale_622"
     },
@@ -980,7 +1475,7 @@
       "file_type": "rationale",
       "source_file": "openbb_client.py",
       "source_location": "L639",
-      "community": 2,
+      "community": 3,
       "norm_label": "company news articles, provider-fallback across company_news_providers.      rec",
       "id": "src_openbb_client_rationale_639"
     },
@@ -989,7 +1484,7 @@
       "file_type": "rationale",
       "source_file": "openbb_client.py",
       "source_location": "L688",
-      "community": 9,
+      "community": 0,
       "norm_label": "sec form 4 insider transactions (director/officer purchases & sales).",
       "id": "src_openbb_client_rationale_688"
     },
@@ -1016,7 +1511,7 @@
       "file_type": "rationale",
       "source_file": "openbb_client.py",
       "source_location": "L766",
-      "community": 4,
+      "community": 6,
       "norm_label": "management discussion & analysis section from the latest sec 10-k/10-q (sec-only",
       "id": "src_openbb_client_rationale_766"
     },
@@ -1034,7 +1529,7 @@
       "file_type": "rationale",
       "source_file": "main.py",
       "source_location": "L64",
-      "community": 3,
+      "community": 5,
       "norm_label": "jsonresponse that serializes nan/inf floats as null instead of crashing.",
       "id": "src_main_rationale_64"
     },
@@ -1043,7 +1538,7 @@
       "file_type": "rationale",
       "source_file": "main.py",
       "source_location": "L182",
-      "community": 6,
+      "community": 1,
       "norm_label": "serialize to json, replacing any nan/inf floats with null.",
       "id": "src_main_rationale_182"
     },
@@ -1052,7 +1547,7 @@
       "file_type": "rationale",
       "source_file": "openbb_client.py",
       "source_location": "L64",
-      "community": 7,
+      "community": 0,
       "norm_label": "return true if ticker has any dividend history across all providers.",
       "id": "src_openbb_client_rationale_64"
     },
@@ -1061,7 +1556,7 @@
       "file_type": "rationale",
       "source_file": "openbb_client.py",
       "source_location": "L220",
-      "community": 2,
+      "community": 3,
       "norm_label": "convert a pandas/numpy cell into a json-safe primitive.",
       "id": "src_openbb_client_rationale_220"
     },
@@ -1079,7 +1574,7 @@
       "file_type": "rationale",
       "source_file": "openbb_client.py",
       "source_location": "L250",
-      "community": 10,
+      "community": 3,
       "norm_label": "return an int, or none for nan/none/non-numeric values.",
       "id": "src_openbb_client_rationale_250"
     },
@@ -1088,7 +1583,7 @@
       "file_type": "rationale",
       "source_file": "openbb_client.py",
       "source_location": "L269",
-      "community": 4,
+      "community": 6,
       "norm_label": "return the single record from an openbb to_df() result.      most openbb endpoin",
       "id": "src_openbb_client_rationale_269"
     },
@@ -1097,7 +1592,7 @@
       "file_type": "rationale",
       "source_file": "openbb_client.py",
       "source_location": "L476",
-      "community": 2,
+      "community": 3,
       "norm_label": "normalize an openbb `symbols` cell (comma string or list) to a symbol list.",
       "id": "src_openbb_client_rationale_476"
     },
@@ -1106,7 +1601,7 @@
       "file_type": "rationale",
       "source_file": "openbb_client.py",
       "source_location": "L491",
-      "community": 2,
+      "community": 3,
       "norm_label": "resolve the news outlet name: prefer `publisher.name`, else the author string.",
       "id": "src_openbb_client_rationale_491"
     },
@@ -1115,7 +1610,7 @@
       "file_type": "rationale",
       "source_file": "openbb_client.py",
       "source_location": "L508",
-      "community": 2,
+      "community": 3,
       "norm_label": "company news articles, provider-fallback across company_news_providers.      rec",
       "id": "src_openbb_client_rationale_508"
     },
@@ -1124,7 +1619,7 @@
       "file_type": "rationale",
       "source_file": "openbb_client.py",
       "source_location": "L557",
-      "community": 9,
+      "community": 0,
       "norm_label": "sec form 4 insider transactions (director/officer purchases & sales).",
       "id": "src_openbb_client_rationale_557"
     },
@@ -1151,7 +1646,7 @@
       "file_type": "rationale",
       "source_file": "openbb_client.py",
       "source_location": "L635",
-      "community": 4,
+      "community": 6,
       "norm_label": "management discussion & analysis section from the latest sec 10-k/10-q (sec-only",
       "id": "src_openbb_client_rationale_635"
     },
@@ -1169,7 +1664,7 @@
       "file_type": "rationale",
       "source_file": "main.py",
       "source_location": "L50",
-      "community": 3,
+      "community": 5,
       "norm_label": "jsonresponse that serializes nan/inf floats as null instead of crashing.",
       "id": "src_main_rationale_50"
     },
@@ -1178,7 +1673,7 @@
       "file_type": "rationale",
       "source_file": "main.py",
       "source_location": "L175",
-      "community": 6,
+      "community": 1,
       "norm_label": "serialize to json, replacing any nan/inf floats with null.",
       "id": "src_main_rationale_175"
     },
@@ -1187,7 +1682,7 @@
       "file_type": "rationale",
       "source_file": "openbb_client.py",
       "source_location": "L63",
-      "community": 7,
+      "community": 0,
       "norm_label": "return true if ticker has any dividend history across all providers.",
       "id": "src_openbb_client_rationale_63"
     },
@@ -1196,7 +1691,7 @@
       "file_type": "rationale",
       "source_file": "openbb_client.py",
       "source_location": "L219",
-      "community": 2,
+      "community": 3,
       "norm_label": "convert a pandas/numpy cell into a json-safe primitive.",
       "id": "src_openbb_client_rationale_219"
     },
@@ -1214,7 +1709,7 @@
       "file_type": "rationale",
       "source_file": "openbb_client.py",
       "source_location": "L249",
-      "community": 10,
+      "community": 3,
       "norm_label": "return an int, or none for nan/none/non-numeric values.",
       "id": "src_openbb_client_rationale_249"
     },
@@ -1223,7 +1718,7 @@
       "file_type": "rationale",
       "source_file": "openbb_client.py",
       "source_location": "L268",
-      "community": 4,
+      "community": 6,
       "norm_label": "return the single record from an openbb to_df() result.      most openbb endpoin",
       "id": "src_openbb_client_rationale_268"
     },
@@ -1232,7 +1727,7 @@
       "file_type": "rationale",
       "source_file": "openbb_client.py",
       "source_location": "L475",
-      "community": 9,
+      "community": 0,
       "norm_label": "sec form 4 insider transactions (director/officer purchases & sales).",
       "id": "src_openbb_client_rationale_475"
     },
@@ -1259,7 +1754,7 @@
       "file_type": "rationale",
       "source_file": "openbb_client.py",
       "source_location": "L553",
-      "community": 4,
+      "community": 6,
       "norm_label": "management discussion & analysis section from the latest sec 10-k/10-q (sec-only",
       "id": "src_openbb_client_rationale_553"
     },
@@ -1277,7 +1772,7 @@
       "file_type": "rationale",
       "source_file": "main.py",
       "source_location": "L49",
-      "community": 3,
+      "community": 5,
       "norm_label": "jsonresponse that serializes nan/inf floats as null instead of crashing.",
       "id": "src_main_rationale_49"
     },
@@ -1286,7 +1781,7 @@
       "file_type": "rationale",
       "source_file": "main.py",
       "source_location": "L174",
-      "community": 6,
+      "community": 1,
       "norm_label": "serialize to json, replacing any nan/inf floats with null.",
       "id": "src_main_rationale_174"
     },
@@ -1295,7 +1790,7 @@
       "file_type": "rationale",
       "source_file": "openbb_client.py",
       "source_location": "L59",
-      "community": 7,
+      "community": 0,
       "norm_label": "return true if ticker has any dividend history across all providers.",
       "id": "src_openbb_client_rationale_59"
     },
@@ -1304,7 +1799,7 @@
       "file_type": "rationale",
       "source_file": "openbb_client.py",
       "source_location": "L209",
-      "community": 2,
+      "community": 3,
       "norm_label": "convert a pandas/numpy cell into a json-safe primitive.",
       "id": "src_openbb_client_rationale_209"
     },
@@ -1313,7 +1808,7 @@
       "file_type": "rationale",
       "source_file": "openbb_client.py",
       "source_location": "L200",
-      "community": 2,
+      "community": 3,
       "norm_label": "convert a pandas/numpy cell into a json-safe primitive.",
       "id": "src_openbb_client_rationale_200"
     },
@@ -1322,7 +1817,7 @@
       "file_type": "rationale",
       "source_file": "openbb_client.py",
       "source_location": "L15",
-      "community": 7,
+      "community": 0,
       "norm_label": "return true if ticker has any dividend history across all providers.",
       "id": "src_openbb_client_rationale_15"
     }
@@ -1564,9 +2059,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L533",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openbb_client_py",
-      "target": "src_openbb_client_get_crypto_profile",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_get_crypto_profile"
     },
     {
       "relation": "contains",
@@ -3139,9 +3634,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L535",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_get_crypto_profile",
-      "target": "src_openbb_client_get_crypto_quote",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_get_crypto_quote"
     },
     {
       "relation": "calls",
@@ -3160,9 +3655,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L534",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_rationale_534",
-      "target": "src_openbb_client_get_crypto_profile",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_get_crypto_profile"
     },
     {
       "relation": "calls",
@@ -3192,9 +3687,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L617",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_rationale_617",
-      "target": "src_openbb_client_split_symbols",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_split_symbols"
     },
     {
       "relation": "rationale_for",
@@ -3233,9 +3728,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L632",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_rationale_632",
-      "target": "src_openbb_client_news_source",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_news_source"
     },
     {
       "relation": "rationale_for",
@@ -3263,9 +3758,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L649",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_rationale_649",
-      "target": "src_openbb_client_get_company_news",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_get_company_news"
     },
     {
       "relation": "rationale_for",
@@ -3293,9 +3788,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L698",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_rationale_698",
-      "target": "src_openbb_client_get_insider_trading",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_get_insider_trading"
     },
     {
       "relation": "rationale_for",
@@ -3333,9 +3828,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L724",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_rationale_724",
-      "target": "src_openbb_client_get_institutional_ownership",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_get_institutional_ownership"
     },
     {
       "relation": "rationale_for",
@@ -3373,9 +3868,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L750",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_rationale_750",
-      "target": "src_openbb_client_get_filings",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_get_filings"
     },
     {
       "relation": "rationale_for",
@@ -3413,9 +3908,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L776",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_rationale_776",
-      "target": "src_openbb_client_get_mda",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_get_mda"
     },
     {
       "relation": "rationale_for",
@@ -3453,9 +3948,9 @@
       "source_file": "openbb_client.py",
       "source_location": "L805",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_openbb_client_rationale_805",
-      "target": "src_openbb_client_get_logo",
-      "confidence_score": 1.0
+      "target": "src_openbb_client_get_logo"
     },
     {
       "relation": "calls",
@@ -3504,9 +3999,9 @@
       "source_file": "db.py",
       "source_location": "L22",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "db_py",
-      "target": "src_db_database_url",
-      "confidence_score": 1.0
+      "target": "src_db_database_url"
     },
     {
       "relation": "contains",
@@ -3514,9 +4009,9 @@
       "source_file": "db.py",
       "source_location": "L26",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "db_py",
-      "target": "src_db_get_conn",
-      "confidence_score": 1.0
+      "target": "src_db_get_conn"
     },
     {
       "relation": "contains",
@@ -3524,9 +4019,9 @@
       "source_file": "db.py",
       "source_location": "L36",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "db_py",
-      "target": "src_db_ensure_journal",
-      "confidence_score": 1.0
+      "target": "src_db_ensure_journal"
     },
     {
       "relation": "contains",
@@ -3534,9 +4029,9 @@
       "source_file": "db.py",
       "source_location": "L51",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "db_py",
-      "target": "src_db_pending",
-      "confidence_score": 1.0
+      "target": "src_db_pending"
     },
     {
       "relation": "contains",
@@ -3544,9 +4039,9 @@
       "source_file": "db.py",
       "source_location": "L59",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "db_py",
-      "target": "src_db_migrate",
-      "confidence_score": 1.0
+      "target": "src_db_migrate"
     },
     {
       "relation": "rationale_for",
@@ -3554,9 +4049,9 @@
       "source_file": "db.py",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_db_rationale_1",
-      "target": "db_py",
-      "confidence_score": 1.0
+      "target": "db_py"
     },
     {
       "relation": "calls",
@@ -3565,9 +4060,9 @@
       "source_file": "db.py",
       "source_location": "L30",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_db_get_conn",
-      "target": "src_db_database_url",
-      "confidence_score": 1.0
+      "target": "src_db_database_url"
     },
     {
       "relation": "calls",
@@ -3576,9 +4071,9 @@
       "source_file": "db.py",
       "source_location": "L70",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_db_migrate",
-      "target": "src_db_get_conn",
-      "confidence_score": 1.0
+      "target": "src_db_get_conn"
     },
     {
       "relation": "rationale_for",
@@ -3586,9 +4081,9 @@
       "source_file": "db.py",
       "source_location": "L27",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_db_rationale_27",
-      "target": "src_db_get_conn",
-      "confidence_score": 1.0
+      "target": "src_db_get_conn"
     },
     {
       "relation": "calls",
@@ -3597,9 +4092,9 @@
       "source_file": "db.py",
       "source_location": "L72",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_db_migrate",
-      "target": "src_db_ensure_journal",
-      "confidence_score": 1.0
+      "target": "src_db_ensure_journal"
     },
     {
       "relation": "calls",
@@ -3608,9 +4103,9 @@
       "source_file": "db.py",
       "source_location": "L74",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_db_migrate",
-      "target": "src_db_pending",
-      "confidence_score": 1.0
+      "target": "src_db_pending"
     },
     {
       "relation": "rationale_for",
@@ -3618,9 +4113,9 @@
       "source_file": "db.py",
       "source_location": "L60",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_db_rationale_60",
-      "target": "src_db_migrate",
-      "confidence_score": 1.0
+      "target": "src_db_migrate"
     },
     {
       "relation": "contains",
@@ -3684,15 +4179,26 @@
       "target": "src_cache_rediscache"
     },
     {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "importers/bond_series.py",
+      "source_location": "L281",
+      "weight": 1.0,
+      "source": "importers_bond_series_parse_offer_emissions",
+      "target": "src_cache_rediscache_set"
+    },
+    {
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "main.py",
       "source_location": "L16",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_py",
-      "target": "init_py",
-      "confidence_score": 1.0
+      "target": "init_py"
     },
     {
       "relation": "imports_from",
@@ -3721,9 +4227,9 @@
       "source_file": "main.py",
       "source_location": "L81",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_py",
-      "target": "src_main_run_migrations",
-      "confidence_score": 1.0
+      "target": "src_main_run_migrations"
     },
     {
       "relation": "contains",
@@ -3731,9 +4237,9 @@
       "source_file": "main.py",
       "source_location": "L95",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_py",
-      "target": "src_main_lifespan",
-      "confidence_score": 1.0
+      "target": "src_main_lifespan"
     },
     {
       "relation": "contains",
@@ -3911,9 +4417,9 @@
       "source_file": "main.py",
       "source_location": "L328",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_py",
-      "target": "src_main_crypto_search",
-      "confidence_score": 1.0
+      "target": "src_main_crypto_search"
     },
     {
       "relation": "contains",
@@ -3921,9 +4427,9 @@
       "source_file": "main.py",
       "source_location": "L343",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "main_py",
-      "target": "src_main_crypto_profile",
-      "confidence_score": 1.0
+      "target": "src_main_crypto_profile"
     },
     {
       "relation": "contains",
@@ -4041,9 +4547,9 @@
       "source_file": "main.py",
       "source_location": "L68",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_rationale_68",
-      "target": "src_main_safejsonresponse",
-      "confidence_score": 1.0
+      "target": "src_main_safejsonresponse"
     },
     {
       "relation": "rationale_for",
@@ -4082,7 +4588,17 @@
       "source_file": "main.py",
       "source_location": "L96",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_lifespan",
+      "target": "src_main_run_migrations"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "main.py",
+      "source_location": "L79",
+      "weight": 1.0,
+      "source": "src_main_rationale_79",
       "target": "src_main_run_migrations",
       "confidence_score": 1.0
     },
@@ -4092,9 +4608,9 @@
       "source_file": "main.py",
       "source_location": "L82",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_rationale_82",
-      "target": "src_main_run_migrations",
-      "confidence_score": 1.0
+      "target": "src_main_run_migrations"
     },
     {
       "relation": "calls",
@@ -4144,11 +4660,21 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "main.py",
-      "source_location": "L203",
+      "source_location": "L205",
       "weight": 1.0,
-      "source": "src_main_rationale_203",
+      "source": "src_main_rationale_205",
       "target": "src_main_safe_json_dumps",
       "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "main.py",
+      "source_location": "L203",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_main_rationale_203",
+      "target": "src_main_safe_json_dumps"
     },
     {
       "relation": "rationale_for",
@@ -4264,9 +4790,9 @@
       "source_file": "main.py",
       "source_location": "L335",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_crypto_search",
-      "target": "src_main_cached_or_404",
-      "confidence_score": 1.0
+      "target": "src_main_cached_or_404"
     },
     {
       "relation": "calls",
@@ -4275,9 +4801,9 @@
       "source_file": "main.py",
       "source_location": "L344",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_crypto_profile",
-      "target": "src_main_cached_or_404",
-      "confidence_score": 1.0
+      "target": "src_main_cached_or_404"
     },
     {
       "relation": "calls",
@@ -4430,8 +4956,793 @@
       "confidence_score": 1.0,
       "source": "src_otel_rationale_1",
       "target": "otel_py"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L109",
+      "weight": 1.0,
+      "source": "importers_bond_series_py",
+      "target": "importers_bond_series_bondfetcherror",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L118",
+      "weight": 1.0,
+      "source": "importers_bond_series_py",
+      "target": "importers_bond_series_strip_tags",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L126",
+      "weight": 1.0,
+      "source": "importers_bond_series_py",
+      "target": "importers_bond_series_dec",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L135",
+      "weight": 1.0,
+      "source": "importers_bond_series_py",
+      "target": "importers_bond_series_page_text",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L144",
+      "weight": 1.0,
+      "source": "importers_bond_series_py",
+      "target": "importers_bond_series_parse_pl_date",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L153",
+      "weight": 1.0,
+      "source": "importers_bond_series_py",
+      "target": "importers_bond_series_add_months",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L167",
+      "weight": 1.0,
+      "source": "importers_bond_series_py",
+      "target": "importers_bond_series_parse_detail_list",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L182",
+      "weight": 1.0,
+      "source": "importers_bond_series_py",
+      "target": "importers_bond_series_row",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L190",
+      "weight": 1.0,
+      "source": "importers_bond_series_py",
+      "target": "importers_bond_series_classify_rate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L200",
+      "weight": 1.0,
+      "source": "importers_bond_series_py",
+      "target": "importers_bond_series_extract_margin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L221",
+      "weight": 1.0,
+      "source": "importers_bond_series_py",
+      "target": "importers_bond_series_extract_fee",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L230",
+      "weight": 1.0,
+      "source": "importers_bond_series_py",
+      "target": "importers_bond_series_parse_emission",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L278",
+      "weight": 1.0,
+      "source": "importers_bond_series_py",
+      "target": "importers_bond_series_parse_offer_emissions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L295",
+      "weight": 1.0,
+      "source": "importers_bond_series_py",
+      "target": "importers_bond_series_fetch_page",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L313",
+      "weight": 1.0,
+      "source": "importers_bond_series_py",
+      "target": "importers_bond_series_sleep",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L318",
+      "weight": 1.0,
+      "source": "importers_bond_series_py",
+      "target": "importers_bond_series_run",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L353",
+      "weight": 1.0,
+      "source": "importers_bond_series_py",
+      "target": "importers_bond_series_upsert_bonds",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L388",
+      "weight": 1.0,
+      "source": "importers_bond_series_py",
+      "target": "importers_bond_series_main",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "importers_bond_series_rationale_1",
+      "target": "importers_bond_series_py",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L109",
+      "weight": 1.0,
+      "source": "importers_bond_series_bondfetcherror",
+      "target": "runtimeerror",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L309",
+      "weight": 1.0,
+      "source": "importers_bond_series_fetch_page",
+      "target": "importers_bond_series_bondfetcherror",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L110",
+      "weight": 1.0,
+      "source": "importers_bond_series_rationale_110",
+      "target": "importers_bond_series_bondfetcherror",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/cpi.py",
+      "source_location": "L42",
+      "weight": 1.0,
+      "source": "importers_cpi_cpifetcherror",
+      "target": "runtimeerror",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L176",
+      "weight": 1.0,
+      "source": "importers_bond_series_parse_detail_list",
+      "target": "importers_bond_series_strip_tags",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L248",
+      "weight": 1.0,
+      "source": "importers_bond_series_parse_emission",
+      "target": "importers_bond_series_strip_tags",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L119",
+      "weight": 1.0,
+      "source": "importers_bond_series_rationale_119",
+      "target": "importers_bond_series_strip_tags",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L210",
+      "weight": 1.0,
+      "source": "importers_bond_series_extract_margin",
+      "target": "importers_bond_series_dec",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L226",
+      "weight": 1.0,
+      "source": "importers_bond_series_extract_fee",
+      "target": "importers_bond_series_dec",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L127",
+      "weight": 1.0,
+      "source": "importers_bond_series_rationale_127",
+      "target": "importers_bond_series_dec",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L268",
+      "weight": 1.0,
+      "source": "importers_bond_series_parse_emission",
+      "target": "importers_bond_series_page_text",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L136",
+      "weight": 1.0,
+      "source": "importers_bond_series_rationale_136",
+      "target": "importers_bond_series_page_text",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L250",
+      "weight": 1.0,
+      "source": "importers_bond_series_parse_emission",
+      "target": "importers_bond_series_parse_pl_date",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L145",
+      "weight": 1.0,
+      "source": "importers_bond_series_rationale_145",
+      "target": "importers_bond_series_parse_pl_date",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L264",
+      "weight": 1.0,
+      "source": "importers_bond_series_parse_emission",
+      "target": "importers_bond_series_add_months",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L154",
+      "weight": 1.0,
+      "source": "importers_bond_series_rationale_154",
+      "target": "importers_bond_series_add_months",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L236",
+      "weight": 1.0,
+      "source": "importers_bond_series_parse_emission",
+      "target": "importers_bond_series_parse_detail_list",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L168",
+      "weight": 1.0,
+      "source": "importers_bond_series_rationale_168",
+      "target": "importers_bond_series_parse_detail_list",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L237",
+      "weight": 1.0,
+      "source": "importers_bond_series_parse_emission",
+      "target": "importers_bond_series_row",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L183",
+      "weight": 1.0,
+      "source": "importers_bond_series_rationale_183",
+      "target": "importers_bond_series_row",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L256",
+      "weight": 1.0,
+      "source": "importers_bond_series_parse_emission",
+      "target": "importers_bond_series_classify_rate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L191",
+      "weight": 1.0,
+      "source": "importers_bond_series_rationale_191",
+      "target": "importers_bond_series_classify_rate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L257",
+      "weight": 1.0,
+      "source": "importers_bond_series_parse_emission",
+      "target": "importers_bond_series_extract_margin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L201",
+      "weight": 1.0,
+      "source": "importers_bond_series_rationale_201",
+      "target": "importers_bond_series_extract_margin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L268",
+      "weight": 1.0,
+      "source": "importers_bond_series_parse_emission",
+      "target": "importers_bond_series_extract_fee",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L222",
+      "weight": 1.0,
+      "source": "importers_bond_series_rationale_222",
+      "target": "importers_bond_series_extract_fee",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L335",
+      "weight": 1.0,
+      "source": "importers_bond_series_run",
+      "target": "importers_bond_series_parse_emission",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L231",
+      "weight": 1.0,
+      "source": "importers_bond_series_rationale_231",
+      "target": "importers_bond_series_parse_emission",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L326",
+      "weight": 1.0,
+      "source": "importers_bond_series_run",
+      "target": "importers_bond_series_parse_offer_emissions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L279",
+      "weight": 1.0,
+      "source": "importers_bond_series_rationale_279",
+      "target": "importers_bond_series_parse_offer_emissions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L325",
+      "weight": 1.0,
+      "source": "importers_bond_series_run",
+      "target": "importers_bond_series_fetch_page",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L296",
+      "weight": 1.0,
+      "source": "importers_bond_series_rationale_296",
+      "target": "importers_bond_series_fetch_page",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L333",
+      "weight": 1.0,
+      "source": "importers_bond_series_run",
+      "target": "importers_bond_series_sleep",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L347",
+      "weight": 1.0,
+      "source": "importers_bond_series_run",
+      "target": "importers_bond_series_upsert_bonds",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L406",
+      "weight": 1.0,
+      "source": "importers_bond_series_main",
+      "target": "importers_bond_series_run",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L319",
+      "weight": 1.0,
+      "source": "importers_bond_series_rationale_319",
+      "target": "importers_bond_series_run",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/bond_series.py",
+      "source_location": "L354",
+      "weight": 1.0,
+      "source": "importers_bond_series_rationale_354",
+      "target": "importers_bond_series_upsert_bonds",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/cpi.py",
+      "source_location": "L42",
+      "weight": 1.0,
+      "source": "importers_cpi_py",
+      "target": "importers_cpi_cpifetcherror",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/cpi.py",
+      "source_location": "L46",
+      "weight": 1.0,
+      "source": "importers_cpi_py",
+      "target": "importers_cpi_build_url",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/cpi.py",
+      "source_location": "L58",
+      "weight": 1.0,
+      "source": "importers_cpi_py",
+      "target": "importers_cpi_parse_cpi_rows",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/cpi.py",
+      "source_location": "L75",
+      "weight": 1.0,
+      "source": "importers_cpi_py",
+      "target": "importers_cpi_fetch_cpi",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/cpi.py",
+      "source_location": "L91",
+      "weight": 1.0,
+      "source": "importers_cpi_py",
+      "target": "importers_cpi_upsert_cpi",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/cpi.py",
+      "source_location": "L109",
+      "weight": 1.0,
+      "source": "importers_cpi_py",
+      "target": "importers_cpi_run",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/cpi.py",
+      "source_location": "L129",
+      "weight": 1.0,
+      "source": "importers_cpi_py",
+      "target": "importers_cpi_main",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/cpi.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "importers_cpi_rationale_1",
+      "target": "importers_cpi_py",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/cpi.py",
+      "source_location": "L84",
+      "weight": 1.0,
+      "source": "importers_cpi_fetch_cpi",
+      "target": "importers_cpi_cpifetcherror",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/cpi.py",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "importers_cpi_rationale_43",
+      "target": "importers_cpi_cpifetcherror",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/cpi.py",
+      "source_location": "L79",
+      "weight": 1.0,
+      "source": "importers_cpi_fetch_cpi",
+      "target": "importers_cpi_build_url",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/cpi.py",
+      "source_location": "L47",
+      "weight": 1.0,
+      "source": "importers_cpi_rationale_47",
+      "target": "importers_cpi_build_url",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/cpi.py",
+      "source_location": "L85",
+      "weight": 1.0,
+      "source": "importers_cpi_fetch_cpi",
+      "target": "importers_cpi_parse_cpi_rows",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/cpi.py",
+      "source_location": "L59",
+      "weight": 1.0,
+      "source": "importers_cpi_rationale_59",
+      "target": "importers_cpi_parse_cpi_rows",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/cpi.py",
+      "source_location": "L112",
+      "weight": 1.0,
+      "source": "importers_cpi_run",
+      "target": "importers_cpi_fetch_cpi",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/cpi.py",
+      "source_location": "L78",
+      "weight": 1.0,
+      "source": "importers_cpi_rationale_78",
+      "target": "importers_cpi_fetch_cpi",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/cpi.py",
+      "source_location": "L123",
+      "weight": 1.0,
+      "source": "importers_cpi_run",
+      "target": "importers_cpi_upsert_cpi",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/cpi.py",
+      "source_location": "L92",
+      "weight": 1.0,
+      "source": "importers_cpi_rationale_92",
+      "target": "importers_cpi_upsert_cpi",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/cpi.py",
+      "source_location": "L141",
+      "weight": 1.0,
+      "source": "importers_cpi_main",
+      "target": "importers_cpi_run",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "importers/cpi.py",
+      "source_location": "L110",
+      "weight": 1.0,
+      "source": "importers_cpi_rationale_110",
+      "target": "importers_cpi_run",
+      "confidence_score": 1.0
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "c9fad2d36abdca3a5a0344bd8b8fe085194c9f50"
+  "built_at_commit": "d21677e67a4cd3d28dcca6d01831ab506d3681a0"
 }
