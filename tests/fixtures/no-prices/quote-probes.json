@@ -1,0 +1,109 @@
+{
+  "captured_at": "2026-09-20",
+  "source": "live prod openst via kubectl port-forward (read-only; responses cached in prod redis)",
+  "results": [
+    {
+      "probe": "corp_equity_bare",
+      "path": "/equity/quote/BST0327",
+      "status": 200,
+      "body_excerpt": "{\"symbol\": \"BST0327\", \"name\": \"BST0327 BEST\", \"last_price\": 100.52, \"open\": 100.52, \"high\": 100.52, \"low\": 100.52, \"volume\": 20}"
+    },
+    {
+      "probe": "corp_equity_wa",
+      "path": "/equity/quote/BST0327.WA",
+      "status": 200,
+      "body_excerpt": "{\"symbol\": \"BST0327.WA\", \"name\": \"BST0327 BEST\", \"last_price\": 100.52, \"open\": 100.52, \"high\": 100.52, \"low\": 100.52, \"volume\": 20}"
+    },
+    {
+      "probe": "corp_ohlcv_bare",
+      "path": "/price/ohlcv/BST0327?start=2026-09-01&end=2026-09-20",
+      "status": 200
+    },
+    {
+      "probe": "corp_ohlcv_wa",
+      "path": "/price/ohlcv/BST0327.WA?start=2026-09-01&end=2026-09-20",
+      "status": 200
+    },
+    {
+      "probe": "crypto_bare",
+      "path": "/crypto/quote/BTC",
+      "status": 404
+    },
+    {
+      "probe": "crypto_pair",
+      "path": "/crypto/quote/BTC-USD",
+      "status": 200,
+      "body_excerpt": "{\"symbol\": \"BTC-USD\", \"price\": 80986.8203, \"open\": 80877.2734, \"high\": 81886.1562, \"low\": 80837.0469, \"volume\": 20948695040, \"date\": \"2026-09-19\", \"change\": 85.3594, \"change_percent\": 0.0}"
+    },
+    {
+      "probe": "foreign_alv",
+      "path": "/equity/quote/ALV.DE",
+      "status": 200,
+      "body_excerpt": "{\"symbol\": \"ALV.DE\", \"asset_type\": \"EQUITY\", \"name\": \"Allianz SE\", \"exchange\": \"GER\", \"bid\": 441.3, \"bid_size\": 214900, \"ask\": 441.5, \"ask_size\": 10000, \"last_price\": 443.3, \"open\": 450.2, \"high\": 450.8, \"low\": 439.6, \"volume\": 1731545, \"prev_close\": 451.1, \"year_high\": 454.6, \"year_low\": 338.8, \"ma"
+    },
+    {
+      "probe": "foreign_nintendo",
+      "path": "/equity/quote/7974.T",
+      "status": 200,
+      "body_excerpt": "{\"symbol\": \"7974.T\", \"asset_type\": \"EQUITY\", \"name\": \"Nintendo Co., Ltd.\", \"exchange\": \"JPX\", \"bid\": 8338.0, \"bid_size\": 0, \"ask\": 8340.0, \"ask_size\": 0, \"last_price\": 8339.0, \"open\": 8350.0, \"high\": 8390.0, \"low\": 8251.0, \"volume\": 6274100, \"prev_close\": 8475.0, \"year_high\": 14630.0, \"year_low\": 65"
+    },
+    {
+      "probe": "foreign_sapde",
+      "path": "/equity/quote/SAP.DE",
+      "status": 200
+    },
+    {
+      "probe": "fund_tfi",
+      "path": "/equity/quote/NNEP25.TFI",
+      "status": 200,
+      "body_excerpt": "{\"symbol\": \"NNEP25.TFI\", \"name\": \"ING Emerytura 2025 (ING Emerytura SFIO)\", \"last_price\": 14.7, \"open\": 14.7, \"high\": 14.7, \"low\": 14.7, \"prev_close\": 14.61, \"change\": 0.09, \"change_percent\": 0.0062}"
+    },
+    {
+      "probe": "pl_bft",
+      "path": "/equity/quote/BFT.WA",
+      "status": 200
+    },
+    {
+      "probe": "pl_etfsp500",
+      "path": "/equity/quote/ETFSP500.WA",
+      "status": 200,
+      "body_excerpt": "{\"symbol\": \"ETFSP500.WA\", \"asset_type\": \"ETF\", \"name\": \"Amundi Core S&P 500 Swap UCITS ETF EUR Dist\", \"exchange\": \"WSE\", \"bid\": 300.1, \"ask\": 301.25, \"open\": 300.0, \"high\": 301.3, \"low\": 299.85, \"volume\": 2715, \"prev_close\": 299.05, \"year_high\": 301.5, \"year_low\": 60.3129, \"ma_50d\": 295.421, \"ma_200"
+    },
+    {
+      "probe": "savings_equity_404",
+      "path": "/equity/quote/ROD1033",
+      "status": 404
+    },
+    {
+      "probe": "savings_ohlcv",
+      "path": "/fixedincome/ohlcv/ROD1033?start=2026-09-01&end=2026-09-20",
+      "status": 200,
+      "body_excerpt": "[{\"date\": \"2026-09-01\", \"open\": 151.67, \"high\": 151.67, \"low\": 151.67, \"close\": 151.67, \"volume\": 0}, {\"date\": \"2026-09-02\", \"open\": 151.67, \"high\": 151.69, \"low\": 151.67, \"close\": 151.69, \"volume\": 0}, {\"date\": \"2026-09-03\", \"open\": 151.69, \"high\": 151.71, \"low\": 151.69, \"close\": 151.71, \"volume\": "
+    },
+    {
+      "probe": "savings_profile",
+      "path": "/fixedincome/profile/ROD1033",
+      "status": 200
+    },
+    {
+      "probe": "us_msft",
+      "path": "/equity/quote/MSFT",
+      "status": 200,
+      "body_excerpt": "{\"symbol\": \"MSFT\", \"asset_type\": \"EQUITY\", \"name\": \"Microsoft Corporation\", \"exchange\": \"NMS\", \"bid\": 494.42, \"bid_size\": 1, \"ask\": 520.0, \"ask_size\": 1, \"last_price\": 493.78, \"open\": 497.47, \"high\": 498.65, \"low\": 491.1, \"volume\": 39356144, \"prev_close\": 497.75, \"year_high\": 553.72, \"year_low\": 349"
+    },
+    {
+      "probe": "us_nvda",
+      "path": "/equity/quote/NVDA",
+      "status": 200
+    }
+  ],
+  "symbol_forms_verified": {
+    "savings_bond": "bare ROD1033 — equity quote 404, /fixedincome/ohlcv + /fixedincome/profile 200 (computed daily close, e.g. 2026-09-04 close 151.73 PLN)",
+    "corp_bond": "bare BST0327 AND BST0327.WA both 200 on /equity/quote (biznesradar dispatch from D80; 100.52 PLN); no normalization needed for corp_bond/fund quote dispatch",
+    "crypto": "pair form BTC-USD only (200); bare BTC 404 — stored symbol must be the -USD pair; NOTE shape uses 'price' not 'last_price' (toQuote must map)",
+    "pl_fund": "NNEP25.TFI 200 (last_price + prev_close present)",
+    "foreign_stock": "ALV.DE 200, 7974.T 200 (Nintendo), SAP.DE 200 — venue-qualified Yahoo form works",
+    "us_stock": "MSFT/NVDA 200 — no-price IBKR rows are stale state, not provider failure",
+    "pl_stock_etf": "BFT.WA 200, ETFSP500.WA 200"
+  }
+}
