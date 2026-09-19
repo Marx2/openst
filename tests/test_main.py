@@ -486,6 +486,55 @@ def test_fixedincome_profile_not_found_returns_404(mock_fn, client):
     assert client.get("/fixedincome/profile/UNKNOWN").status_code == 404
 
 
+@patch(
+    "src.openbb_client.get_bond_ohlcv",
+    return_value=[
+        {"date": "2026-08-05", "open": 151.71, "high": 151.71, "low": 151.71, "close": 151.71, "volume": 0},
+        {"date": "2026-09-04", "open": 151.71, "high": 151.73, "low": 151.71, "close": 151.73, "volume": 0},
+    ],
+)
+def test_fixedincome_quote_returns_last_price(mock_fn, client):
+    from datetime import date, timedelta
+
+    r = client.get("/fixedincome/quote/ROD1033")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["symbol"] == "ROD1033"
+    assert body["last_price"] == 151.73
+    assert body["prev_close"] == 151.71
+    assert body["change"] == 0.02
+    assert body["change_percent"] == 0.0001
+    assert body["currency"] == "PLN"
+    args = mock_fn.call_args.args
+    assert args[0] == "ROD1033"
+    assert args[1] == str(date.today() - timedelta(days=30))
+    assert args[2] == str(date.today())
+
+
+@patch(
+    "src.openbb_client.get_bond_ohlcv",
+    return_value=[{"date": "2026-09-04", "open": 151.73, "high": 151.73, "low": 151.73, "close": 151.73, "volume": 0}],
+)
+def test_fixedincome_quote_single_bar_omits_prev_close(mock_fn, client):
+    r = client.get("/fixedincome/quote/ROD1033")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["last_price"] == 151.73
+    assert "prev_close" not in body
+
+
+@patch("src.openbb_client.get_bond_ohlcv", return_value=None)
+def test_fixedincome_quote_not_found_returns_404(mock_fn, client):
+    assert client.get("/fixedincome/quote/UNKNOWN").status_code == 404
+
+
+@patch("src.main.get_bond_quote", return_value={"symbol": "ROD1033", "last_price": 151.73, "currency": "PLN"})
+def test_fixedincome_quote_hit_returns_cached(mock_fn, client):
+    client.get("/fixedincome/quote/ROD1033")
+    client.get("/fixedincome/quote/ROD1033")
+    assert mock_fn.call_count == 1
+
+
 @patch("src.main.get_corp_bond_profile", return_value={"symbol": "BST0327", "name": "Best S.A.", "asset_type": "corp_bond"})
 def test_corp_bond_profile_returns_record(mock_fn, client):
     r = client.get("/corp-bond/profile/BST0327")

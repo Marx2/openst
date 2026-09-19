@@ -579,6 +579,42 @@ def get_bond_ohlcv(symbol: str, start_date: str, end_date: str) -> list[dict] | 
         return None
 
 
+def get_bond_quote(symbol: str) -> dict | None:
+    """Current computed price for a savings-bond emission (plan 34.2).
+
+    Takes the last 1-2 bars over a recent 30-day window — savings bonds move
+    infrequently, so today alone may not yield a prev_close. Shaped like the
+    equity quote (``last_price`` etc.) so portfoliost-instruments' existing
+    ``toQuote`` translator reuses it unchanged. Returns ``None`` when the
+    engine has no bar (unknown symbol / before issue date).
+    """
+    from datetime import date, timedelta
+
+    end = date.today()
+    start = end - timedelta(days=30)
+    rows = get_bond_ohlcv(symbol, str(start), str(end))
+    if not rows:
+        return None
+    latest = rows[-1]
+    close = latest["close"]
+    quote: dict = {
+        "symbol": symbol,
+        "last_price": close,
+        "open": latest["open"],
+        "high": latest["high"],
+        "low": latest["low"],
+        "currency": "PLN",
+        "date": latest["date"],
+    }
+    if len(rows) >= 2:
+        prev_close = rows[-2]["close"]
+        change = round(close - prev_close, 4)
+        quote["prev_close"] = prev_close
+        quote["change"] = change
+        quote["change_percent"] = round(change / prev_close, 4) if prev_close else None
+    return quote
+
+
 def _bond_profile_from_db(symbol: str) -> dict | None:
     """Read a bond emission's 10-column row from Postgres (D79 21.3).
 
