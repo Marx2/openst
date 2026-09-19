@@ -39,6 +39,7 @@ from .openbb_client import (
     STATEMENTS,
     get_bond_ohlcv,
     get_bond_profile,
+    get_bond_quote,
     get_corp_bond_profile,
     get_calendar,
     get_company_news,
@@ -517,6 +518,15 @@ def fixedincome_ohlcv(
         f"fixedincome_ohlcv:{symbol}:{start}:{end}",
         lambda: get_bond_ohlcv(symbol, start, end),
         f"No bond OHLCV history for {symbol}",
+    )
+
+
+@app.get("/fixedincome/quote/{symbol}")
+def fixedincome_quote(symbol: str):
+    return _cached_or_404(
+        f"fixedincome_quote:{symbol}",
+        lambda: get_bond_quote(symbol),
+        f"No bond quote for {symbol}",
     )
 
 
