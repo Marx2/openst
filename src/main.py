@@ -538,6 +538,35 @@ def corp_bond_profile(symbol: str):
     )
 
 
+@app.get("/corp-bond/catalogue")
+def corp_bond_catalogue():
+    """Full listed corp-bond catalogue as a tickerref CSV (D80 25.3).
+
+    Single server-rendered page scrape (~900 rows); Redis-cached like the
+    other profile endpoints so a daily consumer (instruments tickerref
+    CronJob) costs obligacje.pl one request per cache expiry. Lazy import
+    keeps the heavy scraper module out of service startup.
+    """
+    from .importers.corp_bond_catalogue import fetch_catalogue, to_tickerref_csv
+
+    def fetch():
+        rows = fetch_catalogue()
+        if not rows:
+            return None
+        return to_tickerref_csv(rows)
+
+    cached = _cache.get("corp_bond_catalogue")
+    if cached is not None:
+        return Response(content=cached, media_type="text/csv")
+
+    csv_text = fetch()
+    if csv_text is None:
+        raise HTTPException(status_code=404, detail="No corporate-bond catalogue rows")
+
+    _cache.set("corp_bond_catalogue", csv_text)
+    return Response(content=csv_text, media_type="text/csv")
+
+
 @app.get("/fixedincome/search/{query}")
 def fixedincome_search(query: str):
     normalized = query.strip().lower()

@@ -500,6 +500,41 @@ def test_corp_bond_profile_not_found_returns_404(mock_fn, client):
     assert client.get("/corp-bond/profile/UNKNOWN").status_code == 404
 
 
+@patch("src.main.RedisCache.get", return_value=None)
+@patch("src.main.RedisCache.set")
+@patch(
+    "src.importers.corp_bond_catalogue.fetch_catalogue",
+    return_value=[{"symbol": "BST0327", "issuer": "Best S.A."}],
+)
+@patch(
+    "src.importers.corp_bond_catalogue.to_tickerref_csv",
+    return_value="listing_key,ticker,exchange,name,asset_type,stock_sector,etf_category,country,country_code,isin,aliases\nWSE::BST0327,BST0327,WSE,Best S.A.,corp_bond,,,Poland,PL,,\n",
+)
+def test_corp_bond_catalogue_returns_csv(mock_csv, mock_rows, mock_set, mock_get, client):
+    r = client.get("/corp-bond/catalogue")
+    assert r.status_code == 200
+    assert r.headers["content-type"].startswith("text/csv")
+    assert "WSE::BST0327" in r.text
+    mock_rows.assert_called_once()
+    mock_set.assert_called_once()
+
+
+@patch("src.main.RedisCache.get", return_value=None)
+@patch("src.main.RedisCache.set")
+@patch("src.importers.corp_bond_catalogue.fetch_catalogue", return_value=[])
+def test_corp_bond_catalogue_empty_returns_404(mock_rows, mock_set, mock_get, client):
+    assert client.get("/corp-bond/catalogue").status_code == 404
+
+
+@patch("src.main.RedisCache.get", return_value="cached-csv")
+@patch("src.main.RedisCache.set")
+def test_corp_bond_catalogue_serves_cache(mock_set, mock_get, client):
+    r = client.get("/corp-bond/catalogue")
+    assert r.status_code == 200
+    assert r.text == "cached-csv"
+    mock_set.assert_not_called()
+
+
 @patch("src.main.search_bonds", return_value=[{"symbol": "EDO0936", "name": "10-letnie EDO"}])
 def test_fixedincome_search_returns_results(mock_fn, client):
     r = client.get("/fixedincome/search/EDO")
