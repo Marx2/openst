@@ -633,6 +633,27 @@ def get_bond_profile(symbol: str) -> dict | None:
         return None
 
 
+def get_corp_bond_profile(symbol: str) -> dict | None:
+    """Profile metadata for a Catalyst corporate bond (D80 25.3).
+
+    Routed through the ``biznesradar`` provider, whose
+    ``EquityProfileFetcher.fetch_data`` dispatches Catalyst codes
+    (three uppercase letters + four digits, e.g. ``BST0327``) to the
+    obligacje.pl ``CorporateBondProfileFetcher`` and otherwise probes
+    biznesradar (empty for bonds). Returns ``None`` when the bond is
+    unknown.
+    """
+    try:
+        df = obb.equity.profile(symbol, provider="biznesradar").to_df()
+        if df.empty:
+            return None
+        records = _df_records(df)
+        return records[0] if records else None
+    except Exception as e:
+        logger.warning("corp-bond profile failed for %s: %s", symbol, e)
+        return None
+
+
 def _bond_search_from_db(query: str) -> list[dict] | None:
     """Search savings-bond emissions in Postgres (D79 21.3).
 

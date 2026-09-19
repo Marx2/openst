@@ -486,6 +486,20 @@ def test_fixedincome_profile_not_found_returns_404(mock_fn, client):
     assert client.get("/fixedincome/profile/UNKNOWN").status_code == 404
 
 
+@patch("src.main.get_corp_bond_profile", return_value={"symbol": "BST0327", "name": "Best S.A.", "asset_type": "corp_bond"})
+def test_corp_bond_profile_returns_record(mock_fn, client):
+    r = client.get("/corp-bond/profile/BST0327")
+    assert r.status_code == 200
+    assert r.json()["symbol"] == "BST0327"
+    assert r.json()["asset_type"] == "corp_bond"
+    mock_fn.assert_called_once_with("BST0327")
+
+
+@patch("src.main.get_corp_bond_profile", return_value=None)
+def test_corp_bond_profile_not_found_returns_404(mock_fn, client):
+    assert client.get("/corp-bond/profile/UNKNOWN").status_code == 404
+
+
 @patch("src.main.search_bonds", return_value=[{"symbol": "EDO0936", "name": "10-letnie EDO"}])
 def test_fixedincome_search_returns_results(mock_fn, client):
     r = client.get("/fixedincome/search/EDO")
