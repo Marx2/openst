@@ -9,14 +9,15 @@ WORKDIR /app
 COPY --from=builder /install /usr/local
 # the editable-install finder points at the source tree's absolute build path
 COPY plugins/ /build/plugins/
-# plugin tests live here; run them via `pytest plugins/` (isolated from tests/ to
-# avoid a "tests" package-name collision) 
+# plugin tests live here; they run as a SEPARATE pytest invocation because a
+# combined run hits a "tests" package-name collision (both trees have
+# __init__.py) — see ImportPathMismatchError
 COPY plugins/ /app/plugins/
 COPY pytest.ini ./
 COPY src/ ./src/
 COPY tests/ ./tests/
 COPY migrations/ ./migrations/
-CMD ["python", "-m", "pytest", "tests/", "-v"]
+CMD ["sh", "-c", "python -m pytest tests/ -v && python -m pytest plugins/openbb_biznesradar/tests/ -v && python -m pytest plugins/openbb_obligacje/tests/ -v"]
 
 FROM python:3.12-slim AS runtime
 WORKDIR /app

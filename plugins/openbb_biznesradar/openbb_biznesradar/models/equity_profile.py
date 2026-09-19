@@ -7,6 +7,11 @@ does not (allowing fallback to the next provider in PROFILE_PROVIDERS).
 Note: OpenBB registers profile under the ``EquityInfo`` model key (the router
 uses ``EquityInfoQueryParams`` / ``EquityInfoData``).  ``EquityInfoData`` has no
 ``currency`` field so that is omitted; ``hq_country`` is used as the PL marker.
+
+D80 25.2: ``fetch_data`` (the entry point the OpenBB router calls — there is
+no ``__call__`` on ``Fetcher``) dispatches Catalyst corporate-bond symbols to
+:class:`~openbb_biznesradar.models.corp_bond_profile.CorporateBondProfileFetcher`
+(obligacje.pl) before trying biznesradar.
 """
 
 from __future__ import annotations
@@ -17,6 +22,8 @@ from openbb_core.provider.standard_models.equity_info import (
     EquityInfoQueryParams,
 )
 
+from openbb_biznesradar import obligacje
+from openbb_biznesradar.models.corp_bond_profile import CorporateBondProfileFetcher
 from openbb_biznesradar.scraper import probe_notowania
 
 
@@ -71,3 +78,32 @@ class EquityProfileFetcher(
         del query
         del kwargs
         return [BiznesRadarEquityProfileData(**row) for row in data]
+
+    @classmethod
+    async def fetch_data(cls, params, credentials=None, **kwargs):
+        r"""Dispatch Catalyst corporate-bond symbols to obligacje.pl (D80 25.2).
+
+        ``[A-Z]{3}\d{4}(\.WA)?(-K)?`` codes (e.g. ``BST0327``) scrape
+        ``obligacje.pl/pl/obligacja/{symbol}`` via
+        :class:`CorporateBondProfileFetcher`.  The code shape alone is
+        ambiguous — retail savings-bond codes (``ROD1033``, ``EDO0936``)
+        match it too, but obligacje.pl only lists corporate bonds, so a 404
+        there is expected: the dispatch *probes* the bond page and falls
+        back to the biznesradar ``/notowania`` path when it resolves
+        nothing.  Savings bonds never reach biznesradar (their profile
+        lives on the ``/fixedincome/profile`` surface, D79), so the fallback
+        only costs one extra 404 for genuinely unknown codes.
+        """
+        symbol = str(params.get("symbol", "")).strip()
+        if obligacje.is_catalyst_bond_symbol(symbol):
+            try:
+                result = await CorporateBondProfileFetcher.fetch_data(
+                    params=params, credentials=credentials, **kwargs
+                )
+            except Exception:
+                result = []
+            if result:
+                return result
+        return await super().fetch_data(
+            params=params, credentials=credentials, **kwargs
+        )
