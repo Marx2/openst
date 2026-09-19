@@ -1,0 +1,834 @@
+{
+  "captured_at": "2026-09-20",
+  "source": "portfoliost prod DB (read-only), portfolios.positions where is_open and (current_price is null or current_price = 0)",
+  "count": 82,
+  "groups": {
+    "savings_bond": "asset_type=BOND (ROD*/EDO*) — equity quote 404s; needs /fixedincome/quote (plan 34.2)",
+    "name_stored_fund": "STOCK stored by fund name, country=Other — needs Podsumowanie catalog Symbol Yahoo (plan 34.7)",
+    "name_stored_stock": "STOCK stored by company name (ALLIANZ SE), country=Other — needs catalog venue (plan 34.7)",
+    "stale_equity": "plain US/PL/foreign stocks (IBKR, Rach. rejestrowy PKO BP, ...) — provider quotes work live (MSFT/NVDA/ETFSP500.WA/SAP.DE probed 200); price_as_of NULL after 2026-09-19 21:47 UTC recompute (plan 28.6); self-heal on next refreshQuotes read",
+    "option": "SAP.DE OPTION — no options quote branch; out of scope for 34"
+  },
+  "rows": [
+    {
+      "symbol": "EDO0232",
+      "asset_type": "BOND",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 80.0,
+      "portfolio": "Rach. rejestrowy PKO BP",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "EDO0636",
+      "asset_type": "BOND",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 150.0,
+      "portfolio": "Obligacje PKO SA Beata",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "EDO0636",
+      "asset_type": "BOND",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 50.0,
+      "portfolio": "Rach. rejestrowy PKO BP",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "EDO0735",
+      "asset_type": "BOND",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 1000.0,
+      "portfolio": "Obligacje PKO SA Beata",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "EDO1233",
+      "asset_type": "BOND",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 2.0,
+      "portfolio": "Rach. rejestrowy PKO BP",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "EDO1235",
+      "asset_type": "BOND",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 50.0,
+      "portfolio": "Rach. rejestrowy PKO BP",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ROD0135",
+      "asset_type": "BOND",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 5.0,
+      "portfolio": "Rach. rejestrowy PKO BP",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ROD0234",
+      "asset_type": "BOND",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 15.0,
+      "portfolio": "Rach. rejestrowy PKO BP",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ROD0235",
+      "asset_type": "BOND",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 5.0,
+      "portfolio": "Rach. rejestrowy PKO BP",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ROD0335",
+      "asset_type": "BOND",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 5.0,
+      "portfolio": "Rach. rejestrowy PKO BP",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ROD0435",
+      "asset_type": "BOND",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 5.0,
+      "portfolio": "Rach. rejestrowy PKO BP",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ROD0534",
+      "asset_type": "BOND",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 15.0,
+      "portfolio": "Rach. rejestrowy PKO BP",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ROD0535",
+      "asset_type": "BOND",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 5.0,
+      "portfolio": "Rach. rejestrowy PKO BP",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ROD0635",
+      "asset_type": "BOND",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 5.0,
+      "portfolio": "Rach. rejestrowy PKO BP",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ROD0734",
+      "asset_type": "BOND",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 10.0,
+      "portfolio": "Rach. rejestrowy PKO BP",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ROD0735",
+      "asset_type": "BOND",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 5.0,
+      "portfolio": "Rach. rejestrowy PKO BP",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ROD0834",
+      "asset_type": "BOND",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 5.0,
+      "portfolio": "Rach. rejestrowy PKO BP",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ROD0835",
+      "asset_type": "BOND",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 5.0,
+      "portfolio": "Rach. rejestrowy PKO BP",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ROD0935",
+      "asset_type": "BOND",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 5.0,
+      "portfolio": "Rach. rejestrowy PKO BP",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ROD1033",
+      "asset_type": "BOND",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 60.0,
+      "portfolio": "Rach. rejestrowy PKO BP",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ROD1034",
+      "asset_type": "BOND",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 10.0,
+      "portfolio": "Rach. rejestrowy PKO BP",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ROD1035",
+      "asset_type": "BOND",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 5.0,
+      "portfolio": "Rach. rejestrowy PKO BP",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ROD1135",
+      "asset_type": "BOND",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 5.0,
+      "portfolio": "Rach. rejestrowy PKO BP",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ROD1234",
+      "asset_type": "BOND",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 10.0,
+      "portfolio": "Rach. rejestrowy PKO BP",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ROD1235",
+      "asset_type": "BOND",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 3.0,
+      "portfolio": "Rach. rejestrowy PKO BP",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "SAP.DE",
+      "asset_type": "OPTION",
+      "country": "DE",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 24.0,
+      "portfolio": "Equate+",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ABBV",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 10.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ADC",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 52.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ADP",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 10.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ADYEN.AS",
+      "asset_type": "STOCK",
+      "country": "NL",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 1.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ALLIANZ SE",
+      "asset_type": "STOCK",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 5.0,
+      "portfolio": "IKE Marek",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "AMAT",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 1.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "AMD",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 5.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ARE",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 20.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ASML",
+      "asset_type": "STOCK",
+      "country": "NL",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 2.0,
+      "portfolio": "IKE Marek",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "AVGO",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 2.0,
+      "portfolio": "IKE Marek",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "BETA ETF BITCOIN PORTFELOWY FIZ (ACC) (PLN)",
+      "asset_type": "STOCK",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 80.0,
+      "portfolio": "IKE Beata",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "BFT.WA",
+      "asset_type": "STOCK",
+      "country": "PL",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 1.0,
+      "portfolio": "IKE Marek",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "BYG.L",
+      "asset_type": "STOCK",
+      "country": "GB",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 160.0,
+      "portfolio": "IKE Marek",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "CDNS",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 6.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "CRI.WA",
+      "asset_type": "STOCK",
+      "country": "PL",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 13.0,
+      "portfolio": "IKE Marek",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "CRQ.WA",
+      "asset_type": "STOCK",
+      "country": "PL",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 13.0,
+      "portfolio": "IKE Marek",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "CSN.L",
+      "asset_type": "STOCK",
+      "country": "GB",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 861.0,
+      "portfolio": "IKE Marek",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "CSU.TO",
+      "asset_type": "STOCK",
+      "country": "CA",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 1.2,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "CUBE",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 59.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "EMIM",
+      "asset_type": "STOCK",
+      "country": "IE",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 80.0,
+      "portfolio": "IKE Beata",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ETFSP500.WA",
+      "asset_type": "STOCK",
+      "country": "PL",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 52.0,
+      "portfolio": "IKE Beata",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "GOLDMAN SACHS AKCJI",
+      "asset_type": "STOCK",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 211.511331,
+      "portfolio": "NN TFI PPO",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "GOLDMAN SACHS EMERYTURA 2065",
+      "asset_type": "STOCK",
+      "country": "Other",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 6226.589489,
+      "portfolio": "NN TFI PPK",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "GRAB",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 340.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "ISRG",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 3.0,
+      "portfolio": "IKE Marek",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "JNJ",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 16.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "KLAC",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 4.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "LLY",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 1.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "LRCX",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 2.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "MA",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 5.5,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "MELI",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 0.46,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "META",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 1.3,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "MFC",
+      "asset_type": "STOCK",
+      "country": "CA",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 64.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "MSFT",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 7.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "MUV2.F",
+      "asset_type": "STOCK",
+      "country": "DE",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 1.0,
+      "portfolio": "IKE Marek",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "NET",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 2.0,
+      "portfolio": "IKE Marek",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "NN.AS",
+      "asset_type": "STOCK",
+      "country": "NL",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 43.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "NU",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 63.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "NVDA",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 6.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "NVO",
+      "asset_type": "STOCK",
+      "country": "DK",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 28.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "O",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 41.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "PLTR",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 5.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "QCOM",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 8.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "RBOE.DE",
+      "asset_type": "STOCK",
+      "country": "LU",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 53.0,
+      "portfolio": "IKE Beata",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "SAP.DE",
+      "asset_type": "STOCK",
+      "country": "DE",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 481.765762,
+      "portfolio": "Equate+",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "SCW.WA",
+      "asset_type": "STOCK",
+      "country": "PL",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 25.0,
+      "portfolio": "IKE Marek",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "SP20.L",
+      "asset_type": "STOCK",
+      "country": "IE",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 300.0,
+      "portfolio": "IKE Beata",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "SRT.F",
+      "asset_type": "STOCK",
+      "country": "DE",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 1.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "TSM",
+      "asset_type": "STOCK",
+      "country": "TW",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 9.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "TXN",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 5.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "UBER",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 13.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "UNH",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 4.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "V",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 5.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "VICI",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 105.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "VRC.WA",
+      "asset_type": "STOCK",
+      "country": "PL",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 49.0,
+      "portfolio": "IKE Marek",
+      "price_as_of_null": true
+    },
+    {
+      "symbol": "WPC",
+      "asset_type": "STOCK",
+      "country": "US",
+      "price_source": "manual",
+      "current_price": null,
+      "quantity": 52.0,
+      "portfolio": "IBKR",
+      "price_as_of_null": true
+    }
+  ]
+}
