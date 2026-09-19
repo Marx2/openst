@@ -39,6 +39,7 @@ from .openbb_client import (
     STATEMENTS,
     get_bond_ohlcv,
     get_bond_profile,
+    get_corp_bond_profile,
     get_calendar,
     get_company_news,
     get_crypto_ohlcv,
@@ -525,6 +526,15 @@ def fixedincome_profile(symbol: str):
         f"fixedincome_profile:{symbol}",
         lambda: get_bond_profile(symbol),
         f"No bond profile for {symbol}",
+    )
+
+
+@app.get("/corp-bond/profile/{symbol}")
+def corp_bond_profile(symbol: str):
+    return _cached_or_404(
+        f"corp_bond_profile:{symbol}",
+        lambda: get_corp_bond_profile(symbol),
+        f"No corporate-bond profile for {symbol}",
     )
 
 

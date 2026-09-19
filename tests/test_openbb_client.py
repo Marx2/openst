@@ -1373,6 +1373,37 @@ def test_get_bond_profile_db_empty_falls_back_to_openbb(mock_obb, monkeypatch):
 
 
 @patch("src.openbb_client.obb")
+def test_get_corp_bond_profile_routes_biznesradar(mock_obb):
+    mock_result = MagicMock()
+    mock_result.to_df.return_value = pd.DataFrame(
+        [{"symbol": "BST0327", "name": "Best S.A.", "asset_type": "corp_bond"}]
+    )
+    mock_obb.equity.profile.return_value = mock_result
+
+    result = openbb_client.get_corp_bond_profile("BST0327")
+
+    assert result["symbol"] == "BST0327"
+    assert result["asset_type"] == "corp_bond"
+    mock_obb.equity.profile.assert_called_once_with("BST0327", provider="biznesradar")
+
+
+@patch("src.openbb_client.obb")
+def test_get_corp_bond_profile_empty_returns_none(mock_obb):
+    mock_result = MagicMock()
+    mock_result.to_df.return_value = pd.DataFrame()
+    mock_obb.equity.profile.return_value = mock_result
+
+    assert openbb_client.get_corp_bond_profile("BST9999") is None
+
+
+@patch("src.openbb_client.obb")
+def test_get_corp_bond_profile_error_returns_none(mock_obb):
+    mock_obb.equity.profile.side_effect = Exception("scrape failed")
+
+    assert openbb_client.get_corp_bond_profile("BST0327") is None
+
+
+@patch("src.openbb_client.obb")
 def test_get_bond_profile_no_db_uses_pure_openbb_path(mock_obb, monkeypatch):
     monkeypatch.setattr(openbb_client.db, "database_url", lambda: None)
     mock_result = MagicMock()

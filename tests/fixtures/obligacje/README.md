@@ -50,6 +50,7 @@ catalogue page exposes it as a dedicated column.
   6. Rentowność — calculator link, ignore
 - Symbols are plain (no `.WA` suffix, no `-K`-less variants); special
   characters allowed: `BOS0735-K`, `MBK01PERP-K`, `PEO0435-K`, `PKO1034-K`.
-- Count at capture: **937 rows, 932 unique symbols** (5 duplicate codes
-  appear twice — e.g. a bond re-listed; dedupe by symbol when emitting the
-  CSV).
+- Count at capture: **937 rows, 937 unique symbols** (no duplicates). 5 codes
+  carry a hyphen suffix: `BOS0735-K`, `MBK01PERP-K`, `PEO0435-K`, `PKO0935-K`,
+  `PKO1034-K`. Note: any `[A-Z0-9.]+`-style symbol regex will undercount (misses
+  the hyphenated codes) — match with a character set that includes `-`.
