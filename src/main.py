@@ -74,6 +74,15 @@ from fastapi.responses import JSONResponse as _JSONResponse
 _NEGATIVE_SENTINEL = "__openst_null__"
 NEGATIVE_TTL = 6 * 3600
 
+# plan §37.4 — bound in-flight upstream fetches. Endpoints are sync (they run
+# in the threadpool) and a single provider walk can take 2-15 s; an unbounded
+# burst piles up dozens of long walks in the process and OOMs the pod
+# (incident 2026-09-20). Beyond the bound, requests queue and finish.
+import threading
+
+UPSTREAM_MAX_INFLIGHT = int(os.environ.get("UPSTREAM_MAX_INFLIGHT", "8"))
+_upstream_gate = threading.Semaphore(UPSTREAM_MAX_INFLIGHT)
+
 
 class _SafeJSONResponse(_JSONResponse):
     """JSONResponse that serializes NaN/Inf floats as null instead of crashing."""
@@ -243,7 +252,8 @@ def _cached_or_404(key: str, fetch, not_found_msg: str):
             raise HTTPException(status_code=404, detail=not_found_msg)
         return json.loads(cached)
 
-    value = fetch()
+    with _upstream_gate:  # plan §37.4 — bound in-flight provider walks
+        value = fetch()
     if value is None:
         # Only `None` (every provider failed) is negative-cached; `[]` (a
         # valid empty result, e.g. price_ohlcv for an invalid ticker) still
@@ -585,7 +595,8 @@ def corp_bond_catalogue():
     if cached is not None:
         return Response(content=cached, media_type="text/csv")
 
-    csv_text = fetch()
+    with _upstream_gate:  # plan §37.4 — the catalogue scrape is a fetch too
+        csv_text = fetch()
     if csv_text is None:
         raise HTTPException(status_code=404, detail="No corporate-bond catalogue rows")
 
