@@ -138,6 +138,47 @@ def test_profile_not_found_returns_404(mock_fn, client):
     assert client.get("/equity/profile/UNKNOWN").status_code == 404
 
 
+@patch("src.main.get_profile", return_value=None)
+def test_not_found_is_negative_cached(mock_fn, client):
+    """§37.3 — a 404 (None fetch) is remembered; the provider walk doesn't re-run."""
+    assert client.get("/equity/profile/DEAD").status_code == 404
+    assert client.get("/equity/profile/DEAD").status_code == 404
+    assert mock_fn.call_count == 1
+
+
+@patch("src.main.get_profile", return_value={"name": "Apple Inc"})
+def test_negative_entry_expires_and_is_overwritten_by_a_success(mock_fn, client):
+    """§37.3 — the negative entry only blocks for its TTL; after expiry the
+    fetch runs again and a success overwrites the sentinel."""
+    import time
+
+    import src.main as m
+
+    m._cache.set("equity_profile:FIX", m._NEGATIVE_SENTINEL, ttl=1)
+    # sentinel active → fast 404, no fetch
+    assert client.get("/equity/profile/FIX").status_code == 404
+    assert mock_fn.call_count == 0
+    time.sleep(1.2)  # let the 1 s TTL expire
+    r = client.get("/equity/profile/FIX")
+    assert r.status_code == 200
+    assert r.json() == {"name": "Apple Inc"}
+    assert mock_fn.call_count == 1
+    assert m._cache.get("equity_profile:FIX") != m._NEGATIVE_SENTINEL
+
+
+@patch("src.main.get_ohlcv_history", return_value=[])
+def test_empty_ohlcv_list_is_not_negative_cached(mock_fn, client):
+    """§37.3 — `[]` is a valid empty result (passes through _cached_or_404 as
+    a success), never the None sentinel; a real failure (None) IS cached."""
+    import src.main as m
+
+    client.get("/price/ohlcv/EMPTY")
+    # the empty list was cached as data ("[]"), not the sentinel
+    keys = [k for k in m._cache._client.scan_iter("price_ohlcv:EMPTY:*")]
+    assert keys, "price_ohlcv empty result should be cached"
+    assert all(m._cache._client.get(k) != m._NEGATIVE_SENTINEL for k in keys)
+
+
 @patch("src.main.get_profile", return_value={"name": "Apple Inc"})
 def test_profile_hit_returns_cached(mock_fn, client):
     client.get("/equity/profile/AAPL")

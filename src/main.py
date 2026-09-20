@@ -68,6 +68,12 @@ from .openbb_client import (
 import re as _re
 from fastapi.responses import JSONResponse as _JSONResponse
 
+# plan §37.3 — 404 negative cache. A `None` fetch result (every provider
+# failed for the symbol) is remembered for NEGATIVE_TTL seconds so delisted /
+# unknown tickers stop re-running the full provider walk on every request.
+_NEGATIVE_SENTINEL = "__openst_null__"
+NEGATIVE_TTL = 6 * 3600
+
 
 class _SafeJSONResponse(_JSONResponse):
     """JSONResponse that serializes NaN/Inf floats as null instead of crashing."""
@@ -229,10 +235,20 @@ def _safe_json_dumps(value) -> str:
 def _cached_or_404(key: str, fetch, not_found_msg: str):
     cached = _cache.get(key)
     if cached is not None:
+        if cached == _NEGATIVE_SENTINEL:
+            # Negative cache: this key 404'd recently (delisted/unknown
+            # symbol). Serve the 404 without re-paying the provider walk —
+            # plan §37.3 (each re-probe of a dead ticker fans out across all
+            # PRICE_PROVIDERS for 2-15 s).
+            raise HTTPException(status_code=404, detail=not_found_msg)
         return json.loads(cached)
 
     value = fetch()
     if value is None:
+        # Only `None` (every provider failed) is negative-cached; `[]` (a
+        # valid empty result, e.g. price_ohlcv for an invalid ticker) still
+        # 404s today but is re-checked normally.
+        _cache.set(key, _NEGATIVE_SENTINEL, ttl=NEGATIVE_TTL)
         raise HTTPException(status_code=404, detail=not_found_msg)
 
     _cache.set(key, _safe_json_dumps(value))
