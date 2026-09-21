@@ -2,6 +2,10 @@
 
 Scrapes the live quote fields (last price, open/high/low, volume, change,
 change_percent, prev_close, name) from the biznesradar instrument page.
+``currency`` (45.1) is present only when the page declares
+``<meta itemprop="priceCurrency" content="...">`` — a provider-specific extra
+(``EquityQuoteData`` has no currency field; ``extra="allow"`` keeps it),
+mirroring ``CorporateBondProfileData.currency``.
 Returns a single-element list; raises EmptyDataError when the page is
 unavailable or the symbol does not resolve.
 """

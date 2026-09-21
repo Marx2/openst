@@ -97,6 +97,20 @@ def probe_notowania(symbol: str, fetch_delay_s: float = 0.0) -> str | None:
     timeout, ``BeautifulSoup``), so politeness/rate-limit behaviour stays in a
     single place.  ``fetch_delay_s``, when > 0, sleeps before the request.
     """
+    name, _ = probe_notowania_full(symbol, fetch_delay_s=fetch_delay_s)
+    return name
+
+
+def probe_notowania_full(symbol: str, fetch_delay_s: float = 0.0) -> tuple[str | None, str | None]:
+    """Like :func:`probe_notowania` but also returns the page currency (45.1).
+
+    Returns ``(name, currency)``: the display name (see
+    :func:`probe_notowania`) plus the ``<meta itemprop="priceCurrency">``
+    value from the same page (e.g. ``"PLN"`` for every Polish fund page).
+    Either element may be ``None``; both are ``None`` when the page does not
+    resolve.  The profile probe and the quote scrape share this single fetch
+    of ``/notowania/{symbol}``.
+    """
     symbol = strip_wa_suffix(symbol)
     if fetch_delay_s > 0:
         time.sleep(fetch_delay_s)
@@ -106,14 +120,29 @@ def probe_notowania(symbol: str, fetch_delay_s: float = 0.0) -> str | None:
             url, headers={"User-Agent": USER_AGENT}, timeout=REQUEST_TIMEOUT
         )
     except httpx.HTTPError:
-        return None
+        return None, None
     if response.status_code != 200:
-        return None
+        return None, None
     soup = BeautifulSoup(response.text, "lxml")
     if soup.find("table", class_=lambda c: c and "qTableFull" in c) is None:
+        return None, None
+    return _name_from_soup(soup), _currency_from_soup(soup)
+
+
+def _currency_from_soup(soup) -> str | None:
+    """Read the price currency from the page meta tag (45.1).
+
+    ``<meta itemprop="priceCurrency" content="PLN" />`` declares the quote
+    currency of every biznesradar instrument page (Polish fund pages say
+    ``PLN``).  Returns the upper-cased ISO code, or ``None`` when the tag is
+    absent — callers must omit the key rather than emit ``None`` so the raw
+    row stays backwards-compatible.
+    """
+    tag = soup.find("meta", attrs={"itemprop": "priceCurrency"})
+    if tag is None:
         return None
-    name = _name_from_soup(soup)
-    return name
+    content = (tag.get("content") or "").strip().upper()
+    return content or None
 
 
 def _name_from_soup(soup) -> str | None:
@@ -152,7 +181,10 @@ def scrape_quote(symbol: str) -> dict | None:
 
     Returns a dict with keys ``symbol``, ``name``, ``last_price``,
     ``change``, ``change_percent``, ``prev_close``, ``open``, ``high``,
-    ``low``, ``volume`` when the page resolves; ``None`` otherwise.
+    ``low``, ``volume`` when the page resolves; ``None`` otherwise.  When the
+    page declares ``<meta itemprop="priceCurrency" content="...">`` (45.1)
+    the dict additionally carries ``currency`` with the ISO code — the key is
+    omitted, not set to ``None``, when the tag is missing.
 
     All numeric values are ``float`` (volume is ``int``); missing fields are
     ``None``.  ``.WA`` is stripped for the URL as in other scraper helpers.
@@ -216,7 +248,7 @@ def scrape_quote(symbol: str) -> dict | None:
                     pass
             break
 
-    return {
+    quote = {
         "symbol": symbol,
         "name": _name_from_soup(soup),
         "last_price": _flt("pr_t_close"),
@@ -228,6 +260,10 @@ def scrape_quote(symbol: str) -> dict | None:
         "change_percent": change_percent,
         "prev_close": prev_close,
     }
+    currency = _currency_from_soup(soup)
+    if currency is not None:
+        quote["currency"] = currency
+    return quote
 
 
 def _scrape_pages(

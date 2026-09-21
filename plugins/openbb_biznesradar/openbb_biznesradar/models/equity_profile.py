@@ -16,6 +16,8 @@ no ``__call__`` on ``Fetcher``) dispatches Catalyst corporate-bond symbols to
 
 from __future__ import annotations
 
+from typing import Optional
+
 from openbb_core.provider.abstract.fetcher import Fetcher
 from openbb_core.provider.standard_models.equity_info import (
     EquityInfoData,
@@ -24,7 +26,7 @@ from openbb_core.provider.standard_models.equity_info import (
 
 from openbb_biznesradar import obligacje
 from openbb_biznesradar.models.corp_bond_profile import CorporateBondProfileFetcher
-from openbb_biznesradar.scraper import probe_notowania
+from openbb_biznesradar.scraper import probe_notowania_full
 
 
 class BiznesRadarEquityProfileQueryParams(EquityInfoQueryParams):
@@ -32,7 +34,14 @@ class BiznesRadarEquityProfileQueryParams(EquityInfoQueryParams):
 
 
 class BiznesRadarEquityProfileData(EquityInfoData):
-    """Equity profile data for biznesradar."""
+    """Equity profile data for biznesradar.
+
+    ``currency`` is a provider-specific extra (``EquityInfoData`` has no such
+    field; ``extra="allow"`` keeps it through transform, mirroring
+    ``CorporateBondProfileData.currency``).
+    """
+
+    currency: Optional[str] = None
 
 
 class EquityProfileFetcher(
@@ -56,17 +65,18 @@ class EquityProfileFetcher(
         """Return minimal profile when the symbol resolves on biznesradar."""
         del credentials
         del kwargs
-        name = probe_notowania(query.symbol)
+        name, currency = probe_notowania_full(query.symbol)
         if not name:
             return []
-        return [
-            {
-                "symbol": query.symbol,
-                "name": name,
-                "hq_country": "PL",
-                "stock_exchange": "GPW",
-            }
-        ]
+        row = {
+            "symbol": query.symbol,
+            "name": name,
+            "hq_country": "PL",
+            "stock_exchange": "GPW",
+        }
+        if currency is not None:
+            row["currency"] = currency
+        return [row]
 
     @staticmethod
     def transform_data(
