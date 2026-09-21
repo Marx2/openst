@@ -74,6 +74,23 @@ class BiznesRadarNotFound(Exception):
     """Raised when biznesradar returns no parseable price table for a symbol."""
 
 
+_FUND_SUFFIXES = (".tfi", ".fiz")
+
+
+def default_currency_for_symbol(symbol: str) -> str | None:
+    """Known-universe default currency when the page meta is absent (47.2).
+
+    Every TFI/FIZ fund on biznesradar (Catalyst fund universe) prices in PLN
+    by construction — the page ``<meta itemprop="priceCurrency">`` always agrees
+    when present, and omitting it (as some fund pages do, e.g. NNEP65.TFI
+    before biznesradar added the tag) must NOT silently fall back to USD.
+    Returns ``"PLN"`` for ``.TFI`` / ``.FIZ`` symbols (case-insensitive),
+    ``None`` otherwise — callers omit the key when both meta and default are
+    absent.
+    """
+    return "PLN" if symbol.lower().endswith(_FUND_SUFFIXES) else None
+
+
 def strip_wa_suffix(symbol: str) -> str:
     """Strip a trailing Polish exchange suffix (``.WA``) from a symbol.
 
@@ -127,7 +144,7 @@ def probe_notowania_full(symbol: str, fetch_delay_s: float = 0.0) -> tuple[str |
     soup = BeautifulSoup(response.text, "lxml")
     if soup.find("table", class_=lambda c: c and "qTableFull" in c) is None:
         return None, None
-    return _name_from_soup(soup), _currency_from_soup(soup)
+    return _name_from_soup(soup), _currency_from_soup(soup) or default_currency_for_symbol(symbol)
 
 
 def _currency_from_soup(soup) -> str | None:
@@ -249,10 +266,11 @@ def scrape_quote(symbol: str) -> dict | None:
 
     Returns a dict with keys ``symbol``, ``name``, ``last_price``,
     ``change``, ``change_percent``, ``prev_close``, ``open``, ``high``,
-    ``low``, ``volume`` when the page resolves; ``None`` otherwise.  When the
-    page declares ``<meta itemprop="priceCurrency" content="...">`` (45.1)
-    the dict additionally carries ``currency`` with the ISO code — the key is
-    omitted, not set to ``None``, when the tag is missing.
+    ``low``, ``volume`` when the page resolves; ``None`` otherwise.  The dict
+    carries ``currency`` with the ISO code when the page declares
+    ``<meta itemprop="priceCurrency" content="...">`` or the symbol belongs to
+    the known Polish fund universe (``.TFI``/``.FIZ`` → ``"PLN"``, 47.2) — the
+    key is omitted, not set to ``None``, only when neither applies.
 
     All numeric values are ``float`` (volume is ``int``); missing fields are
     ``None``.  ``.WA`` is stripped for the URL as in other scraper helpers.
@@ -328,7 +346,7 @@ def scrape_quote(symbol: str) -> dict | None:
         "change_percent": change_percent,
         "prev_close": prev_close,
     }
-    currency = _currency_from_soup(soup)
+    currency = _currency_from_soup(soup) or default_currency_for_symbol(clean)
     if currency is not None:
         quote["currency"] = currency
     return quote

@@ -165,6 +165,16 @@ def test_currency_missing_tag_returns_none():
     assert scraper._currency_from_soup(BeautifulSoup(html, "lxml")) is None
 
 
+def test_default_currency_for_symbol_matrix():
+    assert scraper.default_currency_for_symbol("NNEP25.TFI") == "PLN"
+    assert scraper.default_currency_for_symbol("NNEP25.tfi") == "PLN"
+    assert scraper.default_currency_for_symbol("KSENG.FIZ") == "PLN"
+    assert scraper.default_currency_for_symbol("NNEP25.TFI.WA") is None  # suffix passes through, not .TFI
+    assert scraper.default_currency_for_symbol("BST0327.WA") is None
+    assert scraper.default_currency_for_symbol("AAPL") is None
+    assert scraper.default_currency_for_symbol("") is None
+
+
 def test_currency_empty_content_returns_none():
     html = (
         "<html><head><title>Notowania XYZ- BiznesRadar.pl</title></head>"
@@ -201,6 +211,21 @@ def test_nnep65_fixture_carries_currency(httpx_mock, read_fixture):
 
 
 def test_scrape_quote_missing_tag_omits_key(httpx_mock):
+    """47.2 (c) — meta absent + non-Polish symbol ('XAUR') → key omitted."""
+    html = (
+        "<html><head><title>Notowania XAUR- BiznesRadar.pl</title></head>"
+        "<body><table class='qTableFull'></table>"
+        "<table><tr><td id='pr_t_close'>14.66</td></tr></table></body></html>"
+    )
+    httpx_mock([(html, 200)])
+    result = scraper.scrape_quote("XAUR")
+    assert result is not None
+    assert result["last_price"] == 14.66
+    assert "currency" not in result
+
+
+def test_scrape_quote_meta_absent_tfi_defaults_pln(httpx_mock):
+    """47.2 (b) — meta absent + .TFI symbol → PLN from the universe default."""
     html = (
         "<html><head><title>Notowania NNEP25.TFI- BiznesRadar.pl</title></head>"
         "<body><table class='qTableFull'></table>"
@@ -210,7 +235,20 @@ def test_scrape_quote_missing_tag_omits_key(httpx_mock):
     result = scraper.scrape_quote("NNEP25.TFI")
     assert result is not None
     assert result["last_price"] == 14.66
-    assert "currency" not in result
+    assert result["currency"] == "PLN"
+
+
+def test_scrape_quote_meta_absent_fiz_defaults_pln(httpx_mock):
+    """47.2 (b) — .FIZ symbol with no meta also defaults to PLN."""
+    html = (
+        "<html><head><title>Notowania KSENG.FIZ- BiznesRadar.pl</title></head>"
+        "<body><table class='qTableFull'></table>"
+        "<table><tr><td id='pr_t_close'>120.00</td></tr></table></body></html>"
+    )
+    httpx_mock([(html, 200)])
+    result = scraper.scrape_quote("KSENG.FIZ")
+    assert result is not None
+    assert result["currency"] == "PLN"
 
 
 # ---------------------------------------------------------------------------
