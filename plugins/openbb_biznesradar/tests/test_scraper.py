@@ -196,3 +196,54 @@ def test_scrape_quote_missing_tag_omits_key(httpx_mock):
     assert result is not None
     assert result["last_price"] == 14.66
     assert "currency" not in result
+
+
+# ---------------------------------------------------------------------------
+# first-NAV probe (45.5)
+# ---------------------------------------------------------------------------
+
+
+def test_probe_first_nav_reads_oldest_page(httpx_mock, read_fixture):
+    # page 1 (footer -> last page 143), then the last page (oldest row 1998-03-11)
+    httpx_mock([
+        (read_fixture("INGAKC.TFI_history_p1.html"), 200),
+        (read_fixture("INGAKC.TFI_history_last.html"), 200),
+    ])
+    assert scraper.probe_first_nav("INGAKC.TFI") == date(1998, 3, 11)
+
+
+def test_probe_first_nav_strips_wa(httpx_mock, read_fixture):
+    calls = httpx_mock([
+        (read_fixture("INGAKC.TFI_history_p1.html"), 200),
+        (read_fixture("INGAKC.TFI_history_last.html"), 200),
+    ])
+    assert scraper.probe_first_nav("INGAKC.TFI.WA") == date(1998, 3, 11)
+    assert all("INGAKC.TFI" in u for u in calls)
+
+
+def test_probe_first_nav_single_page_returns_none(httpx_mock, build_page):
+    # a single-page history has no pages_pos link -> cannot locate oldest page
+    page = build_page([("11.09.2026", "10.00"), ("10.09.2026", "9.90")], nxt=False)
+    httpx_mock([(page, 200)])
+    assert scraper.probe_first_nav("NNEP99.TFI") is None
+
+
+def test_probe_first_nav_404_returns_none(httpx_mock):
+    httpx_mock([("", 404)])
+    assert scraper.probe_first_nav("ZZZZZ.TFI") is None
+
+
+def test_probe_first_nav_last_page_no_table_returns_none(httpx_mock, build_page):
+    httpx_mock([
+        (build_page([("01.01.2026", "1")], nxt=True), 200),
+        ("<html><body>no table</body></html>", 200),
+    ])
+    assert scraper.probe_first_nav("NNEP99.TFI") is None
+
+
+def test_last_page_number_parsing(httpx_mock, read_fixture):
+    from bs4 import BeautifulSoup
+
+    html = read_fixture("INGAKC.TFI_history_p1.html")
+    # the footer's highest pages_pos index is the true last page
+    assert scraper._last_page_number(BeautifulSoup(html, "lxml")) == 143

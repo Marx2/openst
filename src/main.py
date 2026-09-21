@@ -272,6 +272,41 @@ def _default_dates():
     return str(start), str(end)
 
 
+# A fund's inception date never changes, so the probe is cached for a long TTL
+# (plan §45.5) — the one-time cost is a single oldest-page fetch per fund.
+_FIRST_NAV_TTL_S = 30 * 24 * 3600  # 30 days
+_FUND_SUFFIXES = (".tfi", ".fiz")
+
+
+def _is_fund_symbol(ticker: str) -> bool:
+    return ticker.lower().endswith(_FUND_SUFFIXES)
+
+
+def _fund_first_nav(ticker: str) -> str | None:
+    """A fund's oldest NAV date (ISO) from Redis, probing + caching on a miss.
+
+    Returns ``None`` for non-fund tickers or when the probe fails — the caller
+    keeps the requested start in both cases (never block a request on a probe).
+    """
+    if not _is_fund_symbol(ticker):
+        return None
+    key = f"fund_first_nav:{ticker}"
+    cached = _cache.get(key)
+    if cached is not None:
+        return cached
+    try:
+        from openbb_biznesradar.scraper import probe_first_nav
+
+        first = probe_first_nav(ticker)
+    except Exception as e:
+        logger.warning("first-nav probe failed for %s: %s", ticker, e)
+        return None
+    if first is None:
+        return None
+    _cache.set(key, str(first), ttl=_FIRST_NAV_TTL_S)
+    return str(first)
+
+
 @app.get("/equity/profile/{ticker}")
 def equity_profile(ticker: str):
     return _cached_or_404(
@@ -318,6 +353,15 @@ def price_ohlcv(
         default_start, default_end = _default_dates()
         start = start or default_start
         end = end or default_end
+
+    # plan §45.5 — clamp a fund's start to its oldest NAV: pre-inception pages
+    # are pure waste (they scrape empty pages), and the clamped range keeps the
+    # first request after each cache TTL short enough to sit under the 60 s
+    # ingress cap.  Probe failure → keep the requested start (never block).
+    first_nav = _fund_first_nav(ticker)
+    if first_nav is not None and start < first_nav:
+        logger.info("ohlcv clamp start %s -> %s for fund %s", start, first_nav, ticker)
+        start = first_nav
 
     def fetch():
         rows = get_ohlcv_history(ticker, start, end)

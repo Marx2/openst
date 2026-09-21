@@ -41,6 +41,7 @@ Pagination footer ("buttons pages"):
   Next page => /notowania-historyczne/{SYMBOL},{N} with N = current page + 1.
 """
 
+import re
 import time
 from collections.abc import Iterator
 from datetime import date, datetime
@@ -161,6 +162,73 @@ def _name_from_soup(soup) -> str | None:
         if text:
             return text
     return None
+
+
+def probe_first_nav(symbol: str, fetch_delay_s: float = 0.0) -> date | None:
+    """A fund's oldest NAV date, from the **oldest** history page (45.5).
+
+    Fetches page 1 of ``/notowania-historyczne/{symbol}`` only to read the
+    pagination footer's last page number (a ``pages_pos`` link — the highest
+    index, e.g. the ``34`` in the ellipsis-then-``34`` footer), then fetches
+    that last page (the oldest rows, since pages are newest-first) and returns
+    the minimum row date.  Two page fetches total, **once per fund lifetime**
+    (the caller caches the result in Redis — inception never changes), so it
+    costs one extra probe per fund, not per request.  Returns ``None`` when the
+    page does not resolve or has no parseable rows — callers must keep the
+    requested start (never block the request on a probe failure).
+    """
+    symbol = strip_wa_suffix(symbol)
+    if fetch_delay_s > 0:
+        time.sleep(fetch_delay_s)
+    response = httpx.get(
+        f"{BASE_URL}{HISTORY_PATH}/{symbol}",
+        headers={"User-Agent": USER_AGENT},
+        timeout=REQUEST_TIMEOUT,
+    )
+    if response.status_code != 200:
+        return None
+    last = _last_page_number(BeautifulSoup(response.text, "lxml"))
+    if last is None or last < 2:
+        return None
+    if fetch_delay_s > 0:
+        time.sleep(fetch_delay_s)
+    response = httpx.get(
+        f"{BASE_URL}{HISTORY_PATH}/{symbol},{last}",
+        headers={"User-Agent": USER_AGENT},
+        timeout=REQUEST_TIMEOUT,
+    )
+    if response.status_code != 200:
+        return None
+    return _oldest_date_on_page(BeautifulSoup(response.text, "lxml"))
+
+
+def _last_page_number(soup) -> int | None:
+    """Highest page index referenced by a ``pages_pos`` footer link."""
+    numbers: list[int] = []
+    for a in soup.select("a.pages_pos"):
+        m = re.search(r",(\d+)\s*$", a.get("href") or "")
+        if m:
+            numbers.append(int(m.group(1)))
+    return max(numbers) if numbers else None
+
+
+def _oldest_date_on_page(soup) -> date | None:
+    """Minimum data-row date on a history page (last-page rows are the oldest)."""
+    table = soup.find("table")
+    if table is None:
+        return None
+    oldest: date | None = None
+    for tr in table.find_all("tr"):
+        cells = [td.get_text(strip=True) for td in tr.find_all("td")]
+        if not cells:
+            continue
+        try:
+            d = datetime.strptime(cells[0], DATE_FORMAT).date()
+        except ValueError:
+            continue
+        if oldest is None or d < oldest:
+            oldest = d
+    return oldest
 
 
 def _parse_cell(text: str, name: str):
