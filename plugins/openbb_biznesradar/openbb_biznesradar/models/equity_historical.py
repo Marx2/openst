@@ -31,13 +31,24 @@ _MAX_DATE = date(9999, 12, 31)
 
 # Inter-page politeness delay (s); overridable in production through compose env.
 _DEFAULT_FETCH_DELAY_S = 2.0
+# Funds are NAV series (one price/day, no intraday churn) and can span decades
+# of monthly pages — the 2.0 s bond delay makes an 11-yr fund request ~115 s,
+# blowing the 60 s ingress cap (plan §45.5). A much lower per-page delay keeps
+# even old (1998-vintage) funds under the cap: an 11-yr window is ~45 pages,
+# ~14 s of delay + ~0.3 s/page fetch ≈ 40 s measured for INGAKC (was ~115 s
+# at 2.0 s). Still far above the ~1 request/min politeness a single user-driven
+# scrape implies.
+_DEFAULT_FUND_FETCH_DELAY_S = 0.3
+_FUND_FETCH_DELAY_ENV = "BIZNESRADAR_FUND_FETCH_DELAY_S"
 
 
 def _is_fund(symbol: str) -> bool:
     return symbol.lower().endswith(_FUND_SUFFIXES)
 
 
-def _fetch_delay_s() -> float:
+def _fetch_delay_s(is_fund: bool = False) -> float:
+    if is_fund:
+        return float(os.getenv(_FUND_FETCH_DELAY_ENV, str(_DEFAULT_FUND_FETCH_DELAY_S)))
     return float(os.getenv("BIZNESRADAR_FETCH_DELAY_S", str(_DEFAULT_FETCH_DELAY_S)))
 
 
@@ -75,13 +86,14 @@ class EquityHistoricalFetcher(
         del credentials
         del kwargs  # router forwards router-level extras (preferences, timeframe,…)
         symbol = strip_wa_suffix(query.symbol)
-        cols = FUND_COLUMNS if _is_fund(symbol) else BOND_COLUMNS
+        fund = _is_fund(symbol)
+        cols = FUND_COLUMNS if fund else BOND_COLUMNS
         return list(
             _scrape_pages(
                 symbol,
                 query.start_date or _MIN_DATE,
                 query.end_date or _MAX_DATE,
-                _fetch_delay_s(),
+                _fetch_delay_s(fund),
                 cols,
             )
         )

@@ -231,6 +231,84 @@ def test_price_ohlcv_explicit_window_and_invalid_ticker_empty_list(mock_fn, clie
     mock_fn.assert_called_once_with("FAKE", "2025-01-01", "2025-02-01")
 
 
+# plan §45.5 — fund OHLCV start clamps to the fund's oldest NAV
+
+
+@patch(
+    "src.main.get_ohlcv_history",
+    return_value=[{"date": "2016-06-01", "open": 100.0, "high": 100.0, "low": 100.0, "close": 100.0, "volume": 0}],
+)
+@patch("src.main._fund_first_nav", return_value="2016-06-01")
+def test_price_ohlcv_clamps_fund_start_to_first_nav(mock_nav, mock_fn, client):
+    # a fund that started 2016-06: a 2015 start pre-dates inception, so it
+    # would scrape ~12 empty pages — the clamp drops it to the first NAV.
+    r = client.get("/price/ohlcv/YOUNG.TFI?start=2015-09-21&end=2026-09-21")
+    assert r.status_code == 200
+    mock_fn.assert_called_once_with("YOUNG.TFI", "2016-06-01", "2026-09-21")
+
+
+@patch("src.main.get_ohlcv_history", return_value=[])
+@patch("src.main._fund_first_nav", return_value="2020-01-15")
+def test_price_ohlcv_keeps_start_when_already_after_first_nav(mock_nav, mock_fn, client):
+    r = client.get("/price/ohlcv/NNEP25.TFI?start=2021-05-01&end=2026-09-21")
+    assert r.status_code == 200
+    # start (2021) is after first_nav (2020) -> unchanged
+    mock_fn.assert_called_once_with("NNEP25.TFI", "2021-05-01", "2026-09-21")
+
+
+@patch("src.main.get_ohlcv_history", return_value=[])
+@patch("src.main._fund_first_nav", return_value=None)
+def test_price_ohlcv_probe_miss_keeps_requested_start(mock_nav, mock_fn, client):
+    r = client.get("/price/ohlcv/INGAKC.TFI?start=2015-09-21&end=2026-09-21")
+    assert r.status_code == 200
+    mock_fn.assert_called_once_with("INGAKC.TFI", "2015-09-21", "2026-09-21")
+
+
+@patch("src.main.get_ohlcv_history", return_value=[])
+def test_price_ohlcv_non_fund_symbol_untouched(mock_fn, client):
+    # non-fund ticker: _fund_first_nav returns None without probing, no clamp
+    r = client.get("/price/ohlcv/INGAKC?start=2015-09-21&end=2026-09-21")
+    assert r.status_code == 200
+    mock_fn.assert_called_once_with("INGAKC", "2015-09-21", "2026-09-21")
+
+
+def test_fund_first_nav_caches_probe_in_redis(client, monkeypatch):
+    import src.main as m
+    from datetime import date
+
+    calls = {"n": 0}
+
+    def fake_probe(symbol):
+        calls["n"] += 1
+        return date(1998, 3, 11)
+
+    monkeypatch.setattr(m, "_is_fund_symbol", lambda t: True)
+    with patch("openbb_biznesradar.scraper.probe_first_nav", side_effect=fake_probe):
+        first = m._fund_first_nav("INGAKC.TFI")
+        second = m._fund_first_nav("INGAKC.TFI")
+    assert first == "1998-03-11"
+    assert second == "1998-03-11"
+    assert calls["n"] == 1, "probe must run once; the second call is a Redis hit"
+
+
+def test_fund_first_nav_non_fund_returns_none_without_probing(client, monkeypatch):
+    import src.main as m
+
+    with patch("openbb_biznesradar.scraper.probe_first_nav", side_effect=AssertionError("must not probe")):
+        assert m._fund_first_nav("AAPL") is None
+
+
+def test_fund_first_nav_probe_failure_returns_none(client, monkeypatch):
+    import src.main as m
+    import openbb_biznesradar.scraper as sc
+
+    def boom(symbol):
+        raise ConnectionError("network down")
+
+    monkeypatch.setattr(sc, "probe_first_nav", boom)
+    assert m._fund_first_nav("INGAKC.TFI") is None
+
+
 def test_price_ohlcv_rejects_bad_date_format(client):
     assert client.get("/price/ohlcv/AAPL?start=nope").status_code == 422
 
