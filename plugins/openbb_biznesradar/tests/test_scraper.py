@@ -142,3 +142,57 @@ def test_raises_on_missing_table(httpx_mock):
         list(
             _scrape_pages("BST0327", date(2000, 1, 1), date(2026, 12, 31), 0.0, BOND_COLUMNS)
         )
+
+# ---------------------------------------------------------------------------
+# priceCurrency meta tag (45.1)
+# ---------------------------------------------------------------------------
+
+
+def test_currency_from_soup_parsing(httpx_mock, read_fixture):
+    httpx_mock([(read_fixture("INGAKC.TFI_notowania.html"), 200)])
+    name, currency = scraper.probe_notowania_full("INGAKC.TFI")
+    assert name == "ING Akcji (ING Parasol FIO)"
+    assert currency == "PLN"
+
+
+def test_currency_missing_tag_returns_none():
+    html = (
+        "<html><head><title>Notowania XYZ- BiznesRadar.pl</title></head>"
+        "<body><table class='qTableFull'></table></body></html>"
+    )
+    from bs4 import BeautifulSoup
+
+    assert scraper._currency_from_soup(BeautifulSoup(html, "lxml")) is None
+
+
+def test_currency_empty_content_returns_none():
+    html = (
+        "<html><head><title>Notowania XYZ- BiznesRadar.pl</title></head>"
+        "<body><meta itemprop='priceCurrency' content=''>"
+        "<table class='qTableFull'></table></body></html>"
+    )
+    from bs4 import BeautifulSoup
+
+    assert scraper._currency_from_soup(BeautifulSoup(html, "lxml")) is None
+
+
+def test_scrape_quote_includes_currency(httpx_mock, read_fixture):
+    httpx_mock([(read_fixture("INGAKC.TFI_notowania.html"), 200)])
+    result = scraper.scrape_quote("INGAKC.TFI")
+    assert result is not None
+    assert result["name"] == "ING Akcji (ING Parasol FIO)"
+    assert result["last_price"] == 812.36
+    assert result["currency"] == "PLN"
+
+
+def test_scrape_quote_missing_tag_omits_key(httpx_mock):
+    html = (
+        "<html><head><title>Notowania NNEP25.TFI- BiznesRadar.pl</title></head>"
+        "<body><table class='qTableFull'></table>"
+        "<table><tr><td id='pr_t_close'>14.66</td></tr></table></body></html>"
+    )
+    httpx_mock([(html, 200)])
+    result = scraper.scrape_quote("NNEP25.TFI")
+    assert result is not None
+    assert result["last_price"] == 14.66
+    assert "currency" not in result

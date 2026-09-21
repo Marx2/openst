@@ -7,7 +7,7 @@ Monkeypatching note: ``CorporateBondProfileFetcher.extract_data`` resolves
 ``scrape_bond_profile`` as ``obligacje.scrape_bond_profile`` (module-attribute
 lookup at call time), so the dispatch tests patch
 ``openbb_biznesradar.obligacje.scrape_bond_profile``;
-``EquityProfileFetcher.extract_data`` calls ``probe_notowania`` from its own
+``EquityProfileFetcher.extract_data`` calls ``probe_notowania_full`` from its own
 module namespace, so the biznesradar probe is patched on
 ``openbb_biznesradar.models.equity_profile``.
 """
@@ -66,8 +66,8 @@ def test_dispatch_catalyst_symbol_to_corp_bond_fetcher(monkeypatch):
     called = {}
     monkeypatch.setattr(
         equity_profile,
-        "probe_notowania",
-        lambda s: called.setdefault("br", "MUST NOT BE CALLED"),
+        "probe_notowania_full",
+        lambda s: (called.setdefault("br", "MUST NOT BE CALLED"), None),
     )
     monkeypatch.setattr(
         obligacje,
@@ -91,7 +91,7 @@ def test_dispatch_catalyst_symbol_to_corp_bond_fetcher(monkeypatch):
 def test_dispatch_non_bond_symbol_keeps_biznesradar(monkeypatch):
     called = {}
     monkeypatch.setattr(
-        equity_profile, "probe_notowania", lambda s: called.setdefault("br", "BEST SA")
+        equity_profile, "probe_notowania_full", lambda s: (called.setdefault("br", "BEST SA"), None)
     )
     monkeypatch.setattr(
         obligacje,
@@ -117,7 +117,7 @@ def test_dispatch_falls_back_to_biznesradar_when_bond_page_404s(monkeypatch):
         lambda s: called.setdefault("ob", None),
     )
     monkeypatch.setattr(
-        equity_profile, "probe_notowania", lambda s: called.setdefault("br", "NNEP25 FIO")
+        equity_profile, "probe_notowania_full", lambda s: (called.setdefault("br", "NNEP25 FIO"), None)
     )
     result = asyncio.run(
         equity_profile.EquityProfileFetcher.fetch_data({"symbol": "ROD1033"})
@@ -137,7 +137,7 @@ def test_dispatch_bond_page_error_falls_back_to_biznesradar(monkeypatch):
 
     monkeypatch.setattr(obligacje, "scrape_bond_profile", boom)
     monkeypatch.setattr(
-        equity_profile, "probe_notowania", lambda s: called.setdefault("br", "BEST SA")
+        equity_profile, "probe_notowania_full", lambda s: (called.setdefault("br", "BEST SA"), None)
     )
     result = asyncio.run(
         equity_profile.EquityProfileFetcher.fetch_data({"symbol": "BST0327"})
