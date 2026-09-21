@@ -185,6 +185,21 @@ def test_scrape_quote_includes_currency(httpx_mock, read_fixture):
     assert result["currency"] == "PLN"
 
 
+def test_nnep65_fixture_carries_currency(httpx_mock, read_fixture):
+    """47.1 — the captured NNEP65.TFI page truth: it DOES carry priceCurrency.
+
+    The live page carries the meta and a fresh scrape now returns PLN (a stale
+    openst Redis quote — cached before biznesradar added the tag — was why prod
+    showed no currency).  This pins the fixture bytes: re-capture must still
+    yield ``PLN`` or the test fails.
+    """
+    httpx_mock([(read_fixture("NNEP65.TFI_notowania.html"), 200)])
+    result = scraper.scrape_quote("NNEP65.TFI")
+    assert result is not None
+    assert result["currency"] == "PLN"
+    assert result["name"] == "ING Emerytura 2065 (ING Emerytura SFIO)"
+
+
 def test_scrape_quote_missing_tag_omits_key(httpx_mock):
     html = (
         "<html><head><title>Notowania NNEP25.TFI- BiznesRadar.pl</title></head>"
