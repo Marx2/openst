@@ -771,8 +771,51 @@ def get_fundamentals(ticker: str, statement: str, period: str) -> list[dict]:
     return []
 
 
+def _merged_dividend_calendar(fn, start_date: str, end_date: str) -> list[dict]:
+    """§52.6 — merge the dividend calendar across CALENDAR_PROVIDERS.
+
+    The global dividend calendar is consumed per-symbol downstream (instruments
+    ``toCalendar`` filters rows by symbol), so a first-non-empty provider
+    strategy would mask GPW (biznesradar) rows whenever a US provider returns
+    rows for the same window.  Merge instead, deduping on
+    (symbol, ex_dividend_date, payment_date, amount).  Earnings keeps the
+    first-non-empty strategy (its providers cover the same universe).
+    """
+    records: list[dict] = []
+    seen: set = set()
+    for provider in CALENDAR_PROVIDERS:
+        if _provider_is_blocked(provider):
+            continue
+        try:
+            df = fn(start_date=start_date, end_date=end_date, provider=provider).to_df()
+        except Exception as e:
+            err = str(e)
+            if _is_rate_limited(err):
+                _block_provider(provider)
+                continue
+            if _is_invalid_ticker(err):
+                continue
+            logger.warning("Provider %s failed for calendar/dividend: %s", provider, e)
+            continue
+        if df.empty:
+            continue
+        for record in _df_records(df):
+            key = (
+                record.get("symbol"),
+                str(record.get("ex_dividend_date")),
+                str(record.get("payment_date")),
+                record.get("amount"),
+            )
+            if key not in seen:
+                seen.add(key)
+                records.append(record)
+    return records
+
+
 def get_calendar(kind: str, start_date: str, end_date: str) -> list[dict]:
     fn = getattr(obb.equity.calendar, kind)
+    if kind == "dividend":
+        return _merged_dividend_calendar(fn, start_date, end_date)
     for provider in CALENDAR_PROVIDERS:
         if _provider_is_blocked(provider):
             continue
