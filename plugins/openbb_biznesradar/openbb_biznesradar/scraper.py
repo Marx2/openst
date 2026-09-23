@@ -56,6 +56,30 @@ USER_AGENT = "Mozilla/5.0"
 DATE_FORMAT = "%d.%m.%Y"
 REQUEST_TIMEOUT = 30.0
 
+# Dividend calendar (52.2): /dywidendy/,YYYY,{sortCol},{dir} — sortCol 4
+# (Dzień wypłaty) gives a payment-date-ordered page. Pages carry a full year's
+# rows in a single tbody (no pagination footer), so the date-window filter is
+# applied client-side after parsing.
+DYWIDENDY_PATH = "/dywidendy"
+DYWIDENDY_SORT_COL = 4
+DYWIDENDY_SORT_DIR = 2
+
+# Polish short month abbreviations as used in "05 sie 26" / "30 gru 26".
+_PL_MONTHS = {
+    "sty": 1, "lut": 2, "mar": 3, "kwi": 4, "maj": 5, "cze": 6,
+    "lip": 7, "sie": 8, "wrz": 9, "paź": 10, "lis": 11, "gru": 12,
+}
+
+
+def _dywidendy_url(year: int, sort_col: int = DYWIDENDY_SORT_COL, sort_dir: int = DYWIDENDY_SORT_DIR) -> str:
+    """Build a /dywidendy/ calendar URL for a given year (52.2).
+
+    Format: ``/dywidendy/,YYYY,{sortCol},{dir}`` (e.g. ``,2026,4,2`` — sorted
+    by Dzień wypłaty descending, i.e. payment-date-ordered). ``sort_col=4`` is
+    the payment-date column; ``sort_dir=2`` is descending.
+    """
+    return f"{BASE_URL}{DYWIDENDY_PATH}/,{year},{sort_col},{sort_dir}"
+
 # Page-title wrapping used for the /notowania probe: "Notowania {NAME}..."
 # followed by "...- BiznesRadar.pl".
 _TITLE_PREFIX = "Notowania"
@@ -259,6 +283,104 @@ def _parse_cell(text: str, name: str):
         return float(text)
     except ValueError:
         return None
+
+
+# ---------------------------------------------------------------------------
+# Dividend calendar (plan §52.2) — Polish short dates + /dywidendy/ table
+# ---------------------------------------------------------------------------
+
+_PL_SHORT_DATE_RE = re.compile(r"^(\d{1,2})\s+([a-ząćęłńóśźż]+)\s+(\d{2})$")
+
+
+def parse_pl_short_date(text: str) -> date | None:
+    """Parse a Polish short date ``DD MMM YY`` (e.g. ``05 sie 26``).
+
+    Confirmed against the 52.1 fixtures: every date cell on the /dywidendy/
+    page is ``DD MMM YY`` with a 3-letter Polish month abbreviation
+    (sty/lut/mar/kwi/maj/cze/lip/sie/wrz/paź/lis/gru) and a 2-digit year
+    mapped onto ``2000+YY``. Returns ``None`` for empty / ``bd.`` / unparseable
+    text — callers must omit the date rather than emit ``None``.
+    """
+    m = _PL_SHORT_DATE_RE.match(text.strip())
+    if m is None:
+        return None
+    day_s, month_s, year_s = m.groups()
+    month = _PL_MONTHS.get(month_s.lower())
+    if month is None:
+        return None
+    try:
+        return date(2000 + int(year_s), month, int(day_s))
+    except ValueError:
+        return None
+
+
+def _parse_pln_amount(text: str) -> float | None:
+    """Parse a PLN amount cell (``0,74 PLN``) into a float; None if missing."""
+    text = text.strip()
+    if text in ("", "bd.", "-", "—"):
+        return None
+    text = text.replace(" ", "").replace("PLN", "").replace(",", ".")
+    try:
+        return float(text)
+    except ValueError:
+        return None
+
+
+def scrape_dividend_calendar(start_date: date, end_date: date) -> list[dict]:
+    """Scrape the GPW dividend calendar for ``[start_date, end_date]`` (52.2).
+
+    Fetches one ``/dywidendy/,YYYY,4,2`` page per year in the window (pages
+    are payment-date-ordered; a full year's rows land in one table, never
+    paginated) and filters the parsed rows client-side to the requested
+    window. Returns rows shaped
+    ``{ex_dividend_date, payment_date, amount, status, symbol}`` — ``amount``
+    is a float (PLN, comma-decimal parsed), the dates are ``date`` objects,
+    ``status`` is the raw Polish status string (``rekomendowana`` /
+    ``uchwalona`` / ``wypłacona``), and dates/amount-only cells that are
+    ``bd.`` are ``None``.
+    """
+    rows: list[dict] = []
+    for year in range(start_date.year, end_date.year + 1):
+        url = _dywidendy_url(year)
+        try:
+            response = httpx.get(url, headers={"User-Agent": USER_AGENT}, timeout=REQUEST_TIMEOUT)
+        except httpx.HTTPError:
+            continue
+        if response.status_code != 200:
+            continue
+        soup = BeautifulSoup(response.text, "lxml")
+        table = soup.find("table")
+        if table is None:
+            continue
+        for tr in table.find_all("tr"):
+            cells = [td.get_text(strip=True) for td in tr.find_all("td")]
+            if len(cells) != 8:
+                continue
+            ex_dividend_date = parse_pl_short_date(cells[3])
+            payment_date = parse_pl_short_date(cells[4])
+            amount = _parse_pln_amount(cells[5])
+            if ex_dividend_date is None and payment_date is None:
+                continue
+            if start_date <= (payment_date or ex_dividend_date) <= end_date:
+                rows.append(
+                    {
+                        "ex_dividend_date": ex_dividend_date,
+                        "payment_date": payment_date,
+                        "amount": amount,
+                        "status": cells[7] or None,
+                        "symbol": _symbol_from_profil_cell(cells[0]),
+                    }
+                )
+    return rows
+
+
+def _symbol_from_profil_cell(text: str) -> str | None:
+    """Extract the ticker from a Profil cell (``STX (STALEXP)`` → ``STX``).
+
+    The Profil column is ``SYMBOL (NAME)``; the symbol is the pre-paren token.
+    """
+    token = text.split(" (")[0].strip()
+    return token or None
 
 
 def scrape_quote(symbol: str) -> dict | None:
