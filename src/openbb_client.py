@@ -16,7 +16,7 @@ PROFILE_PROVIDERS = ["fmp", "yfinance", "biznesradar"]
 QUOTE_PROVIDERS = ["fmp", "yfinance", "cboe", "biznesradar"]
 STATEMENT_PROVIDERS = ["fmp", "yfinance", "polygon", "sec"]
 PROJECTION_PROVIDERS = ["fmp", "yfinance", "tmx"]
-CALENDAR_PROVIDERS = ["fmp", "nasdaq"]
+CALENDAR_PROVIDERS = ["fmp", "nasdaq", "biznesradar"]
 SEARCH_PROVIDERS = ["sec", "nasdaq", "cboe", "biznesradar"]
 COMPANY_NEWS_PROVIDERS = ["polygon", "fmp", "yfinance"]
 
