@@ -1,0 +1,74 @@
+{
+  "fundamental-tmx": {
+    "cols": [
+      "ex_dividend_date",
+      "amount",
+      "currency",
+      "declaration_date",
+      "record_date",
+      "payment_date"
+    ],
+    "index_name": "None",
+    "payment_date": true,
+    "ex_div_date_col": true,
+    "rows": 18,
+    "sample": [
+      {
+        "index": 0,
+        "ex_dividend_date": "2022-08-05",
+        "amount": 0.034795,
+        "currency": "CAD",
+        "declaration_date": "2022-07-29",
+        "record_date": "2022-08-08",
+        "payment_date": "2022-08-18"
+      },
+      {
+        "index": 1,
+        "ex_dividend_date": "2022-11-04",
+        "amount": 0.033881,
+        "currency": "CAD",
+        "declaration_date": "2022-10-28",
+        "record_date": "2022-11-07",
+        "payment_date": "2022-11-18"
+      }
+    ]
+  },
+  "calendar-nasdaq": {
+    "cols": [
+      "ex_dividend_date",
+      "symbol",
+      "amount",
+      "name",
+      "record_date",
+      "payment_date",
+      "declaration_date",
+      "annualized_amount"
+    ],
+    "payment_date": true,
+    "rows": 541,
+    "sample": [
+      {
+        "index": 0,
+        "ex_dividend_date": "2026-09-30",
+        "symbol": "AFCG",
+        "amount": 0.05,
+        "name": "Advanced Flower Capital Inc. Common Stock",
+        "record_date": "2026-09-30",
+        "payment_date": "2026-10-15",
+        "declaration_date": "2026-09-15",
+        "annualized_amount": 0.2
+      },
+      {
+        "index": 1,
+        "ex_dividend_date": "2026-09-30",
+        "symbol": "AGNC",
+        "amount": 0.12,
+        "name": "AGNC Investment Corp. Common Stock",
+        "record_date": "2026-09-30",
+        "payment_date": "2026-10-09",
+        "declaration_date": "2026-09-09",
+        "annualized_amount": 1.44
+      }
+    ]
+  }
+}
