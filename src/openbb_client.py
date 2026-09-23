@@ -10,7 +10,7 @@ from openbb import obb
 
 from src import db
 
-DIVIDEND_PROVIDERS = ["nasdaq", "yfinance", "fmp", "intrinio"]
+DIVIDEND_PROVIDERS = ["nasdaq", "yfinance", "fmp", "intrinio", "dividendmax"]
 METRICS_PROVIDERS  = ["yfinance", "fmp", "intrinio"]
 PROFILE_PROVIDERS = ["fmp", "yfinance", "biznesradar"]
 QUOTE_PROVIDERS = ["fmp", "yfinance", "cboe", "biznesradar"]

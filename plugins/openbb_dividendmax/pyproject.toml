@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta:__legacy__"
+
+[project]
+name = "openbb-dividendmax"
+version = "0.1.0"
+description = "dividendmax.com OpenBB provider — UK/EU/US dividend history from public pages"
+dependencies = ["openbb-core", "beautifulsoup4", "lxml", "httpx"]
+
+[project.entry-points."openbb_provider_extension"]
+dividendmax = "openbb_dividendmax:dividendmax_provider"

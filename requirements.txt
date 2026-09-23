@@ -22,3 +22,4 @@ prometheus-client==0.26.0
 python-json-logger==4.2.0
 -e ./plugins/openbb_biznesradar
 -e ./plugins/openbb_obligacje
+-e ./plugins/openbb_dividendmax
