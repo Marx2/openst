@@ -1022,6 +1022,121 @@ def test_get_calendar_empty_window_returns_empty(mock_obb):
     assert get_calendar("dividend", "2026-08-20", "2026-08-25") == []
 
 
+def _dividend_calendar_df(rows: list[dict]) -> pd.DataFrame:
+    return pd.DataFrame(rows)
+
+
+@patch("src.openbb_client.obb")
+def test_get_calendar_dividend_merges_providers(mock_obb):
+    """§52.6 — GPW (biznesradar) rows must surface alongside US (nasdaq) rows:
+    the calendar is consumed per-symbol downstream, so first-non-empty would
+    mask the GPW payers whenever a US provider answers for the window."""
+    us_df = _dividend_calendar_df(
+        [
+            {
+                "ex_dividend_date": "2026-08-10",
+                "symbol": "AAPL",
+                "amount": 0.27,
+                "payment_date": "2026-08-13",
+            }
+        ]
+    )
+    pl_df = _dividend_calendar_df(
+        [
+            {
+                "ex_dividend_date": "2026-09-28",
+                "symbol": "NTT",
+                "amount": 0.22,
+                "payment_date": "2026-12-30",
+                "status": "uchwalona",
+            }
+        ]
+    )
+    empty = MagicMock()
+    empty.to_df.return_value = pd.DataFrame()
+
+    def by_provider(**kwargs):
+        if kwargs.get("provider") == "nasdaq":
+            r = MagicMock()
+            r.to_df.return_value = us_df
+            return r
+        if kwargs.get("provider") == "biznesradar":
+            r = MagicMock()
+            r.to_df.return_value = pl_df
+            return r
+        return empty
+
+    mock_obb.equity.calendar.dividend.side_effect = by_provider
+    result = get_calendar("dividend", "2026-08-20", "2026-12-31")
+    assert {r["symbol"] for r in result} == {"AAPL", "NTT"}
+    assert len(mock_obb.equity.calendar.dividend.call_args_list) == 3
+
+
+@patch("src.openbb_client.obb")
+def test_get_calendar_dividend_dedupes_identical_rows(mock_obb):
+    dup_df = _dividend_calendar_df(
+        [
+            {
+                "ex_dividend_date": "2026-08-10",
+                "symbol": "AAPL",
+                "amount": 0.27,
+                "payment_date": "2026-08-13",
+            }
+        ]
+    )
+
+    def by_provider(**kwargs):
+        if kwargs.get("provider") in ("nasdaq", "biznesradar"):
+            r = MagicMock()
+            r.to_df.return_value = dup_df
+            return r
+        r = MagicMock()
+        r.to_df.return_value = pd.DataFrame()
+        return r
+
+    mock_obb.equity.calendar.dividend.side_effect = by_provider
+    result = get_calendar("dividend", "2026-08-20", "2026-12-31")
+    assert result == [
+        {
+            "ex_dividend_date": "2026-08-10",
+            "symbol": "AAPL",
+            "amount": 0.27,
+            "payment_date": "2026-08-13",
+        }
+    ]
+
+
+@patch("src.openbb_client.obb")
+def test_get_calendar_dividend_skips_rate_limited_provider(mock_obb):
+    """fmp 402 (premium) must not abort the merge — nasdaq rows still surface."""
+    us_df = _dividend_calendar_df(
+        [
+            {
+                "ex_dividend_date": "2026-08-10",
+                "symbol": "AAPL",
+                "amount": 0.27,
+                "payment_date": "2026-08-13",
+            }
+        ]
+    )
+
+    def by_provider(**kwargs):
+        if kwargs.get("provider") == "fmp":
+            raise Exception("402 Premium Query Parameter")
+        if kwargs.get("provider") == "nasdaq":
+            r = MagicMock()
+            r.to_df.return_value = us_df
+            return r
+        r = MagicMock()
+        r.to_df.return_value = pd.DataFrame()
+        return r
+
+    mock_obb.equity.calendar.dividend.side_effect = by_provider
+    result = get_calendar("dividend", "2026-08-20", "2026-12-31")
+    assert [r["symbol"] for r in result] == ["AAPL"]
+    assert openbb_client._provider_is_blocked("fmp")
+
+
 @patch("src.openbb_client.obb")
 def test_search_equities_uses_sec_provider(mock_obb):
     mock_result = MagicMock()
