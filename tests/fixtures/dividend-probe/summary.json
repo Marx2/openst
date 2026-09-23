@@ -1,0 +1,162 @@
+{
+  "probe": "plan-49.9 payment_date availability",
+  "date": "2026-09-23",
+  "fundamental": {
+    "ticker": "AAPL",
+    "endpoint": "equity.fundamental.dividends",
+    "providers": {
+      "yfinance": {
+        "status": "ok",
+        "columns": [
+          "ex_dividend_date",
+          "amount"
+        ],
+        "index_name": "None",
+        "has_payment_date": false,
+        "has_ex_dividend_date": true,
+        "has_record_date": false,
+        "rows": 92,
+        "sample": [
+          {
+            "index": 0,
+            "ex_dividend_date": "1987-05-11",
+            "amount": 0.000536
+          },
+          {
+            "index": 1,
+            "ex_dividend_date": "1987-08-10",
+            "amount": 0.000536
+          },
+          {
+            "index": 2,
+            "ex_dividend_date": "1987-11-17",
+            "amount": 0.000714
+          }
+        ],
+        "fixture": "fundamental-yfinance-dividends.csv"
+      },
+      "fmp": {
+        "status": "error",
+        "error": " [Error] -> Unauthorized FMP request -> 402 -> Premium Query Parameter: 'Special Parameters : The values for 'limit' must be between 0 and 5 based on your current subscription. Please visit our subscription page to upgrade your plan at https://financialmodelingprep.com/"
+      },
+      "intrinio": {
+        "status": "error",
+        "error": "Results not found."
+      },
+      "nasdaq": {
+        "status": "ok",
+        "columns": [
+          "ex_dividend_date",
+          "amount",
+          "dividend_type",
+          "currency",
+          "record_date",
+          "payment_date",
+          "declaration_date"
+        ],
+        "index_name": "None",
+        "has_payment_date": true,
+        "has_ex_dividend_date": true,
+        "has_record_date": true,
+        "rows": 83,
+        "sample": [
+          {
+            "index": 0,
+            "ex_dividend_date": "2026-08-10",
+            "amount": 0.27,
+            "dividend_type": "Cash",
+            "currency": "USD",
+            "record_date": "2026-08-10",
+            "payment_date": "2026-08-13",
+            "declaration_date": "2026-07-30"
+          },
+          {
+            "index": 1,
+            "ex_dividend_date": "2026-05-11",
+            "amount": 0.27,
+            "dividend_type": "Cash",
+            "currency": "USD",
+            "record_date": "2026-05-11",
+            "payment_date": "2026-05-14",
+            "declaration_date": "2026-04-30"
+          },
+          {
+            "index": 2,
+            "ex_dividend_date": "2026-02-09",
+            "amount": 0.26,
+            "dividend_type": "Cash",
+            "currency": "USD",
+            "record_date": "2026-02-09",
+            "payment_date": "2026-02-12",
+            "declaration_date": "2026-01-29"
+          }
+        ],
+        "fixture": "fundamental-nasdaq-dividends.csv"
+      }
+    }
+  },
+  "calendar": {
+    "ticker": "calendar(any)",
+    "endpoint": "equity.calendar.dividend",
+    "window": "2026-09-16..2026-11-22",
+    "providers": {
+      "fmp": {
+        "status": "ok",
+        "columns": [
+          "ex_dividend_date",
+          "symbol",
+          "amount",
+          "record_date",
+          "payment_date",
+          "declaration_date",
+          "adjusted_amount",
+          "dividend_yield",
+          "frequency"
+        ],
+        "has_payment_date": true,
+        "has_ex_dividend_date": true,
+        "has_record_date": true,
+        "rows": 12,
+        "sample": [
+          {
+            "index": 0,
+            "ex_dividend_date": "2026-09-16",
+            "symbol": "HCA",
+            "amount": 0.78,
+            "record_date": "2026-09-16",
+            "payment_date": "2026-09-30",
+            "declaration_date": "2026-07-23",
+            "adjusted_amount": 0.78,
+            "dividend_yield": 0.007109169899867573,
+            "frequency": "Quarterly"
+          },
+          {
+            "index": 1,
+            "ex_dividend_date": "2026-09-16",
+            "symbol": "TSM",
+            "amount": 1.10745,
+            "record_date": "2026-09-16",
+            "payment_date": "2026-10-08",
+            "declaration_date": "2026-05-12",
+            "adjusted_amount": 1.10745,
+            "dividend_yield": 0.00905192473427176,
+            "frequency": "Quarterly"
+          },
+          {
+            "index": 2,
+            "ex_dividend_date": "2026-09-18",
+            "symbol": "SPY",
+            "amount": 1.88883,
+            "record_date": "2026-09-18",
+            "payment_date": "2026-10-30",
+            "declaration_date": "2026-01-02",
+            "adjusted_amount": 1.88883,
+            "dividend_yield": 0.009955126101169767,
+            "frequency": "Quarterly"
+          }
+        ],
+        "fixture": "calendar-fmp-dividend.csv"
+      }
+    }
+  }
+}
