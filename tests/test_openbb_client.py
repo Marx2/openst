@@ -387,6 +387,61 @@ def test_get_dividend_history_empty_df_returns_empty(mock_obb):
     assert get_dividend_history("AAPL") == []
 
 
+def _nasdaq_dividends_df() -> pd.DataFrame:
+    df = pd.DataFrame(
+        [
+            {"ex_dividend_date": "2026-08-10", "amount": 0.27, "record_date": "2026-08-10",
+             "payment_date": "2026-08-13", "declaration_date": "2026-07-30"},
+            {"ex_dividend_date": "2026-05-11", "amount": 0.27, "record_date": "2026-05-11",
+             "payment_date": "2026-05-14", "declaration_date": "2026-04-30"},
+        ]
+    )
+    df = df.set_index(pd.to_datetime(df["ex_dividend_date"]))
+    df.index.name = "ex_dividend_date"
+    return df.drop(columns=["ex_dividend_date"])
+
+
+@patch("src.openbb_client.obb")
+def test_get_dividend_history_nasdaq_first_carries_payment_date(mock_obb):
+    mock_result = MagicMock()
+    mock_result.to_df.return_value = _nasdaq_dividends_df()
+    mock_obb.equity.fundamental.dividends.return_value = mock_result
+
+    result = get_dividend_history("AAPL")
+
+    assert result == [
+        {"date": "2026-08-10", "amount": "0.2700", "payment_date": "2026-08-13"},
+        {"date": "2026-05-11", "amount": "0.2700", "payment_date": "2026-05-14"},
+    ]
+    mock_obb.equity.fundamental.dividends.assert_called_once_with("AAPL", provider="nasdaq")
+
+
+@patch("src.openbb_client.obb")
+def test_get_dividend_history_no_payment_date_column_stays_two_key(mock_obb):
+    mock_result = MagicMock()
+    mock_result.to_df.return_value = _dividends_df()
+    mock_obb.equity.fundamental.dividends.return_value = mock_result
+
+    result = get_dividend_history("AAPL")
+
+    assert result == [
+        {"date": "2024-03-15", "amount": "0.2500"},
+        {"date": "2024-06-15", "amount": "0.3000"},
+    ]
+
+
+@patch("src.openbb_client.obb")
+def test_get_dividend_history_nasdaq_rate_limited_falls_back_to_yfinance(mock_obb):
+    mock_ok = MagicMock()
+    mock_ok.to_df.return_value = _dividends_df()
+    mock_obb.equity.fundamental.dividends.side_effect = [Exception("rate limit exceeded"), mock_ok]
+
+    result = get_dividend_history("AAPL")
+
+    assert result is not None
+    assert len(result) == 2
+
+
 # ---------------------------------------------------------------------------
 # get_dividend_history — rate-limit / invalid ticker
 # ---------------------------------------------------------------------------
@@ -405,7 +460,7 @@ def test_get_dividend_history_rate_limit_blocks_provider_tries_next(mock_obb):
 
     assert result is not None
     assert len(result) == 2
-    assert "yfinance" in openbb_client._provider_blocked_until
+    assert "nasdaq" in openbb_client._provider_blocked_until
     assert mock_obb.equity.fundamental.dividends.call_count == 2
 
 
@@ -432,7 +487,7 @@ def test_get_dividend_history_cached_false_skips_all_providers(mock_obb):
 
 @patch("src.openbb_client.obb")
 def test_get_dividend_history_blocked_provider_skipped(mock_obb):
-    openbb_client._provider_blocked_until["yfinance"] = datetime.now(timezone.utc) + timedelta(hours=1)
+    openbb_client._provider_blocked_until["nasdaq"] = datetime.now(timezone.utc) + timedelta(hours=1)
     mock_ok = MagicMock()
     mock_ok.to_df.return_value = _dividends_df()
     mock_obb.equity.fundamental.dividends.return_value = mock_ok
@@ -441,7 +496,7 @@ def test_get_dividend_history_blocked_provider_skipped(mock_obb):
 
     assert result is not None
     first_call = mock_obb.equity.fundamental.dividends.call_args_list[0]
-    assert first_call[1]["provider"] == "fmp"
+    assert first_call[1]["provider"] == "yfinance"
 
 
 # ---------------------------------------------------------------------------
