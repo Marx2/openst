@@ -1,0 +1,42 @@
+{
+  "probe": "plan-52.3 dividendmax public-page capture (pivot from paid API: no key available)",
+  "date": "2026-09-24",
+  "access": {
+    "mode": "public HTML pages + one public JSON endpoint — NO API key required",
+    "resolution_endpoint": "GET /suggest.json?q={query} (unauthenticated JSON: [{search, id, name, ticker, flag, image, path}])",
+    "resolution_caveats": [
+      "partial name matches included — filter results to ticker == query (case-insensitive)",
+      "same ticker can map to multiple listings (VOD: UK plc + US ADR) — disambiguate by preferring the US listing for bare tickers (openst universe is US + GPW .WA)"
+    ],
+    "page_url": "https://www.dividendmax.com{path} where path ends /dividends",
+    "site_protection": "Cloudflare (some routes 403 on direct hits) + reCAPTCHA v3 on home/interactive; the two scrape targets (suggest.json, /dividends pages) answered 200 with a plain Mozilla UA"
+  },
+  "tos": "terms_and_conditions: content may be used for personal non-commercial use with notices intact; may NOT be reproduced/modified/copied/distributed or used commercially. Personal-use, low-volume scraping (2 polite requests per symbol, long Redis cache) — user decision 2026-09-24.",
+  "history_table": {
+    "selector": "table[aria-label='Declared and forecast {NAME} dividends'] (class mdc-data-table__table; second table on page; first table's aria-label is None, third = annual totals)",
+    "pagination": "none — full history (roughly last 20 years of Paid rows) + ~5 forecast years in one page",
+    "columns": ["Status", "Type", "Decl. date", "Ex-div date", "Pay date", "Decl. Currency", "Forecast amount", "Decl. amount", "Accuracy"],
+    "status_values": ["Paid", "Forecast"],
+    "type_values_seen": ["Quarterly", "Final", "Interim"],
+    "dates": "DD Mon YYYY (English month names, e.g. '31 Oct 2030'); missing = '–' (en dash), not 'bd.'",
+    "amounts": {
+      "notation": "SUBUNIT: '265c' (AAPL, letter c), '4.5¢' (unicode cent, Vodafone USD rows), '7.77p' (pence, GBP rows) — divide by 100; 'Sign up' = forecast amount gated (never needed for Paid rows); '—' = None",
+      "use_column": "Decl. amount for Paid rows; Forecast amount is 'Sign up' (gated) for Forecast rows"
+    },
+    "currency": "per-row Decl. Currency (EUR/GBP/USD seen on Vodafone alone) — carries with the row",
+    "returned_fields": {
+      "ex_dividend_date": true,
+      "payment_date": true,
+      "declaration_date": true,
+      "record_date": false
+    },
+    "known_noise": "early rows can be bogus (AAPL: 'Paid Final 31 Dec 2011 … 0c' predates Apple's real first dividend) — keep as-is, user handles data inconsistencies manually per house rule"
+  },
+  "fixtures": {
+    "suggest-aapl.json": "AAPL resolves to 1 exact ticker match (Apple Inc) + 1 name-only match (APLY) — proves ticker filter needed",
+    "dividends-aapl.html": "US payer, NASDAQ; 75 data rows (2011–2030), 49 Paid, USD, 'c' notation",
+    "suggest-vodafone.json": "VOD resolves to 2 exact ticker matches (UK plc + US ADR) — proves disambiguation needed",
+    "dividends-vodafone.html": "UK payer, LSE; 49 data rows (2006–2031), 39 Paid, EUR/GBP/USD mixed, '¢'/'p' notation"
+  },
+  "volume_estimate": "2 requests per symbol (suggest.json + one page) — negligible; politeness delay + long cache per house scraping convention (cf. biznesradar)"
+}
