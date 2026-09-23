@@ -17,7 +17,7 @@ COPY pytest.ini ./
 COPY src/ ./src/
 COPY tests/ ./tests/
 COPY migrations/ ./migrations/
-CMD ["sh", "-c", "python -m pytest tests/ -v && python -m pytest plugins/openbb_biznesradar/tests/ -v && python -m pytest plugins/openbb_obligacje/tests/ -v"]
+CMD ["sh", "-c", "python -m pytest tests/ -v && python -m pytest plugins/openbb_biznesradar/tests/ -v && python -m pytest plugins/openbb_obligacje/tests/ -v && python -m pytest plugins/openbb_dividendmax/tests/ -v"]
 
 FROM python:3.12-slim AS runtime
 WORKDIR /app

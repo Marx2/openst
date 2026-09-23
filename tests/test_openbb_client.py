@@ -180,8 +180,10 @@ def test_get_dividend_yield_non_payer_caches_result(mock_obb):
 
     get_dividend_yield("AAPL")
     get_dividend_yield("AAPL")
-    # 4 providers tried on first call, 0 on second (cached)
-    assert mock_obb.equity.fundamental.dividends.call_count == 4
+    # all dividend providers tried on first call, 0 on second (cached)
+    assert mock_obb.equity.fundamental.dividends.call_count == len(
+        openbb_client.DIVIDEND_PROVIDERS
+    )
 
 
 @patch("src.openbb_client.obb")
@@ -375,8 +377,11 @@ def test_get_dividend_history_non_payer_caches_result(mock_obb):
 
     get_dividend_history("AAPL")
     get_dividend_history("AAPL")
-    # 4 providers tried on first call (all return empty → cached False), 0 on second
-    assert mock_obb.equity.fundamental.dividends.call_count == 4
+    # all dividend providers tried on first call (all return empty → cached
+    # False), 0 on second
+    assert mock_obb.equity.fundamental.dividends.call_count == len(
+        openbb_client.DIVIDEND_PROVIDERS
+    )
 
 
 @patch("src.openbb_client.obb")
