@@ -10,13 +10,13 @@ from openbb import obb
 
 from src import db
 
-DIVIDEND_PROVIDERS = ["yfinance", "fmp", "intrinio", "nasdaq"]
+DIVIDEND_PROVIDERS = ["nasdaq", "yfinance", "fmp", "intrinio"]
 METRICS_PROVIDERS  = ["yfinance", "fmp", "intrinio"]
 PROFILE_PROVIDERS = ["fmp", "yfinance", "biznesradar"]
 QUOTE_PROVIDERS = ["fmp", "yfinance", "cboe", "biznesradar"]
 STATEMENT_PROVIDERS = ["fmp", "yfinance", "polygon", "sec"]
 PROJECTION_PROVIDERS = ["fmp", "yfinance", "tmx"]
-CALENDAR_PROVIDERS = ["fmp"]
+CALENDAR_PROVIDERS = ["fmp", "nasdaq"]
 SEARCH_PROVIDERS = ["sec", "nasdaq", "cboe", "biznesradar"]
 COMPANY_NEWS_PROVIDERS = ["polygon", "fmp", "yfinance"]
 
@@ -199,7 +199,14 @@ def get_dividend_history(ticker: str) -> list[dict] | None:
                 amount = _safe_float(row.get("amount"), ndigits=4)
                 if amount is None:
                     continue
-                rows.append({"date": str(date), "amount": f"{amount:.4f}"})
+                item = {"date": str(date), "amount": f"{amount:.4f}"}
+                payment_date = row.get("payment_date")
+                if payment_date is not None and not pd.isna(payment_date):
+                    try:
+                        item["payment_date"] = str(pd.Timestamp(payment_date).date())
+                    except (ValueError, TypeError):
+                        pass
+                rows.append(item)
             _pays_dividend[ticker] = True
             return rows
         except Exception as e:
