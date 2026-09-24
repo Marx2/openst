@@ -1138,6 +1138,24 @@ def test_get_calendar_dividend_skips_rate_limited_provider(mock_obb):
 
 
 @patch("src.openbb_client.obb")
+def test_get_calendar_earnings_never_uses_biznesradar(mock_obb):
+    """§52 follow-up — biznesradar only implements CalendarDividend; the Earnings
+    model rejects it ("Input should be 'fmp', 'nasdaq' or 'tmx'"), so earnings
+    must iterate only its own provider list. Empty fmp + nasdaq fall through to
+    tmx, and biznesradar is never attempted."""
+    def by_provider(**kwargs):
+        r = MagicMock()
+        r.to_df.return_value = pd.DataFrame()
+        return r
+
+    mock_obb.equity.calendar.earnings.side_effect = by_provider
+    assert get_calendar("earnings", "2026-08-20", "2027-01-22") == []
+    providers = [c.kwargs["provider"] for c in mock_obb.equity.calendar.earnings.call_args_list]
+    assert "biznesradar" not in providers
+    assert providers == ["fmp", "nasdaq", "tmx"]
+
+
+@patch("src.openbb_client.obb")
 def test_search_equities_uses_sec_provider(mock_obb):
     mock_result = MagicMock()
     mock_result.to_df.return_value = _search_df()
