@@ -16,7 +16,10 @@ PROFILE_PROVIDERS = ["fmp", "yfinance", "biznesradar"]
 QUOTE_PROVIDERS = ["fmp", "yfinance", "cboe", "biznesradar"]
 STATEMENT_PROVIDERS = ["fmp", "yfinance", "polygon", "sec"]
 PROJECTION_PROVIDERS = ["fmp", "yfinance", "tmx"]
-CALENDAR_PROVIDERS = ["fmp", "nasdaq", "biznesradar"]
+# biznesradar only implements CalendarDividend (GPW coupon/payment calendar,
+# §52) — it is NOT a valid provider for the Earnings model, so earnings uses
+# its own list (OpenBB Earnings accepts fmp/nasdaq/tmx).
+CALENDAR_PROVIDERS = {"dividend": ["fmp", "nasdaq", "biznesradar"], "earnings": ["fmp", "nasdaq", "tmx"]}
 SEARCH_PROVIDERS = ["sec", "nasdaq", "cboe", "biznesradar"]
 COMPANY_NEWS_PROVIDERS = ["polygon", "fmp", "yfinance"]
 
@@ -783,7 +786,7 @@ def _merged_dividend_calendar(fn, start_date: str, end_date: str) -> list[dict]:
     """
     records: list[dict] = []
     seen: set = set()
-    for provider in CALENDAR_PROVIDERS:
+    for provider in CALENDAR_PROVIDERS["dividend"]:
         if _provider_is_blocked(provider):
             continue
         try:
@@ -816,7 +819,7 @@ def get_calendar(kind: str, start_date: str, end_date: str) -> list[dict]:
     fn = getattr(obb.equity.calendar, kind)
     if kind == "dividend":
         return _merged_dividend_calendar(fn, start_date, end_date)
-    for provider in CALENDAR_PROVIDERS:
+    for provider in CALENDAR_PROVIDERS[kind]:
         if _provider_is_blocked(provider):
             continue
         try:
