@@ -18,6 +18,7 @@ from src.openbb_client import (
     get_institutional_ownership,
     get_mda,
     get_metrics,
+    get_ohlcv_history,
     get_price_history,
     get_profile,
     get_projections,
@@ -261,6 +262,25 @@ def _price_history_df() -> pd.DataFrame:
     return df
 
 
+def _pence_history_df() -> pd.DataFrame:
+    """yfinance-style LSE history: prices in pence (GBX) — BYG.L 820p = £8.20."""
+    df = pd.DataFrame(
+        [{"close": 820.0}, {"close": 830.5}],
+        index=pd.to_datetime(["2026-09-22", "2026-09-23"]),
+    )
+    df.index.name = "date"
+    return df
+
+
+def _pence_ohlcv_df() -> pd.DataFrame:
+    df = pd.DataFrame(
+        [{"open": 810.0, "high": 830.0, "low": 805.0, "close": 820.0, "volume": 1000}],
+        index=pd.to_datetime(["2026-09-23"]),
+    )
+    df.index.name = "date"
+    return df
+
+
 # ---------------------------------------------------------------------------
 # get_price_history
 # ---------------------------------------------------------------------------
@@ -321,6 +341,58 @@ def test_get_price_history_invalid_ticker_returns_empty(mock_obb):
 
     assert result == []
     assert mock_obb.equity.price.historical.call_count == 1
+
+
+# ---------------------------------------------------------------------------
+# GBX (pence) normalization for yfinance LSE tickers (plan §63.5)
+# ---------------------------------------------------------------------------
+
+
+def test_needs_gbx_normalization_only_yfinance_lse():
+    assert openbb_client._needs_gbx_normalization("yfinance", "BYG.L")
+    assert openbb_client._needs_gbx_normalization("yfinance", "byg.l")
+    assert not openbb_client._needs_gbx_normalization("fmp", "BYG.L")
+    assert not openbb_client._needs_gbx_normalization("yfinance", "AAPL")
+    assert not openbb_client._needs_gbx_normalization("yfinance", "VRC.WA")
+    assert not openbb_client._needs_gbx_normalization("yfinance", "SAP.DE")
+
+
+@patch("src.openbb_client.obb")
+def test_get_price_history_yfinance_lse_normalized_pence_to_gbp(mock_obb):
+    mock_obb.equity.price.historical.return_value.to_df.return_value = _pence_history_df()
+
+    result = get_price_history("BYG.L", "2026-09-22", "2026-09-25")
+
+    # 820p -> 8.20 GBP, 830.5p -> 8.305 GBP (matches the live GBP quote)
+    assert [r["close"] for r in result] == [8.2, 8.305]
+
+
+@patch("src.openbb_client.obb")
+def test_get_price_history_yfinance_non_lse_unchanged(mock_obb):
+    mock_obb.equity.price.historical.return_value.to_df.return_value = _pence_history_df()
+
+    # Same pence-magnitude values, but a non-LSE ticker: no normalization.
+    result = get_price_history("FAKEUS", "2026-09-22", "2026-09-25")
+    assert [r["close"] for r in result] == [820.0, 830.5]
+
+
+@patch("src.openbb_client.obb")
+def test_get_ohlcv_history_yfinance_lse_normalizes_all_price_fields(mock_obb):
+    mock_obb.equity.price.historical.return_value.to_df.return_value = _pence_ohlcv_df()
+
+    result = get_ohlcv_history("BYG.L", "2026-09-23", "2026-09-25")
+
+    r = result[0]
+    assert (r["open"], r["high"], r["low"], r["close"]) == (8.1, 8.3, 8.05, 8.2)
+    assert r["volume"] == 1000  # volume untouched
+
+
+@patch("src.openbb_client.obb")
+def test_get_ohlcv_history_yfinance_non_lse_unchanged(mock_obb):
+    mock_obb.equity.price.historical.return_value.to_df.return_value = _pence_ohlcv_df()
+
+    result = get_ohlcv_history("AAPL", "2026-09-23", "2026-09-25")
+    assert (result[0]["open"], result[0]["close"]) == (810.0, 820.0)
 
 
 @patch("src.openbb_client.obb")
