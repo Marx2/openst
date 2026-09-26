@@ -144,6 +144,27 @@ def get_dividend_yield(ticker: str) -> float | None:
 PRICE_PROVIDERS = ["yfinance", "fmp", "intrinio", "polygon", "cboe", "tiingo", "biznesradar"]
 
 
+def _needs_gbx_normalization(provider: str, ticker: str) -> bool:
+    """yfinance quotes LSE (London, `.L`) symbols in pence (GBX).
+
+    BYG.L 820 = £8.20 (2026-09-25 PROD incident — 100× chart inflation,
+    plan §63.5). Every other source in the system (the quote path, stooq UK)
+    uses GBP, so yfinance LSE history must be normalized to the major unit
+    before it reaches price_bars.
+    """
+    return provider == "yfinance" and (ticker or "").upper().endswith(".L")
+
+
+def _gbx_to_gbp(rows: list[dict]) -> list[dict]:
+    """Divide every price field of a pence-denominated row set by 100."""
+    for r in rows:
+        for k in ("open", "high", "low", "close"):
+            v = r.get(k)
+            if v is not None:
+                r[k] = v / 100.0
+    return rows
+
+
 def get_price_history(ticker: str, start_date: str, end_date: str) -> list[dict] | None:
     for provider in PRICE_PROVIDERS:
         if _provider_is_blocked(provider):
@@ -161,6 +182,8 @@ def get_price_history(ticker: str, start_date: str, end_date: str) -> list[dict]
                 if close is None:
                     continue
                 rows.append({"date": str(date), "close": close})
+            if _needs_gbx_normalization(provider, ticker):
+                rows = _gbx_to_gbp(rows)
             return rows
         except Exception as e:
             err = str(e)
@@ -401,6 +424,8 @@ def get_ohlcv_history(ticker: str, start_date: str, end_date: str) -> list[dict]
                     "close": close,
                     "volume": _safe_int(row.get("volume")) or 0,
                 })
+            if _needs_gbx_normalization(provider, ticker):
+                rows = _gbx_to_gbp(rows)
             return rows
         except Exception as e:
             err = str(e)
