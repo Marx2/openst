@@ -21,23 +21,37 @@ from opentelemetry.sdk.resources import SERVICE_NAME, SERVICE_VERSION, Resource
 from opentelemetry.sdk.trace import TracerProvider
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
+_meter_provider: MeterProvider | None = None
+
+
+def _ensure_otel(service_name: str) -> MeterProvider:
+    """One MeterProvider per process, shared by every app instance.
+
+    The global OTel API refuses to be re-pointed once set, so a second
+    MeterProvider is silently ignored and its metrics never reach the exporter. The
+    httpx instrumentation also binds to the globally-set provider, so re-instrumenting
+    per app double-counts client spans. Guarding on a module global keeps create_app
+    callable more than once (tests, multiple workers) without either effect.
+    """
+    global _meter_provider
+    if _meter_provider is None:
+        resource = Resource.create(
+            {
+                SERVICE_NAME: service_name,
+                SERVICE_VERSION: os.environ.get("APP_VERSION", "0.0.0-dev"),
+            }
+        )
+        reader = PrometheusMetricReader()
+        _meter_provider = MeterProvider(resource=resource, metric_readers=[reader])
+        otel_metrics.set_meter_provider(_meter_provider)
+        otel_trace.set_tracer_provider(TracerProvider(resource=resource))
+        HTTPXClientInstrumentor().instrument()
+    return _meter_provider
+
 
 def setup_otel(app: FastAPI, service_name: str) -> None:
-    resource = Resource.create(
-        {
-            SERVICE_NAME: service_name,
-            SERVICE_VERSION: os.environ.get("APP_VERSION", "0.0.0-dev"),
-        }
-    )
-
-    reader = PrometheusMetricReader()
-    metering = MeterProvider(resource=resource, metric_readers=[reader])
-    otel_metrics.set_meter_provider(metering)
-
-    otel_trace.set_tracer_provider(TracerProvider(resource=resource))
-
-    FastAPIInstrumentor.instrument_app(app, meter_provider=metering)
-    HTTPXClientInstrumentor().instrument()
+    provider = _ensure_otel(service_name)
+    FastAPIInstrumentor.instrument_app(app, meter_provider=provider)
 
     @app.get("/metrics", include_in_schema=False)
     def metrics() -> Response:
