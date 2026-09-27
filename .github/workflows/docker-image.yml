@@ -8,6 +8,21 @@ on:
 
 jobs:
 
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      # The suite needs Redis and Postgres, so it runs through compose rather than
+      # `docker run` of the test image. openst's compose only builds from this repo,
+      # so no sibling checkout is required.
+      - name: Build test image
+        run: docker compose --profile test build test
+
+      - name: Run test suite
+        run: docker compose --profile test run --rm test
+
   release:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
