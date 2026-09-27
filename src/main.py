@@ -200,49 +200,31 @@ _cache = RedisCache(
 
 @app.get("/dividend/yield/{ticker}")
 def dividend_yield(ticker: str):
-    key = f"dividend_yield:{ticker}"
-    cached = _cache.get(key)
-    if cached is not None:
-        return json.loads(cached)
-
-    value = get_dividend_yield(ticker)
-    if value is None:
-        raise HTTPException(status_code=404, detail=f"No dividend yield data for {ticker}")
-
-    _cache.set(key, _safe_json_dumps(value))
-    return value
+    return _cached_or_404(
+        _symbol_key("dividend_yield", ticker),
+        lambda: get_dividend_yield(ticker),
+        f"No dividend yield data for {ticker}",
+    )
 
 
 @app.get("/price/history/{ticker}")
 def price_history(ticker: str):
     end = date.today()
     start = end - timedelta(days=365)
-    key = f"price_history:{ticker}:{start}:{end}"
-    cached = _cache.get(key)
-    if cached is not None:
-        return json.loads(cached)
-
-    value = get_price_history(ticker, str(start), str(end))
-    if value is None:
-        raise HTTPException(status_code=404, detail=f"No price history for {ticker}")
-
-    _cache.set(key, _safe_json_dumps(value))
-    return value
+    return _cached_or_404(
+        _symbol_key("price_history", ticker, start, end),
+        lambda: get_price_history(ticker, str(start), str(end)),
+        f"No price history for {ticker}",
+    )
 
 
 @app.get("/dividend/history/{ticker}")
 def dividend_history(ticker: str):
-    key = f"dividend_history:{ticker}"
-    cached = _cache.get(key)
-    if cached is not None:
-        return json.loads(cached)
-
-    value = get_dividend_history(ticker)
-    if value is None:
-        raise HTTPException(status_code=404, detail=f"No dividend history data for {ticker}")
-
-    _cache.set(key, _safe_json_dumps(value))
-    return value
+    return _cached_or_404(
+        _symbol_key("dividend_history", ticker),
+        lambda: get_dividend_history(ticker),
+        f"No dividend history data for {ticker}",
+    )
 
 
 def _safe_json_dumps(value) -> str:
@@ -284,6 +266,26 @@ def _default_dates():
     return str(start), str(end)
 
 
+def _symbol_key(namespace: str, *parts: str) -> str:
+    """Cache key for a symbol-keyed route. Upper-cases every symbol part.
+
+    The routing was previously a mix: five routes upper-cased, two lower-cased, and
+    eighteen used the raw input. That meant ``/equity/profile/aapl`` and
+    ``/equity/profile/AAPL`` were separate entries — two full provider walks for one
+    instrument — and, worse, a caller varying case defeated the negative cache, so
+    every dead-symbol request re-paid a 2-15 s walk across all providers.
+    """
+    return ":".join(
+        [namespace, *(str(p).strip().upper() if p is not None else "" for p in parts)]
+    )
+
+
+def _query_key(namespace: str, query: str, *parts: str) -> str:
+    """Cache key for a free-text search route. Lower-cases and strips the query."""
+    tail = "".join(f":{p}" for p in parts if p is not None)
+    return f"{namespace}:{query.strip().lower()}{tail}"
+
+
 # A fund's inception date never changes, so the probe is cached for a long TTL
 # (plan §45.5) — the one-time cost is a single oldest-page fetch per fund.
 _FIRST_NAV_TTL_S = 30 * 24 * 3600  # 30 days
@@ -302,7 +304,7 @@ def _fund_first_nav(ticker: str) -> str | None:
     """
     if not _is_fund_symbol(ticker):
         return None
-    key = f"fund_first_nav:{ticker}"
+    key = _symbol_key("fund_first_nav", ticker)
     cached = _cache.get(key)
     if cached is not None:
         return cached
@@ -322,7 +324,7 @@ def _fund_first_nav(ticker: str) -> str | None:
 @app.get("/equity/profile/{ticker}")
 def equity_profile(ticker: str):
     return _cached_or_404(
-        f"equity_profile:{ticker}",
+        _symbol_key("equity_profile", ticker),
         lambda: get_profile(ticker),
         f"No profile data for {ticker}",
     )
@@ -331,7 +333,7 @@ def equity_profile(ticker: str):
 @app.get("/equity/quote/{ticker}")
 def equity_quote(ticker: str):
     return _cached_or_404(
-        f"equity_quote:{ticker}",
+        _symbol_key("equity_quote", ticker),
         lambda: get_quote(ticker),
         f"No quote data for {ticker}",
     )
@@ -340,7 +342,7 @@ def equity_quote(ticker: str):
 @app.get("/equity/metrics/{ticker}")
 def equity_metrics(ticker: str):
     return _cached_or_404(
-        f"equity_metrics:{ticker}",
+        _symbol_key("equity_metrics", ticker),
         lambda: get_metrics(ticker),
         f"No fundamental metrics for {ticker}",
     )
@@ -349,7 +351,7 @@ def equity_metrics(ticker: str):
 @app.get("/equity/projections/{ticker}")
 def equity_projections(ticker: str):
     return _cached_or_404(
-        f"equity_projections:{ticker}",
+        _symbol_key("equity_projections", ticker),
         lambda: get_projections(ticker),
         f"No projections data for {ticker}",
     )
@@ -380,7 +382,7 @@ def price_ohlcv(
         return rows  # [] (invalid ticker) and None (all providers failed) both pass through
 
     return _cached_or_404(
-        f"price_ohlcv:{ticker}:{start}:{end}",
+        _symbol_key("price_ohlcv", ticker, start, end),
         fetch,
         f"No OHLCV history for {ticker}",
     )
@@ -398,7 +400,7 @@ def crypto_ohlcv(
         end = end or default_end
 
     return _cached_or_404(
-        f"crypto_ohlcv:{pair}:{start}:{end}",
+        _symbol_key("crypto_ohlcv", pair, start, end),
         lambda: get_crypto_ohlcv(pair, start, end),
         f"No OHLCV history for {pair}",
     )
@@ -407,7 +409,7 @@ def crypto_ohlcv(
 @app.get("/crypto/quote/{pair}")
 def crypto_quote(pair: str):
     return _cached_or_404(
-        f"crypto_quote:{pair}",
+        _symbol_key("crypto_quote", pair),
         lambda: get_crypto_quote(pair),
         f"No quote for {pair}",
     )
@@ -422,7 +424,7 @@ def crypto_search(query: str):
         return records or None
 
     return _cached_or_404(
-        f"crypto_search:{normalized}",
+        _query_key("crypto_search", query),
         fetch,
         f"No search results for '{query}'",
     )
@@ -431,7 +433,7 @@ def crypto_search(query: str):
 @app.get("/crypto/profile/{pair}")
 def crypto_profile(pair: str):
     return _cached_or_404(
-        f"crypto_profile:{pair}",
+        _symbol_key("crypto_profile", pair),
         lambda: get_crypto_profile(pair),
         f"No profile for {pair}",
     )
@@ -449,7 +451,7 @@ def equity_fundamentals(
         return records or None
 
     return _cached_or_404(
-        f"fundamentals:{ticker}:{statement}:{period}",
+        _symbol_key("fundamentals", ticker, statement, period),
         fetch,
         f"No {statement} statements for {ticker}",
     )
@@ -474,7 +476,7 @@ def equity_calendar(
         return records or None
 
     return _cached_or_404(
-        f"calendar:{kind}:{start}:{end}",
+        _symbol_key("calendar", kind, start, end),
         fetch,
         f"No {kind} calendar entries in window",
     )
@@ -489,7 +491,7 @@ def equity_search(query: str):
         return records or None
 
     return _cached_or_404(
-        f"equity_search:{normalized}",
+        _query_key("equity_search", query),
         fetch,
         f"No search results for '{query}'",
     )
@@ -514,7 +516,7 @@ def news_company(
         return records or None
 
     return _cached_or_404(
-        f"news_company:{ticker}:{limit}:{start_date}:{end_date}:{provider}",
+        _symbol_key("news_company", ticker, limit, start_date, end_date, provider),
         fetch,
         f"No company news for {ticker}",
     )
@@ -527,7 +529,7 @@ def equity_institutional_ownership(ticker: str):
         return records or None
 
     return _cached_or_404(
-        f"sec_institutional:{ticker.upper()}",
+        _symbol_key("sec_institutional", ticker),
         fetch,
         f"No institutional ownership data for {ticker}",
     )
@@ -540,7 +542,7 @@ def equity_ownership(ticker: str):
         return records or None
 
     return _cached_or_404(
-        f"sec_ownership:{ticker.upper()}",
+        _symbol_key("sec_ownership", ticker),
         fetch,
         f"No insider trading data for {ticker}",
     )
@@ -553,7 +555,7 @@ def equity_filings(ticker: str):
         return records or None
 
     return _cached_or_404(
-        f"sec_filings:{ticker.upper()}",
+        _symbol_key("sec_filings", ticker),
         fetch,
         f"No filings found for {ticker}",
     )
@@ -565,7 +567,7 @@ def equity_mda(ticker: str):
         return get_mda(ticker)
 
     return _cached_or_404(
-        f"sec_mda:{ticker.upper()}",
+        _symbol_key("sec_mda", ticker),
         fetch,
         f"No management discussion & analysis for {ticker}",
     )
@@ -574,7 +576,7 @@ def equity_mda(ticker: str):
 @app.get("/equity/logo/{ticker}")
 def equity_logo(ticker: str):
     return _cached_or_404(
-        f"equity_logo:{ticker.upper()}",
+        _symbol_key("equity_logo", ticker),
         lambda: get_logo(ticker),
         f"No logo resolvable for {ticker}",
     )
@@ -597,7 +599,7 @@ def fixedincome_ohlcv(
         end = end or default_end
 
     return _cached_or_404(
-        f"fixedincome_ohlcv:{symbol}:{start}:{end}",
+        _symbol_key("fixedincome_ohlcv", symbol, start, end),
         lambda: get_bond_ohlcv(symbol, start, end),
         f"No bond OHLCV history for {symbol}",
     )
@@ -606,7 +608,7 @@ def fixedincome_ohlcv(
 @app.get("/fixedincome/quote/{symbol}")
 def fixedincome_quote(symbol: str):
     return _cached_or_404(
-        f"fixedincome_quote:{symbol}",
+        _symbol_key("fixedincome_quote", symbol),
         lambda: get_bond_quote(symbol),
         f"No bond quote for {symbol}",
     )
@@ -615,7 +617,7 @@ def fixedincome_quote(symbol: str):
 @app.get("/fixedincome/profile/{symbol}")
 def fixedincome_profile(symbol: str):
     return _cached_or_404(
-        f"fixedincome_profile:{symbol}",
+        _symbol_key("fixedincome_profile", symbol),
         lambda: get_bond_profile(symbol),
         f"No bond profile for {symbol}",
     )
@@ -624,7 +626,7 @@ def fixedincome_profile(symbol: str):
 @app.get("/corp-bond/profile/{symbol}")
 def corp_bond_profile(symbol: str):
     return _cached_or_404(
-        f"corp_bond_profile:{symbol}",
+        _symbol_key("corp_bond_profile", symbol),
         lambda: get_corp_bond_profile(symbol),
         f"No corporate-bond profile for {symbol}",
     )
@@ -669,7 +671,7 @@ def fixedincome_search(query: str):
         return records or None
 
     return _cached_or_404(
-        f"fixedincome_search:{normalized}",
+        _query_key("fixedincome_search", query),
         fetch,
         f"No bond search results for '{query}'",
     )

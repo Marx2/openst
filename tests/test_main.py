@@ -1,25 +1,9 @@
 import json
 import logging
-import os
 from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient
-
-import src.cache as cache_module
-
-
-@pytest.fixture(autouse=True)
-def flush_redis():
-    c = cache_module.RedisCache(
-        host=os.environ.get("REDIS_HOST", "localhost"),
-        port=int(os.environ.get("REDIS_PORT", 6379)),
-        password=os.environ.get("REDIS_PASSWORD") or None,
-        db=int(os.environ.get("REDIS_DB", 0)),
-    )
-    c._client.flushdb()
-    yield
-    c._client.flushdb()
 
 
 @pytest.fixture
