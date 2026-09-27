@@ -19,7 +19,16 @@ Rules:
 docker compose --profile test run --rm test
 ```
 - Tests require Redis — always use the compose test profile, never plain `pytest` locally.
-- All 44 tests must pass before committing. The `test` profile in `docker-compose.yml` spins up Redis automatically.
+- All 542 tests must pass before committing (364 in `tests/`, plus a suite per provider
+  plugin). The `test` profile in `docker-compose.yml` spins up Redis and Postgres.
+- The test image must be rebuilt for source changes — `docker compose run` does not
+  rebuild on its own:
+  ```bash
+  docker compose --profile test build test
+  docker compose --profile test run --rm test
+  ```
+- Tests also run in CI on every push and pull request (`test` job in
+  `.github/workflows/docker-image.yml`).
 
 ### 3. Commit & push
 - Follow Conventional Commits: `feat`, `fix`, `chore`, etc.
