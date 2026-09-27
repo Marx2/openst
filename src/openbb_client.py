@@ -1,6 +1,6 @@
 import logging
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from urllib.parse import urlparse
 
@@ -400,6 +400,40 @@ def get_projections(ticker: str) -> dict | None:
     return base
 
 
+def _ohlcv_row(idx, row) -> dict | None:
+    """Build one OHLCV record, or None when the bar has no usable close.
+
+    open/high/low fall back to close when *absent*, never when zero: `x or close`
+    would rewrite a legitimate 0.0 as the close price.
+    """
+    close = _safe_float(row.get("close"))
+    if close is None:
+        return None
+
+    def price(field: str) -> float:
+        value = _safe_float(row.get(field))
+        return close if value is None else value
+
+    return {
+        "date": str(idx.date() if hasattr(idx, "date") else idx),
+        "open": price("open"),
+        "high": price("high"),
+        "low": price("low"),
+        "close": close,
+        "volume": _safe_int(row.get("volume")) or 0,
+    }
+
+
+def _ohlcv_rows(df) -> list[dict]:
+    """Build OHLCV records from a frame, dropping bars with no usable close."""
+    rows = []
+    for idx, row in df.iterrows():
+        built = _ohlcv_row(idx, row)
+        if built is not None:
+            rows.append(built)
+    return rows
+
+
 def get_ohlcv_history(ticker: str, start_date: str, end_date: str) -> list[dict] | None:
     for provider in PRICE_PROVIDERS:
         if _provider_is_blocked(provider):
@@ -410,20 +444,7 @@ def get_ohlcv_history(ticker: str, start_date: str, end_date: str) -> list[dict]
             ).to_df()
             if df.empty:
                 continue
-            rows = []
-            for idx, row in df.iterrows():
-                date = idx.date() if hasattr(idx, "date") else idx
-                close = _safe_float(row.get("close"))
-                if close is None:
-                    continue  # skip rows with NaN close — unusable
-                rows.append({
-                    "date": str(date),
-                    "open": _safe_float(row.get("open")) or close,
-                    "high": _safe_float(row.get("high")) or close,
-                    "low": _safe_float(row.get("low")) or close,
-                    "close": close,
-                    "volume": _safe_int(row.get("volume")) or 0,
-                })
+            rows = _ohlcv_rows(df)
             if _needs_gbx_normalization(provider, ticker):
                 rows = _gbx_to_gbp(rows)
             return rows
@@ -444,6 +465,10 @@ CRYPTO_PROVIDERS = ["yfinance", "fmp", "tiingo"]
 CRYPTO_SEARCH_PROVIDERS = ["fmp"]  # fmp is the only provider exposing crypto.search
 _CRYPTO_KEY_ENV = {"fmp": "FMP_API_KEY", "tiingo": "TIINGO_TOKEN"}
 
+# A quote only needs the last two bars, so the history fetch is windowed instead of
+# pulling every bar since inception for every quote request.
+CRYPTO_QUOTE_WINDOW_DAYS = 30
+
 
 def _provider_has_key(provider: str) -> bool:
     """Crypto providers requiring a key are only tried when the key is set."""
@@ -461,21 +486,7 @@ def get_crypto_ohlcv(pair: str, start_date: str, end_date: str) -> list[dict] | 
             ).to_df()
             if df.empty:
                 continue
-            rows = []
-            for idx, row in df.iterrows():
-                date = idx.date() if hasattr(idx, "date") else idx
-                close = _safe_float(row.get("close"))
-                if close is None:
-                    continue  # skip rows with NaN close — unusable
-                rows.append({
-                    "date": str(date),
-                    "open": _safe_float(row.get("open")) or close,
-                    "high": _safe_float(row.get("high")) or close,
-                    "low": _safe_float(row.get("low")) or close,
-                    "close": close,
-                    "volume": _safe_int(row.get("volume")) or 0,
-                })
-            return rows
+            return _ohlcv_rows(df)
         except Exception as e:
             err = str(e)
             if _is_rate_limited(err):
@@ -490,27 +501,23 @@ def get_crypto_ohlcv(pair: str, start_date: str, end_date: str) -> list[dict] | 
 
 
 def get_crypto_quote(pair: str) -> dict | None:
+    """Latest quote, derived from the last two bars.
+
+    Fetches a short window rather than the full history: only two bars are used, and
+    pulling every bar since inception for a quote is slow and grows without bound.
+    """
+    end = date.today()
+    start = end - timedelta(days=CRYPTO_QUOTE_WINDOW_DAYS)
     for provider in CRYPTO_PROVIDERS:
         if _provider_is_blocked(provider) or not _provider_has_key(provider):
             continue
         try:
-            df = obb.crypto.price.historical(pair, provider=provider).to_df()
+            df = obb.crypto.price.historical(
+                pair, start_date=str(start), end_date=str(end), provider=provider
+            ).to_df()
             if df.empty:
                 continue
-            rows = []
-            for idx, row in df.iterrows():
-                date = idx.date() if hasattr(idx, "date") else idx
-                close = _safe_float(row.get("close"))
-                if close is None:
-                    continue
-                rows.append({
-                    "date": str(date),
-                    "open": _safe_float(row.get("open")) or close,
-                    "high": _safe_float(row.get("high")) or close,
-                    "low": _safe_float(row.get("low")) or close,
-                    "close": close,
-                    "volume": _safe_int(row.get("volume")) or 0,
-                })
+            rows = _ohlcv_rows(df)
             if not rows:
                 continue
             latest = rows[-1]
@@ -526,11 +533,8 @@ def get_crypto_quote(pair: str) -> dict | None:
             if len(rows) >= 2:
                 prev_close = rows[-2]["close"]
                 change = round(latest["close"] - prev_close, 4)
-                change_percent = (
-                    round(change / prev_close, 2) if prev_close else None
-                )
                 quote["change"] = change
-                quote["change_percent"] = change_percent
+                quote["change_percent"] = round(change / prev_close, 2) if prev_close else None
             return quote
         except Exception as e:
             err = str(e)
@@ -543,6 +547,25 @@ def get_crypto_quote(pair: str) -> dict | None:
             logger.warning("Provider %s failed crypto quote for %s: %s", provider, pair, e)
             continue
     return None
+
+
+def get_crypto_profile(pair: str) -> dict | None:
+    """Crypto profile derived from the quote response (no dedicated profile endpoint).
+
+    ``name`` is not derivable from a price bar, so it is omitted rather than emitted
+    as a permanent null — the quote dict has no such field, and a key that is always
+    null misleads consumers into thinking the data is missing rather than unavailable.
+    """
+    quote = get_crypto_quote(pair)
+    if quote is None:
+        return None
+    parts = pair.upper().split("-")
+    return {
+        "symbol": pair,
+        "currency": parts[-1] if len(parts) > 1 else None,
+        "price": quote.get("price"),
+        "date": quote.get("date"),
+    }
 
 
 def get_crypto_search(query: str) -> list[dict]:
@@ -567,16 +590,6 @@ def get_crypto_search(query: str) -> list[dict]:
     return []
 
 
-def get_crypto_profile(pair: str) -> dict | None:
-    """Crypto profile derived from the quote response (no dedicated profile endpoint)."""
-    quote = get_crypto_quote(pair)
-    if quote is None:
-        return None
-    parts = pair.upper().split("-")
-    currency = parts[-1] if len(parts) > 1 else None
-    return {"symbol": pair, "name": quote.get("name"), "currency": currency}
-
-
 # ---------------------------------------------------------------------------
 # Polish retail savings bonds (D79) — obligacje provider
 # ---------------------------------------------------------------------------
@@ -594,21 +607,8 @@ def get_bond_ohlcv(symbol: str, start_date: str, end_date: str) -> list[dict] | 
         ).to_df()
         if df.empty:
             return None
-        rows = []
-        for idx, row in df.iterrows():
-            date = idx.date() if hasattr(idx, "date") else idx
-            close = _safe_float(row.get("close"))
-            if close is None:
-                continue
-            rows.append({
-                "date": str(date),
-                "open": _safe_float(row.get("open")) or close,
-                "high": _safe_float(row.get("high")) or close,
-                "low": _safe_float(row.get("low")) or close,
-                "close": close,
-                "volume": _safe_int(row.get("volume")) or 0,
-            })
-        return rows if rows else None
+        rows = _ohlcv_rows(df)
+        return rows or None
     except Exception as e:
         logger.warning("obligacje OHLCV failed for %s: %s", symbol, e)
         return None
