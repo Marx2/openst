@@ -160,7 +160,34 @@ def meta():
 
 @app.get("/health", include_in_schema=False)
 def health():
+    """Liveness only — deliberately does not touch Redis or the database.
+
+    A dependency-aware liveness probe makes Kubernetes restart the pod during a
+    Redis blip, which cannot fix Redis and turns a degraded cache into an outage.
+    Dependency state belongs on /ready.
+    """
     return {"status": "ok"}
+
+
+@app.get("/ready", include_in_schema=False)
+def ready():
+    """Readiness — is this pod able to serve traffic usefully?
+
+    Fails on Redis. Without it the service still answers (the cache degrades to
+    misses), but every request pays a full 2-15 s provider walk, so serving
+    traffic would mostly produce ingress timeouts while hammering metered
+    upstreams. Taking the pod out of rotation is the honest signal.
+
+    The database is reported but not gated: openst is designed to run without one,
+    and the bond routes fall back to their provider.
+    """
+    redis_ok = _cache.ping()
+    body = {
+        "status": "ready" if redis_ok else "degraded",
+        "redis": "ok" if redis_ok else "unreachable",
+        "database": "configured" if db.database_url() else "unset",
+    }
+    return JSONResponse(body, status_code=200 if redis_ok else 503)
 
 
 _cache = RedisCache(
