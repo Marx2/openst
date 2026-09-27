@@ -167,16 +167,67 @@ def get_dividend_yield(ticker: str) -> float | None:
 # its fetcher — no extra plumbing needed here.
 PRICE_PROVIDERS = ["yfinance", "fmp", "intrinio", "polygon", "cboe", "tiingo", "biznesradar"]
 
+# Memoised provider-declared currency per ticker, so the pence check below costs
+# at most one quote fetch per symbol per process. Only successful lookups are
+# cached: a None is a transient failure and must be retried, not remembered.
+_symbol_currency_cache: dict[str, str | None] = {}
+
+
+def _is_pence_currency(currency: str | None) -> bool:
+    """True for pence-denominated currency labels.
+
+    OpenBB/yfinance labels LSE pence quotes "GBp"; the ISO code "GBP" collides
+    once lowercased, so the comparison is case-sensitive and excludes "GBP"
+    exactly (same rule as portfoliost-instruments' `isPence`).
+    """
+    if not currency:
+        return False
+    if currency == "GBP":
+        return False
+    return currency[:2].upper() == "GB"
+
+
+def _symbol_currency(ticker: str) -> str | None:
+    """Provider-declared currency for `ticker`, or None if it can't be determined."""
+    key = (ticker or "").upper()
+    if key in _symbol_currency_cache:
+        return _symbol_currency_cache[key]
+    try:
+        quote = get_quote(ticker) or {}
+        currency = quote.get("currency") or None
+    except Exception as e:  # a failed lookup must not be cached
+        logger.warning("currency lookup unavailable for %s: %s", ticker, e)
+        return None
+    if currency:
+        _symbol_currency_cache[key] = currency
+    return currency
+
 
 def _needs_gbx_normalization(provider: str, ticker: str) -> bool:
-    """yfinance quotes LSE (London, `.L`) symbols in pence (GBX).
+    """yfinance quotes *pence* LSE (London, `.L`) lines in GBX (pence/100).
 
     BYG.L 820 = £8.20 (2026-09-25 PROD incident — 100× chart inflation,
     plan §63.5). Every other source in the system (the quote path, stooq UK)
-    uses GBP, so yfinance LSE history must be normalized to the major unit
-    before it reaches price_bars.
+    uses major units, so yfinance LSE history must be normalized to the major
+    unit before it reaches price_bars.
+
+    The `.L` suffix alone is NOT sufficient. Plenty of LSE lines are quoted in
+    USD (CNYA.L, DEAM.L, EMQQ.L, IUFS.L, SMH.L, …) and yfinance returns those
+    in major units already — dividing them produced 100× too small bars
+    (CNYA.L 0.0447 for a fund that trades ~4.46; DEAM.L 0.583 for ~58.3;
+    IWDA.L 1.4691 for ~146.9). So the currency the provider reports decides,
+    not the ticker suffix.
+
+    When the currency cannot be determined we deliberately do NOT scale: a
+    missed scale on a genuine pence line is a bounded 100× on a symbol that
+    instruments also flags, whereas scaling a USD line is an unbounded error
+    on a whole class of ETFs.
     """
-    return provider == "yfinance" and (ticker or "").upper().endswith(".L")
+    if provider != "yfinance":
+        return False
+    if not (ticker or "").upper().endswith(".L"):
+        return False
+    return _is_pence_currency(_symbol_currency(ticker))
 
 
 def _gbx_to_gbp(rows: list[dict]) -> list[dict]:
