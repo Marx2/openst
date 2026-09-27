@@ -31,8 +31,24 @@ SEC_PROVIDERS = ["sec"]
 
 logger = logging.getLogger(__name__)
 
-# In-process cache: None = unknown, True/False = confirmed
+# In-process cache: ticker -> whether it has any dividend history.
+# Bounded because the ticker is attacker-controlled (the routes are unauthenticated),
+# so the key space is unbounded; a plain dict would grow for the life of the process.
 _pays_dividend: dict[str, bool] = {}
+
+# Above this many tracked tickers the least-recently-added entries are dropped. Real
+# usage is a few thousand instruments, so this only trips under scanning/fuzzing, and
+# dropping an entry costs one extra provider walk rather than any correctness.
+PAYS_DIVIDEND_MAX = 20_000
+
+
+def _remember_pays_dividend(ticker: str, pays: bool) -> None:
+    """Record a ticker in the bounded dividend cache."""
+    if len(_pays_dividend) >= PAYS_DIVIDEND_MAX and ticker not in _pays_dividend:
+        # dict preserves insertion order, so the head is the oldest entry.
+        for stale in list(_pays_dividend)[: len(_pays_dividend) - PAYS_DIVIDEND_MAX + 1]:
+            _pays_dividend.pop(stale, None)
+    _pays_dividend[ticker] = pays
 
 PROVIDER_BLOCK_HOURS = 24.0
 _provider_blocked_until: dict[str, datetime] = {}
@@ -78,7 +94,7 @@ def _check_pays_dividend(ticker: str) -> bool:
             df = obb.equity.fundamental.dividends(ticker, provider=provider).to_df()
             any_success = True
             if not df.empty:
-                _pays_dividend[ticker] = True
+                _remember_pays_dividend(ticker, True)
                 return True
         except Exception as e:
             err = str(e)
@@ -91,11 +107,11 @@ def _check_pays_dividend(ticker: str) -> bool:
                     ticker,
                     provider,
                 )
-                _pays_dividend[ticker] = False
+                _remember_pays_dividend(ticker, False)
                 return False
             continue
     if any_success:
-        _pays_dividend[ticker] = False
+        _remember_pays_dividend(ticker, False)
         return False
     return True  # all providers failed — can't confirm non-payer
 
@@ -113,7 +129,7 @@ def get_dividend_yield(ticker: str) -> float | None:
             if df.empty:
                 continue
             if "dividend_yield" not in df.columns:
-                _pays_dividend[ticker] = False
+                _remember_pays_dividend(ticker, False)
                 return 0.0
             raw = df.iloc[0]["dividend_yield"]
             v = _safe_float(raw, ndigits=2)
@@ -129,7 +145,7 @@ def get_dividend_yield(ticker: str) -> float | None:
                     ticker,
                     provider,
                 )
-                _pays_dividend[ticker] = False
+                _remember_pays_dividend(ticker, False)
                 return 0.0
             logger.warning("Provider %s failed for %s: %s", provider, ticker, e)
             continue
@@ -233,7 +249,7 @@ def get_dividend_history(ticker: str) -> list[dict] | None:
                     except (ValueError, TypeError):
                         pass
                 rows.append(item)
-            _pays_dividend[ticker] = True
+            _remember_pays_dividend(ticker, True)
             return rows
         except Exception as e:
             err = str(e)
@@ -246,12 +262,12 @@ def get_dividend_history(ticker: str) -> list[dict] | None:
                     ticker,
                     provider,
                 )
-                _pays_dividend[ticker] = False
+                _remember_pays_dividend(ticker, False)
                 return []
             logger.warning("Provider %s failed for %s: %s", provider, ticker, e)
             continue
     if any_success:
-        _pays_dividend[ticker] = False
+        _remember_pays_dividend(ticker, False)
     return []
 
 
