@@ -2,6 +2,7 @@ import logging
 import os
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
+from enum import Enum
 from urllib.parse import urlparse
 
 import httpx
@@ -82,6 +83,32 @@ def _provider_is_blocked(provider: str) -> bool:
     return until is not None and datetime.now(timezone.utc) < until
 
 
+# What a provider-walk loop should do after a provider raised.
+class _Action(Enum):
+    NEXT = "next"    # try the following provider
+    STOP = "stop"    # stop walking; the caller returns its own "invalid symbol" value
+
+
+def _classify(provider_error: Exception, provider: str, subject: str) -> _Action:
+    """Decide what a provider-walk loop does about an exception, and log it once.
+
+    The policy — throttle means block-and-move-on, an unknown symbol means stop
+    walking, anything else means warn and try the next provider — was duplicated
+    across ~15 loops, so it could drift between routes. What a route returns for an
+    unknown symbol is deliberately *not* decided here: an empty list is a 200 while
+    None is a 404, and that difference is per-route and load-bearing.
+    """
+    err = str(provider_error)
+    if _is_rate_limited(err):
+        _block_provider(provider)
+        return _Action.NEXT
+    if _is_invalid_ticker(err):
+        logger.warning("Invalid/delisted %s (provider %s)", subject, provider)
+        return _Action.STOP
+    logger.warning("Provider %s failed for %s: %s", provider, subject, provider_error)
+    return _Action.NEXT
+
+
 def _check_pays_dividend(ticker: str) -> bool:
     """Return True if ticker has any dividend history across all providers."""
     if ticker in _pays_dividend:
@@ -97,16 +124,7 @@ def _check_pays_dividend(ticker: str) -> bool:
                 _remember_pays_dividend(ticker, True)
                 return True
         except Exception as e:
-            err = str(e)
-            if _is_rate_limited(err):
-                _block_provider(provider)
-                continue
-            if _is_invalid_ticker(err):
-                logger.warning(
-                    "Invalid/delisted ticker %s (provider %s) — skipping all providers",
-                    ticker,
-                    provider,
-                )
+            if _classify(e, provider, ticker) is _Action.STOP:
                 _remember_pays_dividend(ticker, False)
                 return False
             continue
@@ -135,19 +153,9 @@ def get_dividend_yield(ticker: str) -> float | None:
             v = _safe_float(raw, ndigits=2)
             return v if v is not None else 0.0
         except Exception as e:
-            err = str(e)
-            if _is_rate_limited(err):
-                _block_provider(provider)
-                continue
-            if _is_invalid_ticker(err):
-                logger.warning(
-                    "Invalid/delisted ticker %s (provider %s) — skipping all providers",
-                    ticker,
-                    provider,
-                )
+            if _classify(e, provider, ticker) is _Action.STOP:
                 _remember_pays_dividend(ticker, False)
                 return 0.0
-            logger.warning("Provider %s failed for %s: %s", provider, ticker, e)
             continue
     if not got_data and not _check_pays_dividend(ticker):
         return 0.0
@@ -202,14 +210,8 @@ def get_price_history(ticker: str, start_date: str, end_date: str) -> list[dict]
                 rows = _gbx_to_gbp(rows)
             return rows
         except Exception as e:
-            err = str(e)
-            if _is_rate_limited(err):
-                _block_provider(provider)
-                continue
-            if _is_invalid_ticker(err):
-                logger.warning("Invalid/delisted ticker %s (provider %s)", ticker, provider)
+            if _classify(e, provider, ticker) is _Action.STOP:
                 return []
-            logger.warning("Provider %s failed for %s: %s", provider, ticker, e)
             continue
     return None
 
@@ -252,19 +254,9 @@ def get_dividend_history(ticker: str) -> list[dict] | None:
             _remember_pays_dividend(ticker, True)
             return rows
         except Exception as e:
-            err = str(e)
-            if _is_rate_limited(err):
-                _block_provider(provider)
-                continue
-            if _is_invalid_ticker(err):
-                logger.warning(
-                    "Invalid/delisted ticker %s (provider %s) — skipping all providers",
-                    ticker,
-                    provider,
-                )
+            if _classify(e, provider, ticker) is _Action.STOP:
                 _remember_pays_dividend(ticker, False)
                 return []
-            logger.warning("Provider %s failed for %s: %s", provider, ticker, e)
             continue
     if any_success:
         _remember_pays_dividend(ticker, False)
@@ -352,14 +344,7 @@ def _single_record(providers, call, ticker: str) -> dict | None:
                 return records[0]
             continue
         except Exception as e:
-            err = str(e)
-            if _is_rate_limited(err):
-                _block_provider(provider)
-                continue
-            if _is_invalid_ticker(err):
-                logger.warning("Invalid/delisted ticker %s (provider %s)", ticker, provider)
-                continue
-            logger.warning("Provider %s failed for %s: %s", provider, ticker, e)
+            _classify(e, provider, ticker)
             continue
     return None
 
@@ -465,14 +450,8 @@ def get_ohlcv_history(ticker: str, start_date: str, end_date: str) -> list[dict]
                 rows = _gbx_to_gbp(rows)
             return rows
         except Exception as e:
-            err = str(e)
-            if _is_rate_limited(err):
-                _block_provider(provider)
-                continue
-            if _is_invalid_ticker(err):
-                logger.warning("Invalid/delisted ticker %s (provider %s)", ticker, provider)
+            if _classify(e, provider, ticker) is _Action.STOP:
                 return []
-            logger.warning("Provider %s failed for %s: %s", provider, ticker, e)
             continue
     return None
 
@@ -504,14 +483,7 @@ def get_crypto_ohlcv(pair: str, start_date: str, end_date: str) -> list[dict] | 
                 continue
             return _ohlcv_rows(df)
         except Exception as e:
-            err = str(e)
-            if _is_rate_limited(err):
-                _block_provider(provider)
-                continue
-            if _is_invalid_ticker(err):
-                logger.warning("Invalid/delisted pair %s (provider %s)", pair, provider)
-                continue
-            logger.warning("Provider %s failed crypto OHLCV for %s: %s", provider, pair, e)
+            _classify(e, provider, pair)
             continue
     return None
 
@@ -553,14 +525,7 @@ def get_crypto_quote(pair: str) -> dict | None:
                 quote["change_percent"] = round(change / prev_close, 2) if prev_close else None
             return quote
         except Exception as e:
-            err = str(e)
-            if _is_rate_limited(err):
-                _block_provider(provider)
-                continue
-            if _is_invalid_ticker(err):
-                logger.warning("Invalid/delisted pair %s (provider %s)", pair, provider)
-                continue
-            logger.warning("Provider %s failed crypto quote for %s: %s", provider, pair, e)
+            _classify(e, provider, pair)
             continue
     return None
 
@@ -597,11 +562,9 @@ def get_crypto_search(query: str) -> list[dict]:
                 return records
             continue
         except Exception as e:
-            err = str(e)
-            if _is_rate_limited(err):
-                _block_provider(provider)
-                continue
-            logger.warning("Provider %s failed crypto search for '%s': %s", provider, query, e)
+            # No invalid-symbol concept for a free-text search: always try the next
+            # provider, whatever the failure was.
+            _classify(e, provider, query)
             continue
     return []
 
@@ -803,14 +766,8 @@ def get_fundamentals(ticker: str, statement: str, period: str) -> list[dict]:
                 return records
             continue
         except Exception as e:
-            err = str(e)
-            if _is_rate_limited(err):
-                _block_provider(provider)
-                continue
-            if _is_invalid_ticker(err):
-                logger.warning("Invalid/delisted ticker %s (provider %s)", ticker, provider)
+            if _classify(e, provider, ticker) is _Action.STOP:
                 return []
-            logger.warning("Provider %s failed for %s: %s", provider, ticker, e)
             continue
     return []
 
@@ -833,13 +790,9 @@ def _merged_dividend_calendar(fn, start_date: str, end_date: str) -> list[dict]:
         try:
             df = fn(start_date=start_date, end_date=end_date, provider=provider).to_df()
         except Exception as e:
-            err = str(e)
-            if _is_rate_limited(err):
-                _block_provider(provider)
-                continue
-            if _is_invalid_ticker(err):
-                continue
-            logger.warning("Provider %s failed for calendar/dividend: %s", provider, e)
+            # A merge must never abort: one throttled provider contributes nothing and
+            # the remaining providers still surface their rows.
+            _classify(e, provider, f"calendar/dividend {start_date}..{end_date}")
             continue
         if df.empty:
             continue
@@ -872,13 +825,8 @@ def get_calendar(kind: str, start_date: str, end_date: str) -> list[dict]:
                 return records
             continue
         except Exception as e:
-            err = str(e)
-            if _is_rate_limited(err):
-                _block_provider(provider)
-                continue
-            if _is_invalid_ticker(err):
+            if _classify(e, provider, kind) is _Action.STOP:
                 return []
-            logger.warning("Provider %s failed for calendar/%s: %s", provider, kind, e)
             continue
     return []
 
@@ -896,11 +844,7 @@ def search_equities(query: str) -> list[dict]:
                 return records
             continue
         except Exception as e:
-            err = str(e)
-            if _is_rate_limited(err):
-                _block_provider(provider)
-                continue
-            logger.warning("Provider %s failed for search '%s': %s", provider, query, e)
+            _classify(e, provider, query)
             continue
     return []
 
@@ -974,14 +918,8 @@ def get_company_news(
                 return rows
             continue
         except Exception as e:
-            err = str(e)
-            if _is_rate_limited(err):
-                _block_provider(p)
-                continue
-            if _is_invalid_ticker(err):
-                logger.warning("Invalid/delisted ticker %s (provider %s)", ticker, p)
+            if _classify(e, p, ticker) is _Action.STOP:
                 return []
-            logger.warning("Provider %s failed company news for %s: %s", p, ticker, e)
             continue
     return []
 
@@ -1000,14 +938,8 @@ def get_insider_trading(ticker: str) -> list[dict]:
                 return records
             continue
         except Exception as e:
-            err = str(e)
-            if _is_rate_limited(err):
-                _block_provider(provider)
-                continue
-            if _is_invalid_ticker(err):
-                logger.warning("Invalid/delisted ticker %s (provider %s)", ticker, provider)
+            if _classify(e, provider, ticker) is _Action.STOP:
                 return []
-            logger.warning("Provider %s failed insider_trading for %s: %s", provider, ticker, e)
             continue
     return []
 
@@ -1026,14 +958,8 @@ def get_institutional_ownership(ticker: str) -> list[dict]:
                 return records
             continue
         except Exception as e:
-            err = str(e)
-            if _is_rate_limited(err):
-                _block_provider(provider)
-                continue
-            if _is_invalid_ticker(err):
-                logger.warning("Invalid/delisted ticker %s (provider %s)", ticker, provider)
+            if _classify(e, provider, ticker) is _Action.STOP:
                 return []
-            logger.warning("Provider %s failed form_13f for %s: %s", provider, ticker, e)
             continue
     return []
 
@@ -1052,14 +978,8 @@ def get_filings(ticker: str) -> list[dict]:
                 return records
             continue
         except Exception as e:
-            err = str(e)
-            if _is_rate_limited(err):
-                _block_provider(provider)
-                continue
-            if _is_invalid_ticker(err):
-                logger.warning("Invalid/delisted ticker %s (provider %s)", ticker, provider)
+            if _classify(e, provider, ticker) is _Action.STOP:
                 return []
-            logger.warning("Provider %s failed filings for %s: %s", provider, ticker, e)
             continue
     return []
 
@@ -1078,14 +998,8 @@ def get_mda(ticker: str) -> dict | None:
                 return record
             continue
         except Exception as e:
-            err = str(e)
-            if _is_rate_limited(err):
-                _block_provider(provider)
-                continue
-            if _is_invalid_ticker(err):
-                logger.warning("Invalid/delisted ticker %s (provider %s)", ticker, provider)
+            if _classify(e, provider, ticker) is _Action.STOP:
                 return None
-            logger.warning("Provider %s failed management_discussion_analysis for %s: %s", provider, ticker, e)
             continue
     return None
 
@@ -1127,11 +1041,7 @@ def get_logo(ticker: str) -> dict | None:
             if website:
                 break
         except Exception as e:
-            err = str(e)
-            if _is_rate_limited(err):
-                _block_provider(provider)
-                continue
-            logger.warning("Provider %s failed logo profile for %s: %s", provider, ticker, e)
+            _classify(e, provider, ticker)
             continue
 
     domain = urlparse(website or "").hostname
