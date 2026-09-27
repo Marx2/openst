@@ -344,27 +344,102 @@ def test_get_price_history_invalid_ticker_returns_empty(mock_obb):
 
 
 # ---------------------------------------------------------------------------
-# GBX (pence) normalization for yfinance LSE tickers (plan §63.5)
+# GBX (pence) normalization for yfinance LSE tickers (plan §63.5, §63.13)
+#
+# The `.L` suffix alone must NOT trigger the ÷100. Many LSE lines are quoted in
+# USD by yfinance and are already in major units; scaling those produced 100×
+# too small bars (CNYA.L 0.0447 for ~4.46, DEAM.L 0.583 for ~58.3,
+# IWDA.L 1.4691 for ~146.9). The provider-declared currency decides.
 # ---------------------------------------------------------------------------
 
 
-def test_needs_gbx_normalization_only_yfinance_lse():
+def _set_currency(ticker, currency):
+    openbb_client._symbol_currency_cache[ticker.upper()] = currency
+
+
+@pytest.fixture(autouse=True)
+def _clear_currency_cache():
+    openbb_client._symbol_currency_cache.clear()
+    yield
+    openbb_client._symbol_currency_cache.clear()
+
+
+def test_is_pence_currency_excludes_iso_gbp_case_sensitively():
+    assert openbb_client._is_pence_currency("GBp")
+    assert openbb_client._is_pence_currency("GBX")
+    assert not openbb_client._is_pence_currency("GBP")
+    assert not openbb_client._is_pence_currency("USD")
+    assert not openbb_client._is_pence_currency("EUR")
+    assert not openbb_client._is_pence_currency(None)
+    assert not openbb_client._is_pence_currency("")
+
+
+def test_needs_gbx_normalization_only_pence_quoted_lse_on_yfinance():
+    _set_currency("BYG.L", "GBp")
+    _set_currency("CSN.L", "GBp")
     assert openbb_client._needs_gbx_normalization("yfinance", "BYG.L")
     assert openbb_client._needs_gbx_normalization("yfinance", "byg.l")
+
+    # a USD-quoted LSE line is already major units — must NOT be scaled
+    _set_currency("CNYA.L", "USD")
+    _set_currency("DEAM.L", "USD")
+    assert not openbb_client._needs_gbx_normalization("yfinance", "CNYA.L")
+    assert not openbb_client._needs_gbx_normalization("yfinance", "DEAM.L")
+
+    # a GBP-quoted LSE line is already major units too
+    _set_currency("IWDA.GB", "GBP")
+    assert not openbb_client._needs_gbx_normalization("yfinance", "IWDA.GB")
+
+    # other providers / other suffixes never normalize
     assert not openbb_client._needs_gbx_normalization("fmp", "BYG.L")
     assert not openbb_client._needs_gbx_normalization("yfinance", "AAPL")
     assert not openbb_client._needs_gbx_normalization("yfinance", "VRC.WA")
     assert not openbb_client._needs_gbx_normalization("yfinance", "SAP.DE")
 
 
+def test_needs_gbx_normalization_does_not_scale_when_currency_unknown():
+    # deliberately fail open the other way: scaling a USD line is unbounded,
+    # missing a pence line is bounded and flagged by instruments
+    assert not openbb_client._needs_gbx_normalization("yfinance", "NOCURRENCY.L")
+
+
+@patch("src.openbb_client.get_quote")
+def test_symbol_currency_uses_quote_and_caches_success(mock_quote):
+    mock_quote.return_value = {"currency": "GBp"}
+
+    assert openbb_client._symbol_currency("BYG.L") == "GBp"
+    assert openbb_client._symbol_currency("byg.l") == "GBp"
+    assert mock_quote.call_count == 1  # second call served from cache
+
+
+@patch("src.openbb_client.get_quote")
+def test_symbol_currency_does_not_cache_failures(mock_quote):
+    mock_quote.side_effect = Exception("upstream down")
+
+    assert openbb_client._symbol_currency("BYG.L") is None
+    assert openbb_client._symbol_currency("BYG.L") is None
+    assert mock_quote.call_count == 2  # retried, not remembered
+
+
 @patch("src.openbb_client.obb")
-def test_get_price_history_yfinance_lse_normalized_pence_to_gbp(mock_obb):
+def test_get_price_history_yfinance_lse_pence_normalized(mock_obb):
+    _set_currency("BYG.L", "GBp")
     mock_obb.equity.price.historical.return_value.to_df.return_value = _pence_history_df()
 
     result = get_price_history("BYG.L", "2026-09-22", "2026-09-25")
 
     # 820p -> 8.20 GBP, 830.5p -> 8.305 GBP (matches the live GBP quote)
     assert [r["close"] for r in result] == [8.2, 8.305]
+
+
+@patch("src.openbb_client.obb")
+def test_get_price_history_yfinance_usd_lse_untouched(mock_obb):
+    _set_currency("CNYA.L", "USD")
+    mock_obb.equity.price.historical.return_value.to_df.return_value = _pence_history_df()
+
+    # Same input magnitudes, but a USD-quoted .L line: kept as-is.
+    result = get_price_history("CNYA.L", "2026-09-22", "2026-09-25")
+    assert [r["close"] for r in result] == [820.0, 830.5]
 
 
 @patch("src.openbb_client.obb")
@@ -377,7 +452,8 @@ def test_get_price_history_yfinance_non_lse_unchanged(mock_obb):
 
 
 @patch("src.openbb_client.obb")
-def test_get_ohlcv_history_yfinance_lse_normalizes_all_price_fields(mock_obb):
+def test_get_ohlcv_history_yfinance_lse_pence_normalizes_all_price_fields(mock_obb):
+    _set_currency("BYG.L", "GBp")
     mock_obb.equity.price.historical.return_value.to_df.return_value = _pence_ohlcv_df()
 
     result = get_ohlcv_history("BYG.L", "2026-09-23", "2026-09-25")
@@ -385,6 +461,15 @@ def test_get_ohlcv_history_yfinance_lse_normalizes_all_price_fields(mock_obb):
     r = result[0]
     assert (r["open"], r["high"], r["low"], r["close"]) == (8.1, 8.3, 8.05, 8.2)
     assert r["volume"] == 1000  # volume untouched
+
+
+@patch("src.openbb_client.obb")
+def test_get_ohlcv_history_yfinance_usd_lse_untouched(mock_obb):
+    _set_currency("DEAM.L", "USD")
+    mock_obb.equity.price.historical.return_value.to_df.return_value = _pence_ohlcv_df()
+
+    result = get_ohlcv_history("DEAM.L", "2026-09-23", "2026-09-25")
+    assert (result[0]["open"], result[0]["close"]) == (810.0, 820.0)
 
 
 @patch("src.openbb_client.obb")
