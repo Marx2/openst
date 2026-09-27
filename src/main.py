@@ -2,18 +2,20 @@ import base64
 import json
 import logging
 import os
+import threading
 import time
 from contextlib import asynccontextmanager
+from datetime import date, timedelta
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
 from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.responses import Response
+from fastapi.responses import JSONResponse, Response
 from pythonjsonlogger.json import JsonFormatter
 
-from . import db
+from . import db, jsonio
 from .otel import setup_otel
 
 logger = logging.getLogger("openst")
@@ -65,9 +67,6 @@ from .openbb_client import (
     search_equities,
 )
 
-import re as _re
-from fastapi.responses import JSONResponse as _JSONResponse
-
 # plan §37.3 — 404 negative cache. A `None` fetch result (every provider
 # failed for the symbol) is remembered for NEGATIVE_TTL seconds so delisted /
 # unknown tickers stop re-running the full provider walk on every request.
@@ -78,21 +77,20 @@ NEGATIVE_TTL = 6 * 3600
 # in the threadpool) and a single provider walk can take 2-15 s; an unbounded
 # burst piles up dozens of long walks in the process and OOMs the pod
 # (incident 2026-09-20). Beyond the bound, requests queue and finish.
-import threading
-
 UPSTREAM_MAX_INFLIGHT = int(os.environ.get("UPSTREAM_MAX_INFLIGHT", "8"))
 _upstream_gate = threading.Semaphore(UPSTREAM_MAX_INFLIGHT)
 
 
-class _SafeJSONResponse(_JSONResponse):
-    """JSONResponse that serializes NaN/Inf floats as null instead of crashing."""
+class _SafeJSONResponse(JSONResponse):
+    """JSONResponse that serializes NaN/Inf floats as null instead of crashing.
+
+    Delegates to ``jsonio.dumps`` so the response body and the cached value are
+    produced by the same code — they used to be two copies of the same regexes,
+    which is how they drifted into disagreeing about ``-Infinity``.
+    """
 
     def render(self, content) -> bytes:
-        raw = json.dumps(content, ensure_ascii=False, allow_nan=True)
-        raw = _re.sub(r'\bNaN\b', 'null', raw)
-        raw = _re.sub(r'\bInfinity\b', 'null', raw)
-        raw = _re.sub(r'\b-Infinity\b', 'null', raw)
-        return raw.encode("utf-8")
+        return jsonio.dumps(content).encode("utf-8")
 
 
 def _run_migrations() -> None:
@@ -190,7 +188,6 @@ def dividend_yield(ticker: str):
 
 @app.get("/price/history/{ticker}")
 def price_history(ticker: str):
-    from datetime import date, timedelta
     end = date.today()
     start = end - timedelta(days=365)
     key = f"price_history:{ticker}:{start}:{end}"
@@ -222,23 +219,12 @@ def dividend_history(ticker: str):
 
 
 def _safe_json_dumps(value) -> str:
-    """Serialize to JSON, replacing any NaN/Inf floats with null."""
-    import math
+    """Serialize to JSON with every non-finite float replaced by null.
 
-    def default_handler(obj):
-        return str(obj)
-
-    # json.dumps with allow_nan=False would raise; instead we pre-sanitize
-    # via a custom walk — but that's expensive. Simpler: use allow_nan=True
-    # to produce non-spec output, then fix it, OR use a replacer approach.
-    # Fastest: serialize with allow_nan=True and post-process the string.
-    raw = json.dumps(value, ensure_ascii=False, allow_nan=True, default=default_handler)
-    # Replace bare NaN / Infinity / -Infinity tokens (not inside strings)
-    import re
-    raw = re.sub(r'\bNaN\b', 'null', raw)
-    raw = re.sub(r'\bInfinity\b', 'null', raw)
-    raw = re.sub(r'\b-Infinity\b', 'null', raw)
-    return raw
+    Thin alias for ``jsonio.dumps`` — see that module for why this walks the
+    object graph instead of post-processing the serialized text.
+    """
+    return jsonio.dumps(value)
 
 
 def _cached_or_404(key: str, fetch, not_found_msg: str):
@@ -266,7 +252,6 @@ def _cached_or_404(key: str, fetch, not_found_msg: str):
 
 
 def _default_dates():
-    from datetime import date, timedelta
     end = date.today()
     start = end - timedelta(days=365)
     return str(start), str(end)
