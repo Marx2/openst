@@ -34,6 +34,7 @@ if not logger.handlers:
     )
     logger.addHandler(_handler)
 
+from . import memdebug
 from .cache import RedisCache
 from .openbb_client import (
     CALENDAR_KINDS,
@@ -108,6 +109,9 @@ def _run_migrations() -> None:
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    # §73 — start heap tracing at boot when MEM_DEBUG=1, so a snapshot taken
+    # during an incident covers process start rather than beginning mid-growth.
+    memdebug.start()
     _run_migrations()
     yield
 
@@ -156,6 +160,21 @@ def meta():
         "impl": "real",
         "version": os.environ.get("APP_VERSION") or "0.0.0-dev",
     }
+
+
+@app.get("/__mem", include_in_schema=False)
+def mem():
+    """§73 — heap introspection for the leak. See `src/memdebug.py`.
+
+    Two numbers decide the investigation: `rss_bytes` and `traced_bytes`. A small
+    `traced_fraction` means the growth is native (OpenBB's singleton, numpy/pandas
+    buffers) and not something this codebase can fix. A large one means it is a
+    Python container we can find by reading `top_allocations`.
+
+    `tracing: false` means `MEM_DEBUG=1` was not set on the pod, and
+    `traced_bytes` is then 0 — which must not be read as "the heap is empty".
+    """
+    return memdebug.report()
 
 
 @app.get("/health", include_in_schema=False)
