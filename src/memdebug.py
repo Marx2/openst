@@ -28,6 +28,23 @@ question.
 `tracemalloc` is started lazily and only when `MEM_DEBUG=1`. Left on permanently
 it adds real per-allocation overhead to a latency-sensitive service, which is not
 a trade worth making to diagnose a leak that may not be a Python leak at all.
+
+**It has now been used, and here is what it said** (MEM_DEBUG=1 enabled in PROD
+2026-09-30, openst v1.1.38/v1.1.39):
+
+    idle pod          rss 376 MiB   traced 1.55 MiB   traced_fraction 0.0041
+
+0.4% of the resident set is Python heap, and the top allocation sites are all
+interpreter bootstrap (`importlib._bootstrap`, `abc`, `linecache`,
+`dataclasses`). So the retention — if that is the word — is native, and it is not
+in this repository. §73.2's "not a cache, and no unbounded container here" is
+confirmed from the other direction: the Python heap is flat at ~10 MiB across
+every workload measured.
+
+See the §73 measurement table in `portfoliost/docs/plan.md` for what the split
+turned out to be. Short version: there is no per-call and no per-symbol
+retention; RSS is a high-water mark set by the *width* of a burst of concurrent
+provider walks, and it is reused after that.
 """
 
 from __future__ import annotations
