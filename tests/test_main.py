@@ -698,3 +698,87 @@ def test_fixedincome_search_returns_results(mock_fn, client):
 @patch("src.main.search_bonds", return_value=[])
 def test_fixedincome_search_no_results_returns_404(mock_fn, client):
     assert client.get("/fixedincome/search/zzzznope").status_code == 404
+
+
+# --- /fund/history/{code} — plan §72.39 step 2, stage 2 --------------------
+#
+# The route's job is to keep three outcomes apart: rows, an empty-but-valid
+# window, and a code that does not exist. Collapsing the last two is the
+# silent-failure shape stage 5 depends on not being flattened.
+
+
+@patch("src.main.get_fund_category_history")
+def test_fund_history_returns_rows(mock_fn, client):
+    mock_fn.return_value = [
+        {"date": "2023-04-13", "close": 382.05},
+        {"date": "2026-08-19", "close": 904.80},
+    ]
+    r = client.get("/fund/history/ING01W", params={"start": "2023-01-01", "end": "2026-12-31"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body[0] == {"date": "2023-04-13", "close": 382.05}
+    assert body[1]["date"] == "2026-08-19"
+    mock_fn.assert_called_once_with("ING01W", "2023-01-01", "2026-12-31")
+
+
+@patch("src.main.get_fund_category_history")
+def test_fund_history_empty_window_is_200_not_404(mock_fn, client):
+    """A category with no valuation in the window is a valid empty answer."""
+    mock_fn.return_value = []
+    r = client.get("/fund/history/ING01W", params={"start": "2018-01-01", "end": "2018-12-31"})
+    assert r.status_code == 200
+    assert r.json() == []
+
+
+@patch("src.main.get_fund_category_history")
+def test_fund_history_unknown_code_is_404(mock_fn, client):
+    """The code does not exist upstream — a real error, propagated as 404.
+
+    Not flattened to 200-with-zero-bars, which is the shape a dead provider
+    returns and how a broken mapping once shipped unnoticed (reverted 77434fd).
+    """
+    from src.openbb_client import UnknownFundCategory
+
+    mock_fn.side_effect = UnknownFundCategory("no such fund category: ING01A")
+    r = client.get("/fund/history/ING01A", params={"start": "2023-01-01", "end": "2026-12-31"})
+    assert r.status_code == 404
+    assert "ING01A" in r.json()["detail"]
+
+
+@patch("src.main.get_fund_category_history", return_value=None)
+def test_fund_history_transport_failure_is_404(mock_fn, client):
+    r = client.get("/fund/history/ING01W", params={"start": "2023-01-01", "end": "2026-12-31"})
+    assert r.status_code == 404
+
+
+@patch("src.main.get_fund_category_history")
+def test_fund_history_negative_cache_avoids_a_second_walk(mock_fn, client):
+    from src.openbb_client import UnknownFundCategory
+
+    mock_fn.side_effect = UnknownFundCategory("no such fund category: NOPE")
+    params = {"start": "2023-01-01", "end": "2026-12-31"}
+    assert client.get("/fund/history/NOPE", params=params).status_code == 404
+    assert client.get("/fund/history/NOPE", params=params).status_code == 404
+    assert mock_fn.call_count == 1, "a 404 was re-walked instead of negative-cached"
+
+
+@patch("src.main.get_fund_category_history")
+def test_fund_history_cache_key_is_case_insensitive(mock_fn, client):
+    """Lower-casing the code must not buy a second provider walk.
+
+    Mirrors _symbol_key's documented purpose: a caller varying case used to
+    defeat the negative cache and re-pay the walk on every request.
+    """
+    from src.openbb_client import UnknownFundCategory
+
+    mock_fn.side_effect = UnknownFundCategory("no such fund category: ing01a")
+    params = {"start": "2023-01-01", "end": "2026-12-31"}
+    assert client.get("/fund/history/ING01A", params=params).status_code == 404
+    assert client.get("/fund/history/ing01a", params=params).status_code == 404
+    assert mock_fn.call_count == 1
+
+
+@patch("src.main.get_fund_category_history")
+def test_fund_history_rejects_a_malformed_date(mock_fn, client):
+    r = client.get("/fund/history/ING01W", params={"start": "13/04/2023"})
+    assert r.status_code == 422

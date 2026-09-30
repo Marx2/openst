@@ -53,6 +53,7 @@ from .openbb_client import (
     get_dividend_history,
     get_dividend_yield,
     get_filings,
+    get_fund_category_history,
     get_fundamentals,
     get_insider_trading,
     get_institutional_ownership,
@@ -66,6 +67,7 @@ from .openbb_client import (
     get_quote,
     search_bonds,
     search_equities,
+    UnknownFundCategory,
 )
 
 # plan §37.3 — 404 negative cache. A `None` fetch result (every provider
@@ -694,3 +696,56 @@ def fixedincome_search(query: str):
         fetch,
         f"No bond search results for '{query}'",
     )
+
+
+@app.get("/fund/history/{code}")
+def fund_category_history(
+    code: str,
+    start: str | None = Query(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    end: str | None = Query(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+):
+    """NAV history for one Polish fund category (plan §72.39 step 2, stage 2).
+
+    `{code}` is an analizy.pl category code — `ING01W`, not a `.TFI` symbol. The
+    code is not derivable: of ING01's nine categories only ING01/U/W/T/F resolve
+    and A/I/K/S/E are 404, so this route 404s loudly on a guessed code rather than
+    serving an empty series.
+
+    Three outcomes, deliberately distinguishable:
+      200 + rows  — the category exists and has valuations in the window
+      200 + []    — the category exists but has none in the window
+      404         — the code does not exist (or every provider leg failed)
+    """
+    if start is None or end is None:
+        default_start, default_end = _default_dates()
+        start = start or default_start
+        end = end or default_end
+
+    key = _symbol_key("fund_category_history", code, start, end)
+
+    cached = _cache.get(key)
+    if cached is not None:
+        if cached == _NEGATIVE_SENTINEL:
+            raise HTTPException(
+                status_code=404, detail=f"No fund category {code}"
+            )
+        return json.loads(cached)
+
+    def fetch():
+        return get_fund_category_history(code, start, end)
+
+    with _upstream_gate:
+        try:
+            value = fetch()
+        except UnknownFundCategory as e:
+            logger.info("unknown fund category %s: %s", code, e)
+            _cache.set(key, _NEGATIVE_SENTINEL, ttl=NEGATIVE_TTL)
+            raise HTTPException(status_code=404, detail=f"No fund category {code}")
+
+    if value is None:
+        # Transport/shape failure: negative-cache like any other dead lookup.
+        _cache.set(key, _NEGATIVE_SENTINEL, ttl=NEGATIVE_TTL)
+        raise HTTPException(status_code=404, detail=f"No fund category {code}")
+
+    _cache.set(key, _safe_json_dumps(value))
+    return value
