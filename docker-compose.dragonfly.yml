@@ -1,0 +1,37 @@
+services:
+  redis:
+    # Opt-in override: Dragonfly instead of redis:7.4-alpine from
+    # docker-compose.yml. Usage:
+    #   docker compose -f docker-compose.yml -f docker-compose.dragonfly.yml up -d
+    # Backed by the same pfire/redis swap, so keep --proactor_threads pinned:
+    # Dragonfly refuses to boot when maxmemory < 256MiB x proactor_threads.
+    image: ghcr.io/dragonflydb/dragonfly:v2.0.0
+    command:
+      - --dir=/data
+      - --dbfilename=dump
+      - --maxmemory=512mb
+      - --cache_mode=true
+      - --proactor_threads=2
+      - --num_shards=1
+      - --bind=0.0.0.0
+    volumes:
+      - dfdata:/data
+    # Dragonfly's image is distroless (no shell, no redis-cli), so the base
+    # file's redis-cli healthcheck cannot run here.
+    healthcheck:
+      disable: true
+
+  app:
+    depends_on:
+      redis:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_DB: "2"
+      DATABASE_URL: postgresql://openst:openst@postgres:5432/openst
+
+volumes:
+  dfdata:
