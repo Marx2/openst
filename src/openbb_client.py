@@ -170,7 +170,33 @@ PRICE_PROVIDERS = ["yfinance", "fmp", "intrinio", "polygon", "cboe", "tiingo", "
 # Memoised provider-declared currency per ticker, so the pence check below costs
 # at most one quote fetch per symbol per process. Only successful lookups are
 # cached: a None is a transient failure and must be retried, not remembered.
+#
+# §73.4 — BOUNDED, for the same reason `_pays_dividend` twenty lines above is
+# bounded: these routes are unauthenticated, so the ticker is caller-controlled
+# and the key space is unbounded. A plain dict here grows for the life of the
+# process, and the sweep paths in particular walk the alphabet.
+#
+# This is NOT the §73 memory leak and is not offered as its cause. 400 real
+# tickers of a short string is tens of kilobytes, and the measured curve is
+# hundreds of megabytes — four orders of magnitude away. It is fixed because an
+# unbounded caller-keyed dict on an unauthenticated route is a defect on its own
+# (spray N random tickers, grow the heap by N), not because it explains anything
+# about the OOMKills. §73.4's cause is still to be found by measurement.
 _symbol_currency_cache: dict[str, str | None] = {}
+
+# Real usage is a few thousand instruments, so this only trips under scanning or
+# fuzzing, and dropping an entry costs one extra quote fetch rather than any
+# correctness — the same trade `_remember_pays_dividend` makes.
+SYMBOL_CURRENCY_MAX = 20_000
+
+
+def _remember_symbol_currency(ticker: str, currency: str) -> None:
+    """Record a resolved currency in the bounded currency cache."""
+    if len(_symbol_currency_cache) >= SYMBOL_CURRENCY_MAX and ticker not in _symbol_currency_cache:
+        # dict preserves insertion order, so the head is the oldest entry.
+        for stale in list(_symbol_currency_cache)[: len(_symbol_currency_cache) - SYMBOL_CURRENCY_MAX + 1]:
+            _symbol_currency_cache.pop(stale, None)
+    _symbol_currency_cache[ticker] = currency
 
 
 def _is_pence_currency(currency: str | None) -> bool:
@@ -199,7 +225,7 @@ def _symbol_currency(ticker: str) -> str | None:
         logger.warning("currency lookup unavailable for %s: %s", ticker, e)
         return None
     if currency:
-        _symbol_currency_cache[key] = currency
+        _remember_symbol_currency(key, currency)
     return currency
 
 
