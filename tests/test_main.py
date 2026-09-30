@@ -698,3 +698,62 @@ def test_fixedincome_search_returns_results(mock_fn, client):
 @patch("src.main.search_bonds", return_value=[])
 def test_fixedincome_search_no_results_returns_404(mock_fn, client):
     assert client.get("/fixedincome/search/zzzznope").status_code == 404
+
+
+# ---------------------------------------------------------------------------
+# §73.5 — the native-heap release, and the honesty of the diagnosis behind it
+# ---------------------------------------------------------------------------
+
+
+def test_release_free_heap_is_a_noop_when_disabled(monkeypatch):
+    """The escape hatch has to exist and actually work: this is a per-request call
+    on a latency-sensitive path, and a platform where trimming is harmful must be
+    able to turn it off without a redeploy of code."""
+    from src import main as main_mod
+
+    monkeypatch.setattr(main_mod, "_TRIM_ENABLED", False)
+    called = []
+    monkeypatch.setattr(main_mod, "_TRIM_ENABLED", False)
+    # If the guard did not short-circuit, the import of libc would be attempted.
+    import builtins
+
+    real_import = builtins.__import__
+
+    def spy(name, *a, **kw):
+        called.append(name)
+        return real_import(name, *a, **kw)
+
+    monkeypatch.setattr(builtins, "__import__", spy)
+    main_mod.release_free_heap()
+    assert called == [], f"disabled trim still imported {called}"
+
+
+def test_release_free_heap_survives_a_platform_without_libc(monkeypatch):
+    """A service that dies because `malloc_trim` is missing on musl/macOS would turn
+    a memory optimisation into an outage. It must swallow that."""
+    from src import main as main_mod
+
+    monkeypatch.setattr(main_mod, "_TRIM_ENABLED", True)
+
+    real_import = __builtins__["__import__"] if isinstance(__builtins__, dict) else __builtins__.__import__
+
+    def boom(name, *a, **kw):
+        if name == "ctypes":
+            raise ImportError("no ctypes here")
+        return real_import(name, *a, **kw)
+
+    import builtins
+
+    monkeypatch.setattr(builtins, "__import__", boom)
+    main_mod.release_free_heap()  # must not raise
+
+
+def test_release_free_heap_is_called_after_a_request():
+    """The release has to be wired to the request path or it is dead code — which is
+    indistinguishable from not having written it, and is how a fix like this rots."""
+    import inspect
+
+    from src import main as main_mod
+
+    src = inspect.getsource(main_mod.log_requests)
+    assert "release_free_heap()" in src, "the request middleware does not release the heap"

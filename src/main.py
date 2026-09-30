@@ -121,11 +121,49 @@ app = FastAPI(default_response_class=_SafeJSONResponse, lifespan=lifespan)
 setup_otel(app, "openst")
 
 
+# §73.5 — return the native heap to the OS after each request.
+#
+# §73.4 MEASURED what this is, and it is not a leak. Driving 17 logo requests
+# twice over:
+#
+#   17 cold symbols                 dRSS  +11.6 MiB   dTraced  +0.75 MiB
+#   the SAME 17 symbols (warm)     dRSS   +0.0 MiB   dTraced  +0.10 MiB
+#   15 different cold symbols      dRSS  +84.5 MiB   dTraced  +7.03 MiB
+#
+# Nothing is retained: the second pass over identical symbols costs exactly zero.
+# What ratchets is RSS per *unique* symbol, and only 6-8% of it is Python heap —
+# the rest is native (Pillow image buffers, numpy/pandas arrays, OpenBB internals)
+# that glibc's allocator holds in per-thread arena free-lists rather than handing
+# back to the kernel. So the ceiling is a high-water mark that never falls, which
+# is why a periodic sweep of a few hundred symbols walked both replicas into an
+# OOMKill at 700Mi and would still do it at 2Gi, just later.
+#
+# `malloc_trim(0)` is the standard remedy and is what makes the diagnosis
+# falsifiable: if this is the cause, the cold-batch number above drops towards
+# zero. If it does not, the diagnosis is wrong and the trimming is just overhead.
+# It is a single call on a path that already spent hundreds of milliseconds in a
+# provider walk.
+_TRIM_ENABLED = os.environ.get("MALLOC_TRIM", "1").strip().lower() not in {"0", "false", "no", "off"}
+
+
+def release_free_heap() -> None:
+    """Hand glibc's free arena pages back to the OS. No-op off glibc or when off."""
+    if not _TRIM_ENABLED:
+        return
+    try:
+        import ctypes
+
+        ctypes.CDLL("libc.so.6").malloc_trim(0)
+    except Exception:  # noqa: BLE001 - musl, macOS, or a stripped libc: not fatal
+        return
+
+
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     start = time.perf_counter()
     response = await call_next(request)
     elapsed = (time.perf_counter() - start) * 1000
+    release_free_heap()
 
     logger.info(
         "http_request",
