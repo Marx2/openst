@@ -1125,3 +1125,132 @@ def get_logo(ticker: str) -> dict | None:
     if not domain:
         return None
     return {"source": "favicon", "remote_url": _FAVICON_URL.format(domain=domain)}
+
+
+# --- Polish fund categories (analizy.pl) — plan §72.39 step 2, stage 2 -------
+#
+# Why this exists: a PPO/PPI fund's broker executes against the *category* NAV
+# (e.g. ING Akcji category W), while every other provider we carry serves the
+# fund's default category only. Category W's series reproduces four of five
+# stored executed prices to the cent, so the executed series is real and
+# published — our chain simply had no route to it.
+#
+# The key is the provider's own category code, which is NOT derivable from a
+# `.TFI` symbol: of ING01's nine categories only ING01/U/W/T/F resolve and
+# A/I/K/S/E are 404. So callers pass the code (ING01W), never a guessed one.
+
+ANALIZY_QUOTATION_URL = "https://www.analizy.pl/api/quotation/fio/{code}"
+ANALIZY_TIMEOUT = 20
+# Every fund category in this universe is PLN-denominated. The source states the
+# currency on both the envelope and each series, so this is asserted rather than
+# assumed — a bare number with no currency is the mistake ticker_reference's
+# empty yahoo_suffix already caused once (plan §72.39 stage 2).
+ANALIZY_EXPECTED_CURRENCY = "PLN"
+
+
+class UnknownFundCategory(Exception):
+    """The category code does not exist upstream (analizy.pl answered 404).
+
+    Distinct from "no history in the requested window", which is a legitimate
+    empty result. Collapsing the two is exactly the silent failure this provider
+    exists to avoid: `200` with zero bars is what a *dead* provider looks like,
+    and that shape is how a broken mapping once shipped unnoticed (reverted in
+    77434fd). Keep this an error so the route can propagate a 404.
+    """
+
+
+def _select_analizy_series(payload: dict) -> dict | None:
+    """Pick the non-empty price series from an analizy.pl quotation payload.
+
+    Selects on *having points*, never on position: the payload carries a second
+    `fund_with_dividend_*` series that is empty on every fund checked, and
+    nothing documents the order as stable. Returns None when no series has data.
+    """
+    for series in payload.get("series") or []:
+        if series.get("price"):
+            return series
+    return None
+
+
+def _analizy_currency(payload: dict, series: dict | None) -> str | None:
+    """Currency declared by the source, preferring the series' own value."""
+    if series and series.get("currency"):
+        return str(series["currency"]).upper()
+    if payload.get("currency"):
+        return str(payload["currency"]).upper()
+    return None
+
+
+def get_fund_category_history(
+    code: str, start_date: str, end_date: str
+) -> list[dict] | None:
+    """NAV history for one Polish fund category, as [{"date", "close"}, ...].
+
+    `code` is an analizy.pl category code (ING01W), upper-cased. Returns rows in
+    ascending date order, or [] when the category exists but has no valuation in
+    the window. Raises UnknownFundCategory when the code does not exist, so the
+    caller can distinguish "no history" from "wrong code".
+    """
+    cat = (code or "").strip().upper()
+    if not cat:
+        raise UnknownFundCategory("empty fund category code")
+
+    url = ANALIZY_QUOTATION_URL.format(code=cat)
+    try:
+        resp = httpx.get(
+            url,
+            timeout=ANALIZY_TIMEOUT,
+            headers={
+                "User-Agent": "portfoliost-openst/1.0",
+                "X-Requested-With": "XMLHttpRequest",
+            },
+        )
+    except Exception as e:
+        logger.warning("analizy.pl fetch failed for %s: %s", cat, e)
+        return None
+
+    if resp.status_code == 404:
+        # {"success": false} — the code is not in this universe.
+        raise UnknownFundCategory(f"no such fund category: {cat}")
+    if resp.status_code != 200:
+        logger.warning("analizy.pl %s for %s returned %s", resp.status_code, cat, url)
+        return None
+
+    try:
+        payload = resp.json()
+    except Exception as e:
+        logger.warning("analizy.pl payload for %s is not JSON: %s", cat, e)
+        return None
+
+    series = _select_analizy_series(payload)
+    currency = _analizy_currency(payload, series)
+    if currency != ANALIZY_EXPECTED_CURRENCY:
+        # Refuse rather than pass on a bare number: every category here is PLN,
+        # so anything else means we are reading the wrong series or the source
+        # changed shape.
+        logger.warning(
+            "analizy.pl %s declares currency %r, expected %r — refusing",
+            cat,
+            currency,
+            ANALIZY_EXPECTED_CURRENCY,
+        )
+        return None
+
+    if series is None:
+        return []
+
+    rows = []
+    for point in series["price"]:
+        date_str = point.get("date")
+        close = _safe_float(point.get("value"))
+        if not date_str or close is None:
+            continue
+        if start_date and date_str < start_date:
+            continue
+        if end_date and date_str > end_date:
+            continue
+        rows.append({"date": date_str, "close": close})
+
+    rows.sort(key=lambda r: r["date"])
+    _remember_symbol_currency(cat, currency)
+    return rows
