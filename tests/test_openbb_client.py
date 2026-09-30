@@ -1766,3 +1766,55 @@ def test_get_bond_profile_no_db_uses_pure_openbb_path(mock_obb, monkeypatch):
 
     assert result == {"symbol": "EDO0936", "name": "Obligacje 10-letnie EDO"}
     mock_obb.equity.profile.assert_called_once_with("EDO0936", provider="obligacje")
+
+
+@patch("src.openbb_client.obb")
+def test_symbol_currency_cache_is_bounded(mock_obb):
+    """§73.4 — the currency memo is keyed on a caller-controlled ticker and these
+    routes are unauthenticated, so an unbounded dict would grow for the life of
+    the process. Same bound and same trade as `_pays_dividend`: dropping an entry
+    costs one extra quote fetch, never a wrong answer.
+
+    NOT the §73 memory leak — see the note on the dict in openbb_client. This is a
+    defect on its own merits, found while walking §73.4's checklist.
+    """
+    openbb_client._symbol_currency_cache.clear()
+    mock_obb.equity.price.quote.return_value = MagicMock(
+        to_df=lambda: pd.DataFrame([{"currency": "USD"}])
+    )
+    # Shrink the cap so the test does not have to insert 20k entries.
+    with patch.object(openbb_client, "SYMBOL_CURRENCY_MAX", 10):
+        for i in range(40):
+            openbb_client._remember_symbol_currency(f"SYM{i}", "USD")
+        assert len(openbb_client._symbol_currency_cache) <= 10
+        # The most recent write is always retained — a bounded cache that evicted
+        # the newest key would turn a memory bound into a correctness bug.
+        assert openbb_client._symbol_currency_cache.get("SYM39") == "USD"
+        # The oldest were dropped, which is the point.
+        assert "SYM0" not in openbb_client._symbol_currency_cache
+    openbb_client._symbol_currency_cache.clear()
+
+
+@patch("src.openbb_client.obb")
+def test_symbol_currency_reads_through_the_bounded_store(mock_obb):
+    """The write path must go through the bounding helper, not assign directly —
+    a test that only exercised `_remember_symbol_currency` would pass even if
+    `_symbol_currency` bypassed it."""
+    openbb_client._symbol_currency_cache.clear()
+    mock_obb.equity.price.quote.return_value = MagicMock(
+        to_df=lambda: pd.DataFrame([{"currency": "GBP"}])
+    )
+    assert openbb_client._symbol_currency("TESTCO") == "GBP"
+    assert openbb_client._symbol_currency_cache.get("TESTCO") == "GBP"
+    openbb_client._symbol_currency_cache.clear()
+
+
+@patch("src.openbb_client.obb")
+def test_symbol_currency_does_not_cache_a_failure(mock_obb):
+    """A None is a transient failure and must be retried, not remembered. Unchanged
+    by §73.4 and worth pinning next to the bound: bounding a cache is exactly the
+    kind of change that starts caching failures to save a lookup."""
+    openbb_client._symbol_currency_cache.clear()
+    mock_obb.equity.price.quote.side_effect = Exception("upstream down")
+    assert openbb_client._symbol_currency("FAILCO") is None
+    assert "FAILCO" not in openbb_client._symbol_currency_cache
