@@ -749,3 +749,76 @@ def fund_category_history(
 
     _cache.set(key, _safe_json_dumps(value))
     return value
+
+
+@app.get("/fund/catalogue")
+def fund_catalogue():
+    """The analizy.pl fund-category catalogue as a tickerref CSV (§78 step 2).
+
+    **A snapshot, not a scrape** — and that is the one way this route differs from
+    `/corp-bond/catalogue`. That one reads a single server-rendered page; this
+    catalogue is 734 codes across two enumeration passes (~960 requests), so a
+    request-path scrape is impossible. A refresh job rewrites
+    `data/fund-catalogue.csv` and this serves it.
+
+    Cached like the other catalogue route. A missing or empty snapshot is a 404
+    with a loud message rather than an empty CSV: an empty catalogue would make
+    every fund unsearchable and every fund code a 404, which reads exactly like
+    "this source has no funds".
+    """
+    from .importers.fund_catalogue import (
+        CatalogueUnavailable,
+        load_rows,
+        to_tickerref_csv,
+    )
+
+    cached = _cache.get("fund_catalogue")
+    if cached is not None:
+        return Response(content=cached, media_type="text/csv")
+
+    with _upstream_gate:
+        try:
+            csv_text = to_tickerref_csv(load_rows())
+        except CatalogueUnavailable as e:
+            logger.error("fund catalogue unavailable: %s", e)
+            raise HTTPException(status_code=503, detail=str(e))
+
+    _cache.set("fund_catalogue", csv_text)
+    return Response(content=csv_text, media_type="text/csv")
+
+
+@app.get("/fund/search/{query}")
+def fund_search(query: str):
+    """Search fund categories by code or name.
+
+    The provider-side leg for funds, and additive to the reference table the way
+    `bondSearchLeg` is for savings bonds — except fund categories *are* also
+    synced into `ticker_reference`, so this covers the codes the table has not
+    caught up with rather than standing in for the table.
+    """
+    from .importers.fund_catalogue import CatalogueUnavailable, load_rows, search
+
+    normalized = query.strip().lower()
+    if not normalized:
+        raise HTTPException(status_code=404, detail="No fund search results for ''")
+
+    cached = _cache.get(_query_key("fund_search", query))
+    if cached is not None:
+        if cached == _NEGATIVE_SENTINEL:
+            raise HTTPException(status_code=404, detail=f"No fund search results for '{query}'")
+        return json.loads(cached)
+
+    try:
+        hits = search(normalized, load_rows())
+    except CatalogueUnavailable as e:
+        logger.error("fund catalogue unavailable: %s", e)
+        raise HTTPException(status_code=503, detail=str(e))
+
+    if not hits:
+        # Negative-cached: a miss is a real answer for an unrepeatable query, and
+        # re-parsing 734 rows per keystroke is the cost worth avoiding.
+        _cache.set(_query_key("fund_search", query), _NEGATIVE_SENTINEL, ttl=NEGATIVE_TTL)
+        raise HTTPException(status_code=404, detail=f"No fund search results for '{query}'")
+
+    _cache.set(_query_key("fund_search", query), _safe_json_dumps(hits))
+    return hits
