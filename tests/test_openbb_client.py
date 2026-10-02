@@ -1132,8 +1132,10 @@ def test_get_fundamentals_calls_statement_and_period(mock_obb):
 
     result = get_fundamentals("AAPL", "income", "annual")
 
-    assert [r["fiscal_year"] for r in result] == [2024, 2023]
-    assert result[0]["period_ending"] == "2024-09-28 00:00:00"
+    # §79.2 — the provider travels with the rows, in the body.
+    assert result["provider"] == "fmp"
+    assert [r["fiscal_year"] for r in result["rows"]] == [2024, 2023]
+    assert result["rows"][0]["period_ending"] == "2024-09-28 00:00:00"
     mock_obb.equity.fundamental.income.assert_called_once_with(
         "AAPL", period="annual", provider="fmp"
     )
@@ -1147,14 +1149,30 @@ def test_get_fundamentals_falls_back_to_yfinance(mock_obb):
 
     result = get_fundamentals("AAPL", "balance", "quarter")
 
-    assert len(result) == 2
+    assert len(result["rows"]) == 2
+    # The point of the envelope: a mixed-provider table is only visible if the
+    # fallback names itself. Without this the consumer could not tell a yfinance
+    # balance sheet from an fmp one.
+    assert result["provider"] == "yfinance"
     assert mock_obb.equity.fundamental.balance.call_count == 2
 
 
 @patch("src.openbb_client.obb")
-def test_get_fundamentals_all_fail_returns_empty(mock_obb):
+def test_get_fundamentals_all_fail_returns_none(mock_obb):
     mock_obb.equity.fundamental.cash.side_effect = Exception("fail")
-    assert get_fundamentals("AAPL", "cash", "annual") == []
+    assert get_fundamentals("AAPL", "cash", "annual") is None
+
+
+@patch("src.openbb_client.obb")
+def test_get_fundamentals_empty_provider_result_is_not_attributed(mock_obb):
+    """A provider that returns nothing has not answered, so no name is recorded."""
+    mock_obb.equity.fundamental.income.side_effect = [
+        MagicMock(to_df=lambda: pd.DataFrame()),
+        MagicMock(to_df=lambda: pd.DataFrame()),
+        MagicMock(to_df=lambda: pd.DataFrame()),
+        MagicMock(to_df=lambda: pd.DataFrame()),
+    ]
+    assert get_fundamentals("AAPL", "income", "annual") is None
 
 
 @patch("src.openbb_client.obb")

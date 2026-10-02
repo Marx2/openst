@@ -375,16 +375,21 @@ def test_crypto_profile_not_found_returns_404(mock_fn, client):
 
 @patch(
     "src.main.get_fundamentals",
-    return_value=[{"fiscal_year": 2024, "net_income": 93736}],
+    return_value={"provider": "fmp", "rows": [{"fiscal_year": 2024, "net_income": 93736}]},
 )
 def test_fundamentals_defaults_income_annual(mock_fn, client):
     r = client.get("/equity/fundamentals/AAPL")
     assert r.status_code == 200
-    assert r.json() == [{"fiscal_year": 2024, "net_income": 93736}]
+    # §79.2 — the envelope is the body, not a header, so it survives both the
+    # Redis cache here and cachest's 24h body cache on a hit.
+    assert r.json() == {"provider": "fmp", "rows": [{"fiscal_year": 2024, "net_income": 93736}]}
     mock_fn.assert_called_once_with("AAPL", "income", "annual")
 
 
-@patch("src.main.get_fundamentals", return_value=[{"fiscal_year": 2024}])
+@patch(
+    "src.main.get_fundamentals",
+    return_value={"provider": "yfinance", "rows": [{"fiscal_year": 2024}]},
+)
 def test_fundamentals_statement_and_period_params(mock_fn, client):
     client.get("/equity/fundamentals/AAPL?statement=cash&period=quarter")
     mock_fn.assert_called_once_with("AAPL", "cash", "quarter")
@@ -394,7 +399,7 @@ def test_fundamentals_rejects_unknown_statement(client):
     assert client.get("/equity/fundamentals/AAPL?statement=hogwarts").status_code == 422
 
 
-@patch("src.main.get_fundamentals", return_value=[])
+@patch("src.main.get_fundamentals", return_value=None)
 def test_fundamentals_no_data_returns_404(mock_fn, client):
     assert client.get("/equity/fundamentals/UNKNOWN").status_code == 404
 

@@ -466,10 +466,13 @@ def equity_fundamentals(
     statement: str = Query(default="income", pattern=f"^({'|'.join(STATEMENTS)})$"),
     period: str = Query(default="annual", pattern=f"^({'|'.join(PERIODS)})$"),
 ):
-
+    # §79.2 — the body is the provenance envelope {"provider", "rows"} rather
+    # than a bare row list. It has to be in the body: this response is cached in
+    # Redis here for 24h and again in cachest, and a cache hit replays the body
+    # without re-running the fetch, so a header would be dropped on precisely the
+    # requests that are cheapest to serve.
     def fetch():
-        records = get_fundamentals(ticker, statement, period)
-        return records or None
+        return get_fundamentals(ticker, statement, period)
 
     return _cached_or_404(
         _symbol_key("fundamentals", ticker, statement, period),

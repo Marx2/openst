@@ -829,7 +829,20 @@ def search_bonds(query: str) -> list[dict]:
         return []
 
 
-def get_fundamentals(ticker: str, statement: str, period: str) -> list[dict]:
+def get_fundamentals(ticker: str, statement: str, period: str) -> dict | None:
+    """Return ``{"provider": <name>, "rows": [...]}`` for the first provider that answered.
+
+    §79.2 — the provider that satisfied the walk IS part of the answer. The
+    three statements are three independent walks, so one instrument can answer
+    with income from ``fmp`` and a balance sheet from ``yfinance``, in different
+    currencies and units; the consumer merged them into one response with no
+    record of which was which. Returning rows alone made that unrecoverable at
+    every hop below, including through cachest's 24h body cache — so provenance
+    has to travel in the body, not a header.
+
+    Returns ``None`` when every provider failed or returned nothing; the route
+    turns that into a 404, exactly as the previous empty-list return did.
+    """
     fn = getattr(obb.equity.fundamental, statement)
     for provider in STATEMENT_PROVIDERS:
         if _provider_is_blocked(provider):
@@ -840,13 +853,13 @@ def get_fundamentals(ticker: str, statement: str, period: str) -> list[dict]:
                 continue
             records = _df_records(df)
             if records:
-                return records
+                return {"provider": provider, "rows": records}
             continue
         except Exception as e:
             if _classify(e, provider, ticker) is _Action.STOP:
-                return []
+                return None
             continue
-    return []
+    return None
 
 
 def _merged_dividend_calendar(fn, start_date: str, end_date: str) -> list[dict]:
