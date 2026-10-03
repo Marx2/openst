@@ -79,27 +79,58 @@ def test_ohlcv_rows_on_empty_frame():
 # --- crypto profile --------------------------------------------------------
 
 
-def test_crypto_profile_has_no_permanently_null_name(monkeypatch):
-    """`name` came from a quote field that does not exist, so it was always null."""
+def test_crypto_profile_omits_keys_the_search_leg_does_not_carry(monkeypatch):
+    """No search row means no search keys — omitted, not emitted as null.
+
+    The rule this test used to assert was narrower: that `name` was absent
+    because a price bar cannot carry it. §86.3 supersedes that reasoning — the
+    search leg does carry a name — so the rule is now the general one. A key the
+    provider never sends is left out, because a key that is *always* null
+    misleads a consumer into thinking the data is missing rather than
+    unavailable.
+    """
     monkeypatch.setattr(c, "get_crypto_quote", lambda pair: {
         "symbol": pair, "price": 64000.0, "open": 1.0, "high": 2.0, "low": 0.5,
         "volume": 10, "date": "2026-09-27", "change": 1.0, "change_percent": 0.1,
     })
+    monkeypatch.setattr(c, "_crypto_search_row", lambda pair: None)
     profile = c.get_crypto_profile("BTC-USD")
-    assert "name" not in profile, "a key that is always null misleads consumers"
+    assert set(profile) == {"symbol", "currency", "price", "date"}
     assert profile["symbol"] == "BTC-USD"
     assert profile["currency"] == "USD"
     assert profile["price"] == 64000.0
     assert profile["date"] == "2026-09-27"
 
 
+def test_crypto_profile_carries_a_null_the_provider_omitted(monkeypatch):
+    """The other half of the rule: a value the provider *did* send as null is kept.
+
+    `WBTCUSD` comes back with a circulating supply and no total supply. Omitting
+    the key would claim we never asked; coercing it to 0 would claim the token
+    issued nothing. Null is the only honest third option.
+    """
+    monkeypatch.setattr(c, "get_crypto_quote", lambda pair: {
+        "symbol": pair, "price": 64000.0, "date": "2026-09-27",
+    })
+    monkeypatch.setattr(c, "_crypto_search_row", lambda pair: {
+        "symbol": "WBTCUSD", "name": "Wrapped Bitcoin USD", "exchange": "CCC",
+        "ico_date": "2019-01-30", "circulating_supply": 125330.0, "total_supply": None,
+    })
+    profile = c.get_crypto_profile("WBTC-USD")
+    assert profile["name"] == "Wrapped Bitcoin USD"
+    assert profile["circulating_supply"] == 125330.0
+    assert profile["total_supply"] is None
+
+
 def test_crypto_profile_without_quote_suffix_has_no_currency(monkeypatch):
     monkeypatch.setattr(c, "get_crypto_quote", lambda pair: {"price": 1.0, "date": "d"})
+    monkeypatch.setattr(c, "_crypto_search_row", lambda pair: None)
     assert c.get_crypto_profile("BTC")["currency"] is None
 
 
 def test_crypto_profile_none_when_no_quote(monkeypatch):
     monkeypatch.setattr(c, "get_crypto_quote", lambda pair: None)
+    monkeypatch.setattr(c, "_crypto_search_row", lambda pair: None)
     assert c.get_crypto_profile("BTC-USD") is None
 
 

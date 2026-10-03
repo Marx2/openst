@@ -1,7 +1,9 @@
+import json
 import logging
 import types
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
@@ -1122,6 +1124,139 @@ def test_get_crypto_search_skips_keyless_provider(mock_obb, monkeypatch):
 
     assert openbb_client.get_crypto_search("btc") == []
     mock_obb.crypto.search.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# crypto profile — quote body plus the search leg (§86.1 fixtures, §86.3)
+# ---------------------------------------------------------------------------
+
+CRYPTO_FIXTURES = Path(__file__).parent / "fixtures" / "crypto"
+
+
+def _crypto_search_fixture() -> list[dict]:
+    """The recorded 17-row `btcusd` search response, verbatim (§86.1)."""
+    return json.loads((CRYPTO_FIXTURES / "search_BTC-USD.json").read_text(encoding="utf-8"))
+
+
+def _search_fixture_df() -> pd.DataFrame:
+    return pd.DataFrame(_crypto_search_fixture())
+
+
+def _profile_fixture() -> dict:
+    return json.loads((CRYPTO_FIXTURES / "profile_BTC-USD.json").read_text(encoding="utf-8"))
+
+
+@patch("src.openbb_client.obb")
+def test_crypto_profile_fixture_is_the_shape_the_widening_preserves(mock_obb, monkeypatch):
+    """The recorded four-field body is a strict subset of what we now emit.
+
+    Guards the "additive, not a replacement" claim: if the quote-derived keys
+    ever move or change type, this fails before §86.3's merge test does.
+    """
+    monkeypatch.setenv("FMP_API_KEY", "test-key")
+    mock_obb.crypto.price.historical.return_value = MagicMock(to_df=_crypto_single_df)
+    mock_obb.crypto.search.return_value = MagicMock(to_df=_search_fixture_df)
+
+    before = _profile_fixture()
+    after = openbb_client.get_crypto_profile("BTC-USD")
+
+    assert set(before) < set(after)
+    for key, value in before.items():
+        if key in ("price", "date"):
+            # The fixture recorded the live quote; these tests serve a mocked bar.
+            assert isinstance(after[key], type(value))
+            continue
+        assert after[key] == value
+
+
+@patch("src.openbb_client.obb")
+def test_get_crypto_profile_merges_the_exact_search_row(mock_obb, monkeypatch):
+    monkeypatch.setenv("FMP_API_KEY", "test-key")
+    mock_obb.crypto.price.historical.return_value = MagicMock(to_df=_crypto_single_df)
+    mock_obb.crypto.search.return_value = MagicMock(to_df=_search_fixture_df)
+
+    result = openbb_client.get_crypto_profile("BTC-USD")
+
+    # The quote leg is untouched: same keys, same types, same values.
+    assert result["symbol"] == "BTC-USD"
+    assert result["currency"] == "USD"
+    assert result["price"] == 40500.0
+    assert result["date"]
+
+    # The five search fields come from BTCUSD (row 12 of 17), never from row 1,
+    # which is TBTCUSD — "tBTC USD", a different coin that also matches "BTC".
+    assert result["name"] == "Bitcoin USD"
+    assert result["exchange"] == "CCC"
+    assert result["ico_date"] == "2014-09-17"
+    assert result["circulating_supply"] == 19972590.0
+    assert result["total_supply"] == 19972590.0
+
+
+@patch("src.openbb_client.obb")
+def test_get_crypto_profile_null_supplies_stay_null(mock_obb, monkeypatch):
+    """A supply FMP omits is null, never 0.
+
+    WBTCUSD is one of six rows in the fixture with no `total_supply`. Coercing
+    it to 0 would state that Wrapped Bitcoin has issued nothing, which is a
+    different and much worse claim than "the provider does not say".
+    """
+    monkeypatch.setenv("FMP_API_KEY", "test-key")
+    mock_obb.crypto.price.historical.return_value = MagicMock(to_df=_crypto_single_df)
+    mock_obb.crypto.search.return_value = MagicMock(to_df=_search_fixture_df)
+
+    result = openbb_client.get_crypto_profile("WBTC-USD")
+
+    assert result["name"] == "Wrapped Bitcoin USD"
+    assert result["circulating_supply"] == 125330.0
+    assert result["total_supply"] is None
+
+
+@patch("src.openbb_client.obb")
+def test_get_crypto_profile_no_exact_match_keeps_the_quote_body(mock_obb, monkeypatch):
+    """No exact row means no search fields — omitted, not null.
+
+    NMBTCUSD is in the response but is not the pair asked for, so a profile for
+    NMBTCUSD-USD must come back exactly as it did before this step: four keys.
+    """
+    monkeypatch.setenv("FMP_API_KEY", "test-key")
+    mock_obb.crypto.price.historical.return_value = MagicMock(to_df=_crypto_single_df)
+    mock_obb.crypto.search.return_value = MagicMock(to_df=_search_fixture_df)
+
+    result = openbb_client.get_crypto_profile("NMBTCUSD-USD")
+
+    assert set(result) == {"symbol", "currency", "price", "date"}
+    assert result["price"] == 40500.0
+    mock_obb.crypto.search.assert_called_once_with("NMBTCUSD-USD", provider="fmp")
+
+
+@patch("src.openbb_client.obb")
+def test_get_crypto_profile_keyless_search_provider_does_not_raise(mock_obb, monkeypatch):
+    """No FMP key means no search leg, and still a usable profile.
+
+    The gating is the established `_provider_has_key` pattern from
+    get_crypto_quote: the profile degrades to the quote body instead of raising,
+    because a research page with no name beats a 404.
+    """
+    monkeypatch.delenv("FMP_API_KEY", raising=False)
+    mock_obb.crypto.price.historical.return_value = MagicMock(to_df=_crypto_single_df)
+
+    result = openbb_client.get_crypto_profile("BTC-USD")
+
+    assert set(result) == {"symbol", "currency", "price", "date"}
+    mock_obb.crypto.search.assert_not_called()
+
+
+@patch("src.openbb_client.obb")
+def test_get_crypto_profile_search_failure_keeps_the_quote_body(mock_obb, monkeypatch):
+    monkeypatch.setenv("FMP_API_KEY", "test-key")
+    mock_obb.crypto.price.historical.return_value = MagicMock(to_df=_crypto_single_df)
+    mock_obb.crypto.search.side_effect = Exception("402 payment required")
+
+    result = openbb_client.get_crypto_profile("BTC-USD")
+
+    assert set(result) == {"symbol", "currency", "price", "date"}
+    # …and the provider is blocked for the walk, as with any other search.
+    assert "fmp" in openbb_client._provider_blocked_until
 
 
 @patch("src.openbb_client.obb")
