@@ -607,23 +607,75 @@ def get_crypto_quote(pair: str) -> dict | None:
     return None
 
 
-def get_crypto_profile(pair: str) -> dict | None:
-    """Crypto profile derived from the quote response (no dedicated profile endpoint).
+CRYPTO_PROFILE_SEARCH_FIELDS = (
+    "name",
+    "exchange",
+    "ico_date",
+    "circulating_supply",
+    "total_supply",
+)
 
-    ``name`` is not derivable from a price bar, so it is omitted rather than emitted
-    as a permanent null — the quote dict has no such field, and a key that is always
-    null misleads consumers into thinking the data is missing rather than unavailable.
+
+def _crypto_search_row(pair: str) -> dict | None:
+    """The one crypto-search row that is exactly ``pair``, or ``None``.
+
+    The search leg filters with ``str.contains``, so it returns every symbol that
+    embeds the query: ``BTC`` matches ``TBTCUSD`` (row 1) as well as ``BTCUSD``
+    (row 12). Taking the first row would file tBTC USD's supply under Bitcoin's
+    name, which is worse than no name at all.
+
+    The dash is stripped on both sides because the provider does not spell the
+    pair the way we ask for it — FMP returns ``BTCUSD`` for ``BTC-USD`` — so a
+    literal comparison matches nothing for any real pair (§86.1).
+    """
+    wanted = pair.upper().replace("-", "")
+    for provider in CRYPTO_SEARCH_PROVIDERS:
+        if _provider_is_blocked(provider) or not _provider_has_key(provider):
+            continue
+        try:
+            df = obb.crypto.search(pair, provider=provider).to_df()
+            if df.empty:
+                continue
+            records = _df_records(df)
+        except Exception as e:
+            # Free-text search has no invalid-symbol concept, so — exactly as in
+            # get_crypto_search — every failure just moves to the next provider.
+            # A profile without a name is still a profile.
+            _classify(e, provider, pair)
+            continue
+        for row in records:
+            if str(row.get("symbol", "")).upper().replace("-", "") == wanted:
+                return row
+    return None
+
+
+def get_crypto_profile(pair: str) -> dict | None:
+    """Quote-derived price/currency plus the search leg's name and supply.
+
+    The body is still derived from the quote (there is no dedicated crypto
+    profile endpoint), but the fields a price bar cannot carry are merged on from
+    the search leg, which already runs against the only provider with crypto
+    metadata. Keys the search row does not have are omitted rather than emitted
+    as null, so a key is never permanently empty (§86.1).
     """
     quote = get_crypto_quote(pair)
     if quote is None:
         return None
     parts = pair.upper().split("-")
-    return {
+    profile = {
         "symbol": pair,
         "currency": parts[-1] if len(parts) > 1 else None,
         "price": quote.get("price"),
         "date": quote.get("date"),
     }
+    row = _crypto_search_row(pair)
+    if row is not None:
+        for field in CRYPTO_PROFILE_SEARCH_FIELDS:
+            if field in row:
+                # A missing supply stays None and is never coerced to 0: FMP
+                # omits it for six of the seventeen btcusd-matching rows.
+                profile[field] = row[field]
+    return profile
 
 
 def get_crypto_search(query: str) -> list[dict]:
