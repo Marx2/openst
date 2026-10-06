@@ -120,8 +120,15 @@ def test_scrape_aapl_full_history(httpx_mock, read_fixture, no_delay):
         "https://www.dividendmax.com/"
         "united-states/nasdaq/technology-hardware-and-equipment/apple-inc/dividends"
     )
-    assert len(rows) == 58
-    assert rows[0] == {
+    # 58 Paid + 17 Forecast rows on the captured page (forecast amount cells are
+    # sign-up gated; only the dates + currency are public).
+    assert len(rows) == 75
+    paid = [r for r in rows if r["status"] == "Paid"]
+    forecast = [r for r in rows if r["status"] == "Forecast"]
+    assert len(paid) == 58
+    assert len(forecast) == 17
+    paid0 = paid[0]
+    assert paid0 == {
         "ex_dividend_date": date(2026, 8, 10),
         "payment_date": date(2026, 8, 13),
         "declaration_date": date(2026, 7, 30),
@@ -131,9 +138,15 @@ def test_scrape_aapl_full_history(httpx_mock, read_fixture, no_delay):
         "status": "Paid",
         "symbol": "AAPL",
     }
-    assert rows[-1]["ex_dividend_date"] == date(2011, 12, 31)
-    assert rows[-1]["declaration_date"] is None
-    assert all(r["status"] == "Paid" for r in rows)
+    assert paid[-1]["ex_dividend_date"] == date(2011, 12, 31)
+    assert paid[-1]["declaration_date"] is None
+    assert all(r["amount"] is not None for r in paid)
+    first = forecast[0]
+    assert first["status"] == "Forecast"
+    assert first["amount"] is None
+    assert first["ex_dividend_date"] > date(2026, 8, 13)
+    assert first["payment_date"] is not None
+    assert first["currency"] == "USD"
 
 
 def test_scrape_vodafone_mixed_currencies(httpx_mock, read_fixture, no_delay):
@@ -142,12 +155,15 @@ def test_scrape_vodafone_mixed_currencies(httpx_mock, read_fixture, no_delay):
         (read_fixture("dividends-vodafone.html"), 200),
     ])
     rows = scrape_dividend_history("VOD")
-    assert len(rows) == 39
-    assert rows[0]["amount"] == 0.0236
-    assert rows[0]["currency"] == "EUR"
-    assert rows[-1]["ex_dividend_date"] == date(2006, 12, 31)
-    assert rows[-1]["currency"] == "GBP"
-    assert {r["currency"] for r in rows} == {"EUR", "GBP", "USD"}
+    # 39 Paid + 10 Forecast rows on the captured page.
+    assert len(rows) == 49
+    paid = [r for r in rows if r["status"] == "Paid"]
+    assert len(paid) == 39
+    assert paid[0]["amount"] == 0.0236
+    assert paid[0]["currency"] == "EUR"
+    assert paid[-1]["ex_dividend_date"] == date(2006, 12, 31)
+    assert paid[-1]["currency"] == "GBP"
+    assert {r["currency"] for r in paid} == {"EUR", "GBP", "USD"}
     assert all(r["symbol"] == "VOD" for r in rows)
 
 

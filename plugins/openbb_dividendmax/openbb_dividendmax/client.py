@@ -152,18 +152,23 @@ def _history_table(soup: BeautifulSoup):
 
 
 def _rows_from_table(table) -> list[dict]:
-    """Parse the history table into raw ``Paid``-row dicts (no symbol set)."""
+    """Parse the history table into raw ``Paid``/``Forecast``-row dicts (no symbol set)."""
     rows: list[dict] = []
     for tr in table.find_all("tr"):
         cells = [td.get_text(" ", strip=True) for td in tr.find_all("td")]
         if len(cells) != 9:
             continue
         status, dividend_type, decl_date, ex_date, pay_date, currency, _forecast, declared, _accuracy = cells
-        if status != "Paid":
+        if status not in ("Paid", "Forecast"):
             continue
         ex_dividend_date = parse_en_date(ex_date)
         amount = parse_subunit_amount(declared)
-        if ex_dividend_date is None or amount is None:
+        # Forecast rows carry the full date triple + currency with the amount
+        # cell sign-up gated; expose them with amount=None so the store can
+        # keep them as predicted, date-only rows.
+        if ex_dividend_date is None:
+            continue
+        if status == "Paid" and amount is None:
             continue
         rows.append(
             {

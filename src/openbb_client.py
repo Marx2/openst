@@ -293,6 +293,68 @@ def get_price_history(ticker: str, start_date: str, end_date: str) -> list[dict]
     return None
 
 
+def _forecast_status(raw: str | None) -> bool:
+    if raw is None:
+        return False
+    s = raw.strip().lower()
+    return any(k in s for k in ("forecast", "predicted", "rekomendowana"))
+
+
+def _normalise_dividend_df(df, today: str) -> list[dict]:
+    """Flatten an equity.fundamental.dividends dataframe into pay/forecast rows.
+
+    Paid/declared rows keep the historical shape ``{date, amount, payment_date?}``
+    (see #52); rows the provider marks as forecast/predicted are kept with
+    ``status`` set and no ``amount`` — dividendmax's amount cell is gated behind
+    sign-up, so a real number will never be present anyway. The `payload` path in
+    the store maps that to status='predicted', amount=NULL.
+    """
+    if df.empty:
+        return []
+    if not isinstance(df.index, pd.DatetimeIndex):
+        for col in ("date", "ex_dividend_date", "record_date"):
+            if col in df.columns:
+                df = df.set_index(pd.to_datetime(df[col]))
+                break
+        else:
+            df.index = pd.to_datetime(df.index, errors="coerce")
+    rows = []
+    for idx, row in df.iterrows():
+        date = idx.date() if hasattr(idx, "date") else idx
+        raw_status = row.get("status")
+        if _forecast_status(raw_status if isinstance(raw_status, str) else None):
+            item = {"date": str(date), "status": raw_status}
+            payment_date = row.get("payment_date")
+            if payment_date is not None and not pd.isna(payment_date):
+                try:
+                    item["payment_date"] = str(pd.Timestamp(payment_date).date())
+                except (ValueError, TypeError):
+                    pass
+            if row.get("declaration_date") is not None and not pd.isna(row.get("declaration_date")):
+                try:
+                    item["declaration_date"] = str(pd.Timestamp(row["declaration_date"]).date())
+                except (ValueError, TypeError):
+                    pass
+            if row.get("currency") is not None and not pd.isna(row.get("currency")):
+                item["currency"] = str(row["currency"])
+            rows.append(item)
+            continue
+        amount = _safe_float(row.get("amount"), ndigits=4)
+        if amount is None:
+            continue
+        item = {"date": str(date), "amount": f"{amount:.4f}"}
+        payment_date = row.get("payment_date")
+        if payment_date is not None and not pd.isna(payment_date):
+            try:
+                item["payment_date"] = str(pd.Timestamp(payment_date).date())
+            except (ValueError, TypeError):
+                pass
+        if isinstance(raw_status, str) and raw_status.strip():
+            item["status"] = raw_status
+        rows.append(item)
+    return rows
+
+
 def get_dividend_history(ticker: str) -> list[dict] | None:
     if _pays_dividend.get(ticker) is False:
         return []
@@ -305,29 +367,22 @@ def get_dividend_history(ticker: str) -> list[dict] | None:
             any_success = True
             if df.empty:
                 continue
-            # Some providers return the ex-dividend date as a column instead
-            # of the index; normalize so we always have a DatetimeIndex.
-            if not isinstance(df.index, pd.DatetimeIndex):
-                for col in ("date", "ex_dividend_date", "record_date"):
-                    if col in df.columns:
-                        df = df.set_index(pd.to_datetime(df[col]))
-                        break
-                else:
-                    df.index = pd.to_datetime(df.index, errors="coerce")
-            rows = []
-            for idx, row in df.iterrows():
-                date = idx.date() if hasattr(idx, "date") else idx
-                amount = _safe_float(row.get("amount"), ndigits=4)
-                if amount is None:
-                    continue
-                item = {"date": str(date), "amount": f"{amount:.4f}"}
-                payment_date = row.get("payment_date")
-                if payment_date is not None and not pd.isna(payment_date):
-                    try:
-                        item["payment_date"] = str(pd.Timestamp(payment_date).date())
-                    except (ValueError, TypeError):
-                        pass
-                rows.append(item)
+            rows = _normalise_dividend_df(df, "today")
+            if provider != "dividendmax":
+                # Even when nasdaq keeps the paid history, dividendmax's page
+                # carries the declared forecast dates that nasdaq/yfinance never
+                # return — union-merge into the same response, deduping by date.
+                try:
+                    fx = obb.equity.fundamental.dividends(ticker, provider="dividendmax").to_df()
+                    if not fx.empty:
+                        for fr in _normalise_dividend_df(fx, "today"):
+                            if "status" in fr or ("amount" in fr and fr["amount"] == ""):
+                                if fr.get("status") is not None and _forecast_status(fr.get("status")):
+                                    known = {r.get("date") for r in rows}
+                                    if fr["date"] not in known:
+                                        rows.append(fr)
+                except Exception:
+                    pass
             _remember_pays_dividend(ticker, True)
             return rows
         except Exception as e:

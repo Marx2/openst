@@ -577,7 +577,11 @@ def test_get_dividend_history_nasdaq_first_carries_payment_date(mock_obb):
         {"date": "2026-08-10", "amount": "0.2700", "payment_date": "2026-08-13"},
         {"date": "2026-05-11", "amount": "0.2700", "payment_date": "2026-05-14"},
     ]
-    mock_obb.equity.fundamental.dividends.assert_called_once_with("AAPL", provider="nasdaq")
+    # nasdaq first; dividendmax is then consulted for its forecast rows and
+    # contributes none (mock returns the same no-status paid df), so the body
+    # stays the paid history.
+    mock_obb.equity.fundamental.dividends.assert_any_call("AAPL", provider="nasdaq")
+    assert mock_obb.equity.fundamental.dividends.call_count == 2
 
 
 @patch("src.openbb_client.obb")
@@ -625,7 +629,8 @@ def test_get_dividend_history_rate_limit_blocks_provider_tries_next(mock_obb):
     assert result is not None
     assert len(result) == 2
     assert "nasdaq" in openbb_client._provider_blocked_until
-    assert mock_obb.equity.fundamental.dividends.call_count == 2
+    # one nasdaq failure + one successful provider + the dividendmax forecast merge
+    assert mock_obb.equity.fundamental.dividends.call_count == 3
 
 
 @patch("src.openbb_client.obb")

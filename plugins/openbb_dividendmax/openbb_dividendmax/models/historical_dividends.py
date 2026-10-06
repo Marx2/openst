@@ -43,8 +43,13 @@ class DividendmaxHistoricalDividendsData(HistoricalDividendsData):
     The standard model only carries ``symbol`` / ``ex_dividend_date`` /
     ``amount``; the extras below are provider-specific and survive transform
     via ``extra="allow"`` (mirroring the biznesradar ``currency`` pattern).
+
+    ``amount`` is relaxed to optional: dividendmax's ``Forecast`` rows carry
+    the dates and currency but the amount cell is sign-up gated, so they are
+    exposed with ``amount=None`` and ``status='Forecast'``.
     """
 
+    amount: Optional[float] = None  # type: ignore[assignment]
     payment_date: Optional[date] = None
     declaration_date: Optional[date] = None
     currency: Optional[str] = None
