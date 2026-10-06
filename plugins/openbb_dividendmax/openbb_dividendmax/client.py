@@ -11,11 +11,14 @@ per symbol:
      variant such as ``VOD.L`` → ``VOD``) and prefer the US listing on ties.
   2. ``GET {path}`` — the per-company page whose server-rendered table
      ``table[aria-label='Declared and forecast {NAME} dividends']`` carries the
-     full dividend history (roughly the last 20 years of ``Paid`` rows plus a
-     few ``Forecast`` rows) in a single unpaginated page.
+     full dividend history (roughly the last 20 years of ``Paid`` rows,
+     a handful of ``Declared`` rows, plus a few ``Forecast`` rows) in a
+     single unpaginated page.
 
-Only ``Paid`` rows are exposed: the ``Forecast amount`` cell is sign-up gated
-(``Sign up``) and the standard model requires a real amount.  Dates are English
+``Paid`` and ``Declared`` rows carry a real declared amount; ``Forecast``
+rows come through with ``amount=None`` and ``status='Forecast'`` — the
+``Forecast amount`` cell is sign-up gated (``Sign up``), while the ``Declared``
+row above it on the page publishes its amount.  Dates are English
 ``DD Mon YYYY`` (``31 Oct 2030``); a missing date is an en dash ``–``.  Amounts
 are subunit notation — ``265c`` / ``4.5¢`` (US cents) / ``7.77p`` (pence) — and
 are divided by 100.  The currency is per-row (``Decl. Currency``).
@@ -152,14 +155,14 @@ def _history_table(soup: BeautifulSoup):
 
 
 def _rows_from_table(table) -> list[dict]:
-    """Parse the history table into raw ``Paid``/``Forecast``-row dicts (no symbol set)."""
+    """Parse the history table into raw ``Paid``/``Declared``/``Forecast``-row dicts (no symbol set)."""
     rows: list[dict] = []
     for tr in table.find_all("tr"):
         cells = [td.get_text(" ", strip=True) for td in tr.find_all("td")]
         if len(cells) != 9:
             continue
         status, dividend_type, decl_date, ex_date, pay_date, currency, _forecast, declared, _accuracy = cells
-        if status not in ("Paid", "Forecast"):
+        if status not in ("Paid", "Declared", "Forecast"):
             continue
         ex_dividend_date = parse_en_date(ex_date)
         amount = parse_subunit_amount(declared)
@@ -168,7 +171,7 @@ def _rows_from_table(table) -> list[dict]:
         # keep them as predicted, date-only rows.
         if ex_dividend_date is None:
             continue
-        if status == "Paid" and amount is None:
+        if status in ("Paid", "Declared") and amount is None:
             continue
         rows.append(
             {
@@ -185,7 +188,7 @@ def _rows_from_table(table) -> list[dict]:
 
 
 def scrape_dividend_history(symbol: str, fetch_delay_s: float | None = None) -> list[dict]:
-    """Scrape the full ``Paid`` dividend history for ``symbol``.
+    """Scrape the full dividend history for ``symbol`` (Paid + Declared + Forecast).
 
     Two polite requests: ``/suggest.json`` then the ``/dividends`` page, with
     ``fetch_delay_s`` (default from ``DIVIDENDMAX_FETCH_DELAY_S``, 1 s) slept
