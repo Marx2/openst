@@ -375,12 +375,20 @@ def get_dividend_history(ticker: str) -> list[dict] | None:
                 try:
                     fx = obb.equity.fundamental.dividends(ticker, provider="dividendmax").to_df()
                     if not fx.empty:
+                        known = {r.get("date") for r in rows}
                         for fr in _normalise_dividend_df(fx, "today"):
-                            if "status" in fr or ("amount" in fr and fr["amount"] == ""):
-                                if fr.get("status") is not None and _forecast_status(fr.get("status")):
-                                    known = {r.get("date") for r in rows}
-                                    if fr["date"] not in known:
-                                        rows.append(fr)
+                            st = fr.get("status")
+                            if st is None:
+                                continue
+                            s = st.strip().lower()
+                            # Forecast rows (dates only) and declared rows
+                            # (public amount) are what dividendmax knows and
+                            # nasdaq/yfinance never return. Paid rows are
+                            # skipped: the primary provider already has them.
+                            if _forecast_status(st) or "declar" in s:
+                                if fr["date"] not in known:
+                                    rows.append(fr)
+                                    known.add(fr["date"])
                 except Exception:
                     pass
             _remember_pays_dividend(ticker, True)

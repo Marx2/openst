@@ -585,6 +585,41 @@ def test_get_dividend_history_nasdaq_first_carries_payment_date(mock_obb):
 
 
 @patch("src.openbb_client.obb")
+def test_get_dividend_history_merges_declared_and_forecast_rows(mock_obb):
+    paid = MagicMock()
+    paid.to_df.return_value = _nasdaq_dividends_df()
+
+    fx_df = pd.DataFrame(
+        [
+            {"ex_dividend_date": "2026-10-15", "amount": 1.73, "status": "Declared",
+             "payment_date": "2026-11-16", "declaration_date": "2026-09-10", "currency": "USD"},
+            {"ex_dividend_date": "2027-01-15", "amount": float("nan"), "status": "Forecast",
+             "payment_date": "2027-02-14", "declaration_date": "2026-11-01", "currency": "USD"},
+            {"ex_dividend_date": "2026-08-10", "amount": 0.27, "status": "Paid"},
+        ]
+    )
+    fx_df = fx_df.set_index(pd.to_datetime(fx_df["ex_dividend_date"]))
+    fx = MagicMock()
+    fx.to_df.return_value = fx_df.drop(columns=["ex_dividend_date"])
+    mock_obb.equity.fundamental.dividends.side_effect = [paid, fx]
+
+    result = get_dividend_history("ABBV")
+
+    declared = [r for r in result if r.get("status") == "Declared"]
+    forecast = [r for r in result if r.get("status") == "Forecast"]
+    # declared row carries the public amount through to the body
+    assert declared == [
+        {"date": "2026-10-15", "amount": "1.7300", "payment_date": "2026-11-16",
+         "status": "Declared"}
+    ]
+    assert len(forecast) == 1
+    assert forecast[0]["date"] == "2027-01-15"
+    assert forecast[0]["payment_date"] == "2027-02-14"
+    # dividendmax's paid duplicate of a date nasdaq already returned is skipped
+    assert len([r for r in result if r["date"] == "2026-08-10"]) == 1
+
+
+@patch("src.openbb_client.obb")
 def test_get_dividend_history_no_payment_date_column_stays_two_key(mock_obb):
     mock_result = MagicMock()
     mock_result.to_df.return_value = _dividends_df()
