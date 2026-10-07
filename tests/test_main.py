@@ -184,6 +184,32 @@ def test_metrics_returns_record(mock_fn, client):
     assert r.json() == {"market_cap": 3.1e12}
 
 
+@patch(
+    "src.main.get_historical_splits",
+    return_value={
+        "status": "confirmed",
+        "provider": "fmp",
+        "events": [{"effectiveDate": "2024-06-10", "numerator": 10, "denominator": 1, "factor": 10}],
+    },
+)
+def test_splits_returns_provider_status_and_normalized_event(mock_fn, client):
+    r = client.get("/equity/splits/NVDA")
+    assert r.status_code == 200
+    assert r.json()["status"] == "confirmed"
+    assert r.json()["events"][0]["factor"] == 10
+    mock_fn.assert_called_once_with("NVDA")
+
+
+@patch(
+    "src.main.get_historical_splits",
+    return_value={"status": "unsupported", "provider": "fmp", "events": []},
+)
+def test_splits_keeps_provider_coverage_failure_distinct_from_empty(mock_fn, client):
+    r = client.get("/equity/splits/DNP.WA")
+    assert r.status_code == 200
+    assert r.json() == {"status": "unsupported", "provider": "fmp", "events": []}
+
+
 @patch("src.main.get_projections", return_value={"target_median": 250.0})
 def test_projections_returns_record(mock_fn, client):
     r = client.get("/equity/projections/AAPL")

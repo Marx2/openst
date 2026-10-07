@@ -55,6 +55,7 @@ from .openbb_client import (
     get_filings,
     get_fund_category_history,
     get_fundamentals,
+    get_historical_splits,
     get_insider_trading,
     get_institutional_ownership,
     get_logo,
@@ -366,6 +367,15 @@ def equity_metrics(ticker: str):
         _symbol_key("equity_metrics", ticker),
         lambda: get_metrics(ticker),
         f"No fundamental metrics for {ticker}",
+    )
+
+
+@app.get("/equity/splits/{ticker}")
+def equity_splits(ticker: str):
+    return _cached_or_404(
+        _symbol_key("equity_splits", ticker),
+        lambda: get_historical_splits(ticker),
+        f"No split data for {ticker}",
     )
 
 
