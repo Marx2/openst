@@ -16,6 +16,7 @@ METRICS_PROVIDERS  = ["yfinance", "fmp", "intrinio"]
 PROFILE_PROVIDERS = ["fmp", "yfinance", "biznesradar"]
 QUOTE_PROVIDERS = ["fmp", "yfinance", "cboe", "biznesradar"]
 STATEMENT_PROVIDERS = ["fmp", "yfinance", "polygon", "sec"]
+SPLIT_PROVIDERS = ["fmp"]
 PROJECTION_PROVIDERS = ["fmp", "yfinance", "tmx"]
 # biznesradar only implements CalendarDividend (GPW coupon/payment calendar,
 # §52) — it is NOT a valid provider for the Earnings model, so earnings uses
@@ -450,6 +451,59 @@ def _df_records(df: "pd.DataFrame") -> list[dict]:
     else:
         df = df.reset_index()
     return [{str(k): _plain(v) for k, v in row.items()} for _, row in df.iterrows()]
+
+
+def get_historical_splits(ticker: str) -> dict:
+    """Return normalized split events and provider coverage status.
+
+    OpenBB's historical-splits model currently exposes FMP only. A provider
+    failure is deliberately returned as ``unsupported``/``unavailable`` rather
+    than being mistaken for a confirmed empty history.
+    """
+    for provider in SPLIT_PROVIDERS:
+        if _provider_is_blocked(provider):
+            continue
+        try:
+            df = obb.equity.fundamental.historical_splits(ticker, provider=provider).to_df()
+            if df.empty:
+                return {"status": "confirmed_empty", "provider": provider, "events": []}
+
+            events: list[dict] = []
+            for row in _df_records(df):
+                raw_date = row.get("date") or row.get("effective_date")
+                numerator = _safe_float(row.get("numerator"), ndigits=8)
+                denominator = _safe_float(row.get("denominator"), ndigits=8)
+                if raw_date is None or numerator is None or denominator is None:
+                    return {
+                        "status": "malformed",
+                        "provider": provider,
+                        "events": [],
+                    }
+                if numerator <= 0 or denominator <= 0:
+                    return {"status": "malformed", "provider": provider, "events": []}
+                effective_date = str(raw_date)
+                factor = round(numerator / denominator, 8)
+                events.append({
+                    "symbol": ticker.upper(),
+                    "effectiveDate": effective_date,
+                    "numerator": numerator,
+                    "denominator": denominator,
+                    "factor": factor,
+                    "splitType": row.get("splitType"),
+                    "provider": provider,
+                })
+            return {"status": "confirmed", "provider": provider, "events": events}
+        except Exception as e:
+            action = _classify(e, provider, ticker)
+            if _is_rate_limited(str(e)):
+                continue
+            logger.warning("Split provider unavailable for %s: %s", ticker, e)
+            return {
+                "status": "unsupported" if _is_invalid_ticker(str(e)) else "unavailable",
+                "provider": provider,
+                "events": [],
+            }
+    return {"status": "unavailable", "provider": None, "events": []}
 
 
 def _df_single_long_records(df: "pd.DataFrame") -> dict | None:
