@@ -491,6 +491,7 @@ def get_historical_splits(ticker: str) -> dict:
                     "factor": factor,
                     "splitType": row.get("splitType"),
                     "provider": provider,
+                    "evidence": row,
                 })
             return {"status": "confirmed", "provider": provider, "events": events}
         except Exception as e:
