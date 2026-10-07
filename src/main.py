@@ -373,7 +373,7 @@ def equity_metrics(ticker: str):
 @app.get("/equity/splits/{ticker}")
 def equity_splits(ticker: str):
     return _cached_or_404(
-        _symbol_key("equity_splits", ticker),
+        _symbol_key("equity_splits_v2", ticker),
         lambda: get_historical_splits(ticker),
         f"No split data for {ticker}",
     )
